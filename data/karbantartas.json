@@ -13,8 +13,8 @@
     {
       "id": "jogszabalyi-dijak",
       "mikor": "--01-10",
-      "mit": "Okmánydíjak, eredetiségvizsgálat, kilométertérítés (normaköltség, munkába járás), mozgáskorlátozott-kedvezmény",
-      "hol": "data/szabalyok.json → okmanyok, km; data/tetelek.json → gepjarmuado_mozgaskorlatozott",
+      "mit": "Okmánydíjak, eredetiségvizsgálat, származásellenőrzés, rendszámtábla, kilométertérítés (normaköltség, munkába járás), mozgáskorlátozott-kedvezmény",
+      "hol": "data/szabalyok.json → okmanyok (forgalmi_engedely, torzskonyv, eredetisegvizsgalat_savok, szarmazasellenorzes, rendszamtabla_par), km; data/tetelek.json → gepjarmuado_mozgaskorlatozott",
       "forras": "https://nav.gov.hu/",
       "hogyan": "Év elején változhatnak. Ha egyik sem változott, csak írd be a mai napot.",
       "utoljara": "2026-11-06"
@@ -81,6 +81,15 @@
       "forras": "https://www.ksh.hu/",
       "hogyan": "Évente egyszer frissülnek. Írd át a százalékokat és a források időszakát.",
       "utoljara": "2026-11-06"
+    },
+    {
+      "id": "behozott-vizsga",
+      "mikor": "2026-11-07",
+      "mit": "Behozott autó: a forgalomba helyezés előtti műszaki vizsgálat hatósági díja, és a rendszámtábla díjának hivatalos (jogszabályi) forrása",
+      "hol": "data/szabalyok.json → okmanyok; S.atiras (forras/js/szamitas.mjs) és atirasPanel, ha új tétel kell",
+      "forras": "https://njt.hu/",
+      "hogyan": "A rendszámtábla 11 500 Ft-os díja most hírforrásból van: keresd meg a jogszabályt, és cseréld a forrást. A forgalomba helyezés előtti vizsgálat díja (2025 óta kb. 57 000 Ft a sajtó szerint) még nincs a kalkulátorban: ha hivatalos forrással megvan, vedd fel a behozott autó tételei közé.",
+      "utoljara": null
     }
   ]
 }

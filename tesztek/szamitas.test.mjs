@@ -127,3 +127,15 @@ test('autóhitel: annuitás THM-ből', () => {
   assert.equal(r.ertekVeg, null);
   assert.ok(S.autohitel(adat, { ar: 5, onero: 5, evek: 1, thm: 5 }).hiba);
 });
+
+test('regisztrációs adó: a kor szerinti csökkentés hónapsávjai', () => {
+  // 81–100 kW, „15”-ös, 2021 előtti: B oszlop, 47 000 × 2,25 = 105 750 Ft
+  const r92 = S.regado(adat, { datum: '2026-11-01', elsoForgalom: '2019-03-01', kw: 85, osztaly: '15', hajtas: 'hagyomanyos' });
+  assert.equal(r92.teljes, 105750);
+  assert.equal(r92.csokk, 70); // 85–96 hónap
+  assert.equal(r92.osszeg, 31725);
+  const r102 = S.regado(adat, { datum: '2026-10-01', elsoForgalom: '2018-04-01', kw: 85, osztaly: '15', hajtas: 'hagyomanyos' });
+  assert.equal(r102.honapok, 102);
+  assert.equal(r102.csokk, 74); // 97–108 hónap
+  assert.equal(r102.osszeg, 27495);
+});

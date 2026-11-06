@@ -44,7 +44,7 @@
     "eredetisegvizsgalat_max": 27000,
     "forras": {
       "nev": "47/2024. (XII. 6.) ÉKM rendelet (hatályos 2025. február 1-jétől)",
-      "url": null
+      "url": "https://net.jogtar.hu/jogszabaly?docid=a2400047.eko"
     },
     "eredetisegvizsgalat_savok": [
       {
@@ -67,6 +67,13 @@
       "nev": "Merkantil: hatósági díjak tájékoztató (eredetiségvizsgálat hatósági ára, 2025. február 1-jétől)",
       "url": "https://merkantil.hu/static/merkantil/sw/file/Hatosagi_dijak_tajekoztato_20250311_v2.pdf",
       "idoszak": "2025. február 1-jétől, egységes hatósági ár"
+    },
+    "szarmazasellenorzes": 14715,
+    "rendszamtabla_par": 11500,
+    "behozott_forras": {
+      "nev": "Infostart: forgalomba helyezési díjak 2025-től (rendszámtábla 1 pár 11 500 Ft)",
+      "url": "https://infostart.hu/belfold/2025/03/07/8-milliardos-sarc-az-autosoknak",
+      "idoszak": "2025. március"
     }
   },
   "hataridok": {
@@ -83,21 +90,25 @@
     "otthoni": 80,
     "forrasok": [
       {
+        "mi": "sav",
         "nev": "MVM Next: rezsicsökkentett energia 2025. augusztus 1-jétől (2523 kWh/év)",
         "url": "https://www.mvmnext.hu/contents/kapcsolodo-dokumentumok/rezsibox-tajekoztatas.pdf",
         "idoszak": "2025. augusztus 1-jétől"
       },
       {
-        "nev": "Bank360: kedvezményes áramár (A1, A2 tarifa) 36,9 Ft/kWh",
-        "url": "https://bank360.hu/rezsi-kalkulator",
-        "idoszak": "2025"
-      },
-      {
-        "nev": "Telex: lakossági piaci ár a sávhatár felett 70,104 Ft/kWh",
-        "url": "https://telex.hu/belfold/2022/08/05/rezsicsokkentes-csokkentese-tudnivalok-gyorstalpalo",
+        "mi": "kedv",
+        "nev": "Bank360: rezsicsökkentett A1 áramár, bruttó 36,9 Ft/kWh (a 4/2011. (I. 31.) NFM rendelet szerinti díjakból összesítve)",
+        "url": "https://bank360.hu/rezsicsokkentes-2023",
         "idoszak": "2022. augusztus óta változatlan"
       },
       {
+        "mi": "piaci",
+        "nev": "MEKH-rendelet a lakossági piaci áramárról, A1 és A2 árszabásnál 70,104 Ft/kWh",
+        "url": "https://njt.jog.gov.hu/jogszabaly/2022-7-20-5Z",
+        "idoszak": "2022. augusztus 1-jétől"
+      },
+      {
+        "mi": "tolto",
         "nev": "Infostart: MOL Plugee AC-töltés listaára 219 Ft/kWh (2025)",
         "url": "https://infostart.hu/gazdasag/2025/04/30/nagy-ajandekot-kapnak-az-autosok-de-nem-mindenki",
         "idoszak": "2025. április"
@@ -147,12 +158,16 @@
     "vevo_atiras_nap": 15,
     "forrasok": [
       {
-        "nev": "Autónavigátor: bejelentési határidők (eladó 8, vevő 15 nap)",
-        "url": "https://www.autonavigator.hu/cikkek/5-pont-amire-mindenkeppen-figyelj-ha-autot-adsz-el-vagy-veszel/"
+        "nev": "326/2011. (XII. 28.) Korm. rendelet a közúti közlekedési igazgatási feladatokról (tulajdonjog-változás bejelentése, a magánokirat tartalma)",
+        "url": "https://njt.hu/jogszabaly/2011-326-20-22"
       },
       {
-        "nev": "Money.hu: a használt autó adásvételének lépései",
-        "url": "https://tudastar.money.hu/ismerteto/igy-zajlik-a-hasznalt-autok-adasvetele-mutatjuk-a-lepeseket-es-a-koltsegeket/"
+        "nev": "1999. évi LXXXIV. törvény a közúti közlekedési nyilvántartásról",
+        "url": "https://njt.hu/jogszabaly/1999-84-00-00"
+      },
+      {
+        "nev": "Autónavigátor: bejelentési határidők összefoglalója (eladó 8, vevő 15 nap)",
+        "url": "https://www.autonavigator.hu/cikkek/5-pont-amire-mindenkeppen-figyelj-ha-autot-adsz-el-vagy-veszel/"
       }
     ]
   },
@@ -212,12 +227,17 @@
     "eves_ervenyes": "a következő év január 31-ig",
     "forrasok": [
       {
-        "nev": "Economx: éves autópálya-matrica, díjak",
-        "url": "https://www.economx.hu/gazdasag/eves-autopalya-matrica-vasarlas-dijak.820523.html",
-        "idoszak": "2026"
+        "nev": "Nemzeti Útdíjfizetési Szolgáltató (nemzetiutdij.hu), a hivatalos díjtábla az E-matrica menüben",
+        "url": "https://nemzetiutdij.hu/",
+        "idoszak": "2026. január 1-jétől"
       },
       {
-        "nev": "Nemzeti Útdíjfizetési Szolgáltató (ematrica.nemzetiutdij.hu)",
+        "nev": "Nemzeti Mobilfizetési Zrt.: e-matrica díjak (D1, 2026)",
+        "url": "https://nmzrt.hu/en/services/e-vignette/e-matrica-fees.html",
+        "idoszak": "2026. január 1-jétől"
+      },
+      {
+        "nev": "Nemzeti Útdíjfizetési Szolgáltató: e-matrica vásárlás",
         "url": "https://ematrica.nemzetiutdij.hu/",
         "idoszak": "hivatalos vásárlási felület"
       }

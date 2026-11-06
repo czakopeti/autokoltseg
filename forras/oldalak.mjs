@@ -95,7 +95,6 @@ ${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}"><h3>Adásvételi szerződés</h3><p>Kitölthető, nyomtatható minta használt autó eladásához.</p><span class="ugrik">Kitöltöm</span></a></li>
 <li><a href="${L.l('le-kw-atvaltas/')}"><h3>LE–kW átváltás</h3><p>Hány kW egy lóerő, és melyik szerepel a forgalmiban.</p><span class="ugrik">Átváltom</span></a></li>
 </ul>
-<p class="kesz">Hamarosan: lízing, és hogy megéri-e lecserélni az autódat.</p>
 </div></section>
 ${jovoreBlokk}`;
   };
@@ -213,7 +212,7 @@ export function atirasOldal(k) {
     { k: 'Ki fizeti az illetéket?', v: ['A vevő. Ha többen veszitek meg az autót, mindenki a saját tulajdoni hányada után fizet.'] },
     { k: 'Kell illetéket fizetni elektromos vagy hibrid autó után?', v: ['Az „5E” és „5Z” osztályú, vagyis tisztán elektromos és nulla emissziós autó után nem. A hibrid és a plug-in hibrid után igen.'] },
     { k: 'Mennyi az illeték, ha ajándékba kapom vagy öröklöm az autót?', v: ['A vásárlási illeték kétszerese. Ha szülőtől, nagyszülőtől, gyermektől, unokától vagy a házastársadtól kapod vagy veszed, nem kell illetéket fizetni.'] },
-    { k: 'Mennyi a regisztrációs adó egy külföldről hozott autónál?', v: [`Az alapösszeget (${M.rag(aktualis, 'ban', 'ben')} ${M.ftx(regAlap.ft)}) megszorozzák a teljesítményhez és a környezetvédelmi osztályhoz tartozó szorzóval, majd az autó kora szerint csökkentik. Egy 2021 előtt forgalomba helyezett, „15”-ös osztályú, 85 kW-os, 90 hónapos autónál ${M.ftx(regPelda.osszeg)}.`] },
+    { k: 'Mennyi a regisztrációs adó egy külföldről hozott autónál?', v: [`Az alapösszeget (${M.rag(aktualis, 'ban', 'ben')} ${M.ftx(regAlap.ft)}) megszorozzák a teljesítményhez és a környezetvédelmi osztályhoz tartozó szorzóval, majd az autó kora szerint csökkentik. Egy 2021 előtt forgalomba helyezett, „15”-ös osztályú, 85 kW-os, ${regPelda.honapok} hónapos autónál ${M.ftx(regPelda.teljes)} a teljes összeg, ebből ${regPelda.csokk}% a kor miatti csökkentés, így ${M.ftx(regPelda.osszeg)} marad.`] },
     { k: 'Meddig kell átíratni az autót?', v: [`A szerződéskötéstől számított ${adat.szabalyok.hataridok.atiras_napok} napon belül. Az eredetiségvizsgálat a vizsgálat napjától 60 napig használható fel.`] },
   ];
   const leiras = `Átírási illeték ${aktualis}: illeték, eredetiségvizsgálat, forgalmi és törzskönyv egy összegben, külföldről hozott autónál regisztrációs adóval. A NAV tételeivel.`;
@@ -224,7 +223,7 @@ ${oldalfej(L, { morzsa: ['Átírás'], cim: `Mennyibe kerül az autó átírása
 ${forgalmi({ kalk: 'atiras', cim: 'Az átírás adatai', extra: ' data-mai-datum="datum"', tartalom: `
 <fieldset><legend>A vásárlás</legend>
 ${sor('', negyzetek('honnan', 'Honnan jön az autó?', [['hazai', 'Magyar rendszámos'], ['kulfold', 'Külföldről hozom be']], 'hazai'))}
-${sor('', valaszto('szerzes', 'Hogyan lesz a tiéd?', [['vetel', 'Megveszem'], ['ajandek', 'Ajándékba kapom vagy öröklöm'], ['kozeli', 'Szülőtől, gyermektől, házastárstól']], 'vetel'))}
+${sor('', negyzetek('szerzes', 'Kitől és hogyan lesz a tiéd?', [['vetel', 'Megveszem'], ['ajandek', 'Ajándékba kapom vagy öröklöm'], ['kozeli', 'Szülőtől, nagyszülőtől, gyermektől, unokától vagy a házastársamtól kapom vagy veszem']], 'vetel') + '<span class="sugo">Közeli hozzátartozótól nem kell illetéket fizetni, se vételnél, se ajándéknál, se öröklésnél. Ajándéknál és öröklésnél egyébként kétszeres az illeték.</span>')}
 ${sor('', `<label for="datum">Az átírás napja</label><input id="datum" name="datum" type="date" value="${k.ma}">`)}
 </fieldset>
 <fieldset><legend>Az autó</legend>
@@ -256,6 +255,8 @@ ${il.tabla.map((s, i) => `<tr><td>${S.ILLETEK_KW_SAVOK[i]}</td>${s.map((x, j) =>
 <tr><td>Forgalmi engedély</td><td>${M.ftx(ok.forgalmi_engedely)}</td></tr>
 <tr><td>Törzskönyv</td><td>${M.ftx(ok.torzskonyv)}</td></tr>
 <tr><td>A törzskönyv postázása</td><td>${M.ftx(ok.torzskonyv_postazas)}</td></tr>
+${ok.szarmazasellenorzes ? `<tr><td>Behozott autónál: származásellenőrzés</td><td>${M.ftx(ok.szarmazasellenorzes)}</td></tr>` : ''}
+${ok.rendszamtabla_par ? `<tr><td>Behozott autónál: rendszámtábla, 1 pár</td><td>${M.ftx(ok.rendszamtabla_par)}</td></tr>` : ''}
 </tbody><caption>${ok.forras.nev}</caption></table></div>
 <h2>Regisztrációs adó, ha külföldről hozod</h2>
 <p>A behozott autó első hazai forgalomba helyezése előtt regisztrációs adót is kell fizetni. Az összeg a teljesítménytől és a környezetvédelmi osztálytól függ, és az autó korával csökken. A hibrid és a plug-in hibrid mindig a legkedvezőbb oszlopba kerül, az elektromos autó mentes.</p>
@@ -274,6 +275,7 @@ ${forrasLista([
   ...(ra[jovo] ? [{ nev: `NAV: regisztrációs adó ${jovo}. évre valorizált mértéke`, url: ra[jovo].forras, d: M.ftx(ra[jovo].ft) }] : []),
   { nev: ok.forras.nev, url: ok.forras.url },
   ...(ok.eredetiseg_forras ? [{ nev: ok.eredetiseg_forras.nev, url: ok.eredetiseg_forras.url, d: ok.eredetiseg_forras.idoszak }] : []),
+  ...(ok.behozott_forras ? [{ nev: ok.behozott_forras.nev, url: ok.behozott_forras.url, d: ok.behozott_forras.idoszak }] : []),
 ])}
 ${tovabb(L, ut)}
 </article></div>`;
@@ -387,7 +389,7 @@ ${['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => { const m = a
 </tbody><caption>Értékvesztés. ${adat.szabalyok.maradvany.leiras}</caption></table></div>
 <div class="tabla-tarto"><table class="tabla becsles-tabla"><thead><tr><th>Mit becsülünk</th><th>Érték</th><th>Forrás</th><th>Az adat időszaka</th></tr></thead><tbody>
 ${adat.szabalyok.maradvany.forrasok.map((x, i) => `<tr><td>${i ? 'Értékvesztés 3 év után, évente' : 'Értékvesztés az első 3 évben'}</td><td>${(() => { const v = ['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => adat.szabalyok.maradvany[h][i ? 'evi' : 'harom']); return i ? `évi ${M.tized(Math.min(...v), 1)}–${M.tized(Math.max(...v), 1)}%` : `a listaár ${M.tized(Math.min(...v), 1)}–${M.tized(Math.max(...v), 1)}%-a marad`; })()}</td><td><a href="${x.url}" rel="noopener">${x.nev.replace(/:.*$/, '')}</a></td><td>${x.idoszak || ''}</td></tr>`).join('')}
-${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${/Plugee/.test(x.nev) ? 'Nyilvános töltés' : /piaci/.test(x.nev) ? 'Otthoni áram a sávhatár felett' : /Bank360/.test(x.nev) ? 'Otthoni áram a sávhatárig' : 'A kedvezményes sáv'}</td><td>${/Plugee/.test(x.nev) ? `${adat.szabalyok.energia.tolto} Ft/kWh` : /piaci/.test(x.nev) ? `${M.tized(adat.szabalyok.energia.aram_piaci, 1)} Ft/kWh` : /Bank360/.test(x.nev) ? `${M.tized(adat.szabalyok.energia.aram_kedv, 1)} Ft/kWh` : `${fmt(adat.szabalyok.energia.sav_kwh)} kWh/év`}</td><td>${x.url ? `<a href="${x.url}" rel="noopener">${x.nev.replace(/:.*$/, '')}</a>` : x.nev.replace(/:.*$/, '')}</td><td>${x.idoszak || ''}</td></tr>`).join('')}
+${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${ENERGIA_SOR(adat, x)[0]}</td><td>${ENERGIA_SOR(adat, x)[1]}</td><td>${x.url ? `<a href="${x.url}" rel="noopener">${x.nev.replace(/:.*$/, '')}</a>` : x.nev.replace(/:.*$/, '')}</td><td>${x.idoszak || ''}</td></tr>`).join('')}
 </tbody><caption>A töltési veszteséget ${adat.szabalyok.energia.veszteseg}%-kal számoljuk. ${adat.szabalyok.energia.tolto_leiras}</caption></table></div>
 <p>Az értékvesztés egy hajtástípus átlagos aránya, nem a te autód garantált értékvesztése. A márka, a felszereltség, az állapot és a futott kilométer sokat számít, ezért ha tudod, mennyiért adhatnád el az autódat, írd be: azzal pontosabb.</p>
 <h2>Hogyan frissül?</h2>
@@ -796,6 +798,11 @@ ${tovabb(L, ut)}
   });
 }
 
+/** A Források oldal energiatáblájának egy sora: mit becsülünk és mennyi, a forrás 'mi' kulcsa szerint. */
+function ENERGIA_SOR(adat, x) {
+  const e = adat.szabalyok.energia;
+  return ({ tolto: ['Nyilvános töltés', `${e.tolto} Ft/kWh`], piaci: ['Otthoni áram a sávhatár felett', `${M.tized(e.aram_piaci, 1)} Ft/kWh`], kedv: ['Otthoni áram a sávhatárig', `${M.tized(e.aram_kedv, 1)} Ft/kWh`], sav: ['A kedvezményes sáv', `${fmt(e.sav_kwh)} kWh/év`] })[x.mi] || [x.nev, ''];
+}
 const forrasbol = (lista) => lista.map((f) => ({ nev: f.nev, url: f.url, d: f.idoszak || f.d || '' }));
 
 /* ======================= PLUG-IN HIBRID 2027 ======================= */

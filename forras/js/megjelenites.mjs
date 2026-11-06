@@ -120,7 +120,7 @@ export function atirasPanel(adat, r, b = {}) {
   // Az eredetiségvizsgálat egységes hatósági ár, a hengerűrtartalom szerint
   const ok = adat.szabalyok.okmanyok;
   const evSav = ok.eredetisegvizsgalat_savok?.find((x) => x.ft === Number(b.eredetisegDij ?? ok.eredetisegvizsgalat_alap));
-  for (const t of r.tetelek) h += tetel(t.nev, ftx(t.ft), { forras: 'hivatalos', forrasUrl: t.kulcs === 'illetek' ? adat.tetelek.illetek?.[b.ev]?.forras : t.kulcs === 'regado' ? adat.tetelek.regado_alap?.[b.ev]?.forras : t.kulcs === 'eredetiseg' ? ok.eredetiseg_forras?.url : '', al: t.kulcs === 'eredetiseg' && evSav ? `hatósági ár, ${evSav.nev}` : '' });
+  for (const t of r.tetelek) h += tetel(t.nev, ftx(t.ft), { forras: 'hivatalos', forrasUrl: t.kulcs === 'illetek' ? adat.tetelek.illetek?.[b.ev]?.forras : t.kulcs === 'regado' ? adat.tetelek.regado_alap?.[b.ev]?.forras : t.kulcs === 'eredetiseg' ? ok.eredetiseg_forras?.url : t.kulcs === 'rendszam' ? ok.behozott_forras?.url : ok.forras?.url || '', al: t.kulcs === 'eredetiseg' && evSav ? `hatósági ár, ${evSav.nev}` : '' });
   h += tetel('Összesen', ftx(r.osszesen), { cls: 'vegso' });
   h += '</ul>';
   h = jelekkel(h);

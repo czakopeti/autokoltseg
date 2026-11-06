@@ -169,6 +169,11 @@ export function atiras(adat, b) {
   tetelek.push({ nev: 'Vagyonszerzési illeték', ft: il.osszeg, kulcs: 'illetek' });
   if (rg) tetelek.push({ nev: 'Regisztrációs adó', ft: rg.osszeg, kulcs: 'regado' });
   if (b.eredetiseg !== false) tetelek.push({ nev: 'Eredetiségvizsgálat', ft: Number(b.eredetisegDij ?? o.eredetisegvizsgalat_alap), kulcs: 'eredetiseg' });
+  if (rg) {
+    // A behozott autó első hazai forgalomba helyezésének hatósági díjai
+    if (o.szarmazasellenorzes) tetelek.push({ nev: 'Származásellenőrzés', ft: o.szarmazasellenorzes, kulcs: 'szarmazas' });
+    if (o.rendszamtabla_par) tetelek.push({ nev: 'Rendszámtábla (1 pár)', ft: o.rendszamtabla_par, kulcs: 'rendszam' });
+  }
   tetelek.push({ nev: 'Forgalmi engedély', ft: o.forgalmi_engedely, kulcs: 'forgalmi' });
   tetelek.push({ nev: 'Törzskönyv', ft: o.torzskonyv, kulcs: 'torzskonyv' });
   if (b.postazas !== false) tetelek.push({ nev: 'Törzskönyv postázása', ft: o.torzskonyv_postazas, kulcs: 'postazas' });
