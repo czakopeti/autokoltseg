@@ -231,6 +231,7 @@ const KALK = {
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),
   kgfb: (adat, e) => {
+    if (document.getElementById('evfordulo')?.validity?.badInput) return M.hianyPanel('Add meg az évforduló teljes dátumát: évet, hónapot és napot is.');
     if (ures(e, ['evfordulo'])) return mintaval('kgfb', adat, e);
     const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
     const r = S.kgfb(adat, { evfordulo: e.evfordulo, ma, osztaly: e.osztaly, karok: Math.min(4, Number(e.karok) || 0), nap270: e.rovid !== true });

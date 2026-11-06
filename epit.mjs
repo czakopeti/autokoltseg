@@ -36,12 +36,13 @@ let css = readFileSync(join(GYOKER, 'forras/css/style.css'), 'utf8');
 // Előnézetben a betűk a CSS-be ágyazva, hogy szigorú tartalombiztonsági szabályú tárhelyen is megjelenjenek
 if (elonezet) css = css.replace(/url\(fonts\/([\w.-]+\.woff2)\)/g, (m, f) => `url(data:font/woff2;base64,${readFileSync(join(GYOKER, 'forras/fonts', f)).toString('base64')})`);
 writeFileSync(join(KI, 'assets/style.css'), css);
-let jsOssz = '';
-for (const f of ['szamitas', 'megjelenites', 'app']) {
-  const forras = readFileSync(join(GYOKER, `forras/js/${f}.mjs`), 'utf8').replace(/from '\.\/(\w+)\.mjs'/g, "from './$1.js'");
-  writeFileSync(join(KI, `assets/js/${f}.js`), forras);
-  jsOssz += forras;
-}
+// A JavaScript-modulok egymást is verziószámmal töltik be: a Cloudflare a böngészőben órákig gyorsítótárazza a fájlokat,
+// és enélkül egy új app.js a régi szamitas.js-t kaphatná (2026. november 6-án így állt le két új kalkulátor).
+const JS = ['szamitas', 'megjelenites', 'app'];
+const jsNyers = Object.fromEntries(JS.map((f) => [f, readFileSync(join(GYOKER, `forras/js/${f}.mjs`), 'utf8')]));
+const jsOssz = JS.map((f) => jsNyers[f]).join('');
+const jsVerzio = createHash('sha1').update(jsOssz).digest('hex').slice(0, 8);
+for (const f of JS) writeFileSync(join(KI, `assets/js/${f}.js`), jsNyers[f].replace(/from '\.\/(\w+)\.mjs'/g, `from './$1.js?v=${jsVerzio}'`));
 // A forgalmi-kártya rozettája külön fájlban: egyszer töltődik le, és minden oldal a gyorsítótárból veszi.
 writeFileSync(join(KI, 'assets/gilos.svg'), gilos().replace('<svg class="gilos"', '<svg xmlns="http://www.w3.org/2000/svg"').replace('aria-hidden="true" ', '').replace('stroke="currentColor"', 'stroke="#000"'));
 const verzio = createHash('sha1').update(css + jsOssz).digest('hex').slice(0, 8);
@@ -98,6 +99,10 @@ if (!elonezet) {
 ${cfg.eles ? '' : '  X-Robots-Tag: noindex, nofollow, noarchive\n'}
 # A betűk és a verziózott fájlok sokáig gyorsítótárazhatók
 /assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/style.css
   Cache-Control: public, max-age=31536000, immutable
 
 # A Cloudflare-címek (autokoltseg-7t6.pages.dev és az előnézetek) ne kerüljenek a keresőkbe: csak a saját domain
