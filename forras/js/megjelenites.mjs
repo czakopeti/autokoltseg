@@ -117,9 +117,10 @@ export function atirasPanel(adat, r, b = {}) {
   if (il.mentes) h += megjegyzes(il.mentes, 'mentes');
   if (r.regado?.mentes) h += megjegyzes(r.regado.mentes, 'mentes');
   h += '<ul class="tetelek">';
-  // az előre beírt átlagos díj becslés, csak az attól eltérő összeg számít saját adatnak
-  const sajatDij = b.eredetisegDij && Number(b.eredetisegDij) !== adat.szabalyok.okmanyok.eredetisegvizsgalat_alap;
-  for (const t of r.tetelek) h += tetel(t.nev, ftx(t.ft), { forras: t.kulcs === 'eredetiseg' ? (sajatDij ? 'sajat' : 'becsles') : 'hivatalos', forrasUrl: t.kulcs === 'illetek' ? adat.tetelek.illetek?.[b.ev]?.forras : t.kulcs === 'regado' ? adat.tetelek.regado_alap?.[b.ev]?.forras : '', al: t.kulcs === 'eredetiseg' && !sajatDij ? 'átlagos ár, a vizsgálóhelytől függ' : '' });
+  // Az eredetiségvizsgálat egységes hatósági ár, a hengerűrtartalom szerint
+  const ok = adat.szabalyok.okmanyok;
+  const evSav = ok.eredetisegvizsgalat_savok?.find((x) => x.ft === Number(b.eredetisegDij ?? ok.eredetisegvizsgalat_alap));
+  for (const t of r.tetelek) h += tetel(t.nev, ftx(t.ft), { forras: 'hivatalos', forrasUrl: t.kulcs === 'illetek' ? adat.tetelek.illetek?.[b.ev]?.forras : t.kulcs === 'regado' ? adat.tetelek.regado_alap?.[b.ev]?.forras : t.kulcs === 'eredetiseg' ? ok.eredetiseg_forras?.url : '', al: t.kulcs === 'eredetiseg' && evSav ? `hatósági ár, ${evSav.nev}` : '' });
   h += tetel('Összesen', ftx(r.osszesen), { cls: 'vegso' });
   h += '</ul>';
   h = jelekkel(h);

@@ -236,7 +236,7 @@ ${sor('B', `<label for="elsoForgalom">Első forgalomba helyezés</label><input i
 </fieldset>
 <fieldset><legend>Vizsgálat és okmányok</legend>
 ${sor('', jelolo('eredetiseg', 'Eredetiségvizsgálat kell', 'Ha 60 napon belül már volt, vedd ki a pipát.', true))}
-<div class="sor" data-mutat="eredetiseg"><span class="kod ures"></span><div class="mezo">${szamMezo({ id: 'eredetisegDij', cim: 'A vizsgálat díja', me: 'Ft', ertek: ok.eredetisegvizsgalat_alap, sugo: `A hengerűrtartalomtól függ: ${M.ftx(ok.eredetisegvizsgalat_min)} és ${M.ftx(ok.eredetisegvizsgalat_max)} között.` })}</div></div>
+<div class="sor" data-mutat="eredetiseg"><span class="kod">P.1</span><div class="mezo">${valaszto('eredetisegDij', 'Hengerűrtartalom', ok.eredetisegvizsgalat_savok.map((x) => [x.ft, `${x.nev}: ${fmt(x.ft)} Ft`]), ok.eredetisegvizsgalat_alap, 'Az eredetiségvizsgálat hatósági ára ettől függ, minden vizsgálóhelyen ugyanannyi.')}</div></div>
 ${sor('', jelolo('postazas', 'Postán kérem a törzskönyvet', `${M.ftx(ok.torzskonyv_postazas)}.`, true))}
 ${sor('', szamMezo({ id: 'hanyad', cim: 'Tulajdoni hányad', me: '%', ertek: 100, min: 1, max: 100, sugo: 'Ha többen veszitek meg, a saját részed.' }))}
 ${sor('', szamMezo({ id: 'vetelar', cim: 'Vételár, ha a teljes összeget is látni szeretnéd', me: 'Ft', placeholder: 'pl. 3 500 000' }))}
@@ -273,6 +273,7 @@ ${forrasLista([
   ...(ilJovo ? [{ nev: `A ${jovo}. évi tételek (ABT-összefoglaló a NAV közleménye alapján)`, url: ilJovo.forras, d: `közzétéve: ${datumHu(ilJovo.kozzeteve)}` }] : []),
   ...(ra[jovo] ? [{ nev: `NAV: regisztrációs adó ${jovo}. évre valorizált mértéke`, url: ra[jovo].forras, d: M.ftx(ra[jovo].ft) }] : []),
   { nev: ok.forras.nev, url: ok.forras.url },
+  ...(ok.eredetiseg_forras ? [{ nev: ok.eredetiseg_forras.nev, url: ok.eredetiseg_forras.url, d: ok.eredetiseg_forras.idoszak }] : []),
 ])}
 ${tovabb(L, ut)}
 </article></div>`;
@@ -387,7 +388,6 @@ ${['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => { const m = a
 <div class="tabla-tarto"><table class="tabla becsles-tabla"><thead><tr><th>Mit becsülünk</th><th>Érték</th><th>Forrás</th><th>Az adat időszaka</th></tr></thead><tbody>
 ${adat.szabalyok.maradvany.forrasok.map((x, i) => `<tr><td>${i ? 'Értékvesztés 3 év után, évente' : 'Értékvesztés az első 3 évben'}</td><td>${(() => { const v = ['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => adat.szabalyok.maradvany[h][i ? 'evi' : 'harom']); return i ? `évi ${M.tized(Math.min(...v), 1)}–${M.tized(Math.max(...v), 1)}%` : `a listaár ${M.tized(Math.min(...v), 1)}–${M.tized(Math.max(...v), 1)}%-a marad`; })()}</td><td><a href="${x.url}" rel="noopener">${x.nev.replace(/:.*$/, '')}</a></td><td>${x.idoszak || ''}</td></tr>`).join('')}
 ${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${/Plugee/.test(x.nev) ? 'Nyilvános töltés' : /piaci/.test(x.nev) ? 'Otthoni áram a sávhatár felett' : /Bank360/.test(x.nev) ? 'Otthoni áram a sávhatárig' : 'A kedvezményes sáv'}</td><td>${/Plugee/.test(x.nev) ? `${adat.szabalyok.energia.tolto} Ft/kWh` : /piaci/.test(x.nev) ? `${M.tized(adat.szabalyok.energia.aram_piaci, 1)} Ft/kWh` : /Bank360/.test(x.nev) ? `${M.tized(adat.szabalyok.energia.aram_kedv, 1)} Ft/kWh` : `${fmt(adat.szabalyok.energia.sav_kwh)} kWh/év`}</td><td>${x.url ? `<a href="${x.url}" rel="noopener">${x.nev.replace(/:.*$/, '')}</a>` : x.nev.replace(/:.*$/, '')}</td><td>${x.idoszak || ''}</td></tr>`).join('')}
-<tr><td>Eredetiségvizsgálat</td><td>${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_alap)} (${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_min)}–${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_max)})</td><td>a vizsgálóhelyek árai</td><td><span class="halk">ellenőrzés alatt</span></td></tr>
 </tbody><caption>A töltési veszteséget ${adat.szabalyok.energia.veszteseg}%-kal számoljuk. ${adat.szabalyok.energia.tolto_leiras}</caption></table></div>
 <p>Az értékvesztés egy hajtástípus átlagos aránya, nem a te autód garantált értékvesztése. A márka, a felszereltség, az állapot és a futott kilométer sokat számít, ezért ha tudod, mennyiért adhatnád el az autódat, írd be: azzal pontosabb.</p>
 <h2>Hogyan frissül?</h2>

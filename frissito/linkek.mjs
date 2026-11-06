@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { GYOKER } from '../forras/adat.mjs';
 
 const W = join(GYOKER, 'web');
+// Ezek az oldalak a robotokat (vagy a GitHub gépeit) tiltják, böngészőből viszont működnek: 2026. november 6-án kézzel ellenőrizve.
+const ROBOTTILTO = ['abt.hu', 'njt.hu'];
 const linkek = new Map();
 (function jar(d) {
   for (const f of readdirSync(d)) {
@@ -12,7 +14,7 @@ const linkek = new Map();
     if (statSync(p).isDirectory()) jar(p);
     else if (f.endsWith('.html')) for (const m of readFileSync(p, 'utf8').matchAll(/href="(https?:\/\/[^"]+)"/g)) {
       const u = m[1].replace(/&amp;/g, '&');
-      if (/autozom\.hu|pages\.dev/.test(u)) continue;
+      if (/autozom\.hu|pages\.dev/.test(u) || ROBOTTILTO.some((h) => new URL(u).hostname.endsWith(h))) continue;
       if (!linkek.has(u)) linkek.set(u, new Set());
       linkek.get(u).add(p.replace(W, '').replace('index.html', ''));
     }

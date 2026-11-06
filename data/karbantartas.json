@@ -26,7 +26,7 @@
       "hol": "data/szabalyok.json → okmanyok.eredetisegvizsgalat_*",
       "forras": null,
       "hogyan": "Most becslésként jelöljük. Keress rá forrást (vizsgálóállomások árlistái), és írd be a forrást.",
-      "utoljara": null
+      "utoljara": "2026-11-06"
     },
     {
       "id": "hitel-hfm",
@@ -35,7 +35,7 @@
       "hol": "data/szabalyok.json → hitel",
       "forras": "https://www.mnb.hu/",
       "hogyan": "A mostani forrás egy 2015-ös cikk. Ellenőrizd az MNB hatályos rendeletében, és cseréld a forrást.",
-      "utoljara": null
+      "utoljara": "2026-11-06"
     },
     {
       "id": "budapest-parkolas",

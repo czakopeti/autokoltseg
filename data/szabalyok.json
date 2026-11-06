@@ -45,6 +45,28 @@
     "forras": {
       "nev": "47/2024. (XII. 6.) ÉKM rendelet (hatályos 2025. február 1-jétől)",
       "url": null
+    },
+    "eredetisegvizsgalat_savok": [
+      {
+        "cm3": 1400,
+        "ft": 22950,
+        "nev": "1400 cm³-ig"
+      },
+      {
+        "cm3": 2000,
+        "ft": 24975,
+        "nev": "1401–2000 cm³"
+      },
+      {
+        "cm3": null,
+        "ft": 27000,
+        "nev": "2000 cm³ felett"
+      }
+    ],
+    "eredetiseg_forras": {
+      "nev": "Merkantil: hatósági díjak tájékoztató (eredetiségvizsgálat hatósági ára, 2025. február 1-jétől)",
+      "url": "https://merkantil.hu/static/merkantil/sw/file/Hatosagi_dijak_tajekoztato_20250311_v2.pdf",
+      "idoszak": "2025. február 1-jétől, egységes hatósági ár"
     }
   },
   "hataridok": {
@@ -207,14 +229,14 @@
     "hfm_lizing": 80,
     "forrasok": [
       {
-        "nev": "Economx: az MNB adósságfék-szabályai (gépjárműhitelnél 75%-os hitelfedezeti mutató)",
-        "url": "https://www.economx.hu/magyar-gazdasag/2015/01/01/matol_szigoritanak_a_hitelfelvetelben-591573/",
-        "idoszak": "hatályos 2015. január 1-jétől"
+        "nev": "32/2014. (IX. 10.) MNB rendelet a jövedelemarányos törlesztőrészlet és a hitelfedezeti arányok szabályozásáról",
+        "url": "https://www.mnb.hu/letoltes/32-2014mnbrendelet.pdf",
+        "idoszak": "hatályos szöveg: net.jogtar.hu, 2026. február 27-től"
       },
       {
-        "nev": "Bank360: a hitelfedezeti mutató",
-        "url": "https://bank360.hu/hitelfedezeti-mutato",
-        "idoszak": "2024"
+        "nev": "Merkantil Bank: tájékoztató az MNB-rendeletről (gépjárműhitel 75%, pénzügyi lízing 80%)",
+        "url": "https://www.merkantil.hu/static/merkantil/sw/file/Tajekoztato_JTM_191001.pdf",
+        "idoszak": "2019"
       }
     ]
   }
