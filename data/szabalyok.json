@@ -4,17 +4,44 @@
     "normakoltseg_ft_km": 15,
     "munkaba_jaras_ft_km": 30,
     "norma_benzin": [
-      [1000, 7.6],
-      [1500, 8.6],
-      [2000, 9.5],
-      [3000, 11.4],
-      [null, 13.3]
+      [
+        1000,
+        7.6
+      ],
+      [
+        1500,
+        8.6
+      ],
+      [
+        2000,
+        9.5
+      ],
+      [
+        3000,
+        11.4
+      ],
+      [
+        null,
+        13.3
+      ]
     ],
     "norma_dizel": [
-      [1500, 5.7],
-      [2000, 6.7],
-      [3000, 7.6],
-      [null, 9.5]
+      [
+        1500,
+        5.7
+      ],
+      [
+        2000,
+        6.7
+      ],
+      [
+        3000,
+        7.6
+      ],
+      [
+        null,
+        9.5
+      ]
     ],
     "lpg_szorzo": 1.2,
     "cng_kg_per_l": 0.64,
@@ -62,21 +89,26 @@
     "forrasok": [
       {
         "nev": "MVM Next: rezsicsökkentett energia 2025. augusztus 1-jétől (2523 kWh/év)",
-        "url": "https://www.mvmnext.hu/contents/kapcsolodo-dokumentumok/rezsibox-tajekoztatas.pdf"
+        "url": "https://www.mvmnext.hu/contents/kapcsolodo-dokumentumok/rezsibox-tajekoztatas.pdf",
+        "idoszak": "2025. augusztus 1-jétől"
       },
       {
         "nev": "Bank360: kedvezményes áramár (A1, A2 tarifa) 36,9 Ft/kWh",
-        "url": "https://bank360.hu/rezsi-kalkulator"
+        "url": "https://bank360.hu/rezsi-kalkulator",
+        "idoszak": "2025"
       },
       {
         "nev": "Telex: lakossági piaci ár a sávhatár felett 70,104 Ft/kWh",
-        "url": "https://telex.hu/belfold/2022/08/05/rezsicsokkentes-csokkentese-tudnivalok-gyorstalpalo"
+        "url": "https://telex.hu/belfold/2022/08/05/rezsicsokkentes-csokkentese-tudnivalok-gyorstalpalo",
+        "idoszak": "2022. augusztus óta változatlan"
       },
       {
         "nev": "Infostart: MOL Plugee AC-töltés listaára 219 Ft/kWh (2025)",
-        "url": "https://infostart.hu/gazdasag/2025/04/30/nagy-ajandekot-kapnak-az-autosok-de-nem-mindenki"
+        "url": "https://infostart.hu/gazdasag/2025/04/30/nagy-ajandekot-kapnak-az-autosok-de-nem-mindenki",
+        "idoszak": "2025. április"
       }
-    ]
+    ],
+    "tolto_leiras": "A nyilvános töltésnél a MOL Plugee AC-töltőinek listaárával számolunk. Villámtöltőn (DC) ennél drágább, nagyjából 270–290 Ft/kWh."
   },
   "maradvany": {
     "leiras": "Az első 3 évre a 3 éves autók listaárhoz viszonyított értéke (DAT, Németország, 2026. augusztus), utána évi átlagos értékcsökkenés (KSH-modell, magyar használtautó-piac, 2026. szeptember). A hibridre és a plug-in hibridre nincs külön 3 éves adat, ezért becsült.",
@@ -105,11 +137,13 @@
     "forrasok": [
       {
         "nev": "Economx (dpa, DAT): a 3 éves autók maradványértéke, 2026. szeptember 27.",
-        "url": "https://www.economx.hu/gazdasag/uzemanyag-aremelkedes-auto-elektromos/"
+        "url": "https://www.economx.hu/gazdasag/uzemanyag-aremelkedes-auto-elektromos/",
+        "idoszak": "2026. augusztus (DAT)"
       },
       {
         "nev": "Economx (KSH, Használtautó.hu): évi értékvesztés hajtás szerint, 2026. október 15.",
-        "url": "https://www.economx.hu/magyar-gazdasag/ksh-hasznalt-auto-dragulas-suzuki-ford-audi/"
+        "url": "https://www.economx.hu/magyar-gazdasag/ksh-hasznalt-auto-dragulas-suzuki-ford-audi/",
+        "idoszak": "2026. szeptember (KSH)"
       }
     ]
   },

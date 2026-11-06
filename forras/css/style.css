@@ -477,3 +477,8 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
 .forras-pontok b { color: var(--tinta); }
 a.jel { text-decoration: none; }
 a.jel:hover { text-decoration: underline; }
+.naplo-kit { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 13.5px; margin: 2px 0 8px !important; }
+.naplo-kit .kit { padding: 1px 8px; border: 1px solid var(--vonal2); border-radius: 999px; color: var(--tinta2); }
+.becsles-tabla td:nth-child(2), .becsles-tabla th:nth-child(2) { white-space: nowrap; }
+.becsles-tabla td:nth-child(3), .becsles-tabla td:nth-child(4) { white-space: normal; text-align: left; }
+.becsles-tabla th:nth-child(3), .becsles-tabla th:nth-child(4) { text-align: left; }

@@ -191,7 +191,7 @@ export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labj
   return `<section class="elszamolas${szeles ? ' szeles' : ''}" id="eredmeny" aria-labelledby="elsz-cim">
 <div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2><time datetime="${k.ma}">${datumHu(k.ma)}</time></div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
-${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button>${k.cfg.kapcsolat_email ? `<a class="szoveg-gomb" data-hibajelzes data-cim="${esc(k.cfg.kapcsolat_email)}" href="mailto:${esc(k.cfg.kapcsolat_email)}">Szerinted hibás?</a>` : ''}</div>` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
+${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button>${k.cfg.kapcsolat_email ? `<a class="szoveg-gomb" data-hibajelzes data-cim="${esc(k.cfg.kapcsolat_email)}" href="mailto:${esc(k.cfg.kapcsolat_email)}" title="Megnyitjuk a levelezőprogramodat egy előkészített hibajelentéssel. Te küldöd el.">Szerinted hibás?</a><span class="kicsi halk">A gomb a leveleződet nyitja meg, a levelet te küldöd el.</span>` : ''}</div>` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
 ${pecset(k.ma, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
 </section>
 <a class="mini" href="#eredmeny" hidden><span class="mi"></span><span class="mennyi"></span></a>`;

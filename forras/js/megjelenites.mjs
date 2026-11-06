@@ -213,7 +213,7 @@ export function automPanel(adat, b, k) {
   }
   if (!fr.hiba) {
     h += tetel('Tényleges kiadás havonta', ftx((fr.ev - fr.ertekvesztes) / 12), { forras: 'sajat', al: 'üzemanyag, biztosítás, szerviz, gumi, adó' });
-    if (fr.ertekvesztes > 0) h += tetel('Értékvesztés havonta', ftx(fr.ertekvesztes / 12), { forras: fr.ertekBecsles ? 'becsles' : 'sajat', al: fr.ertekBecsles ? `évi ${tized(fr.ertekEvi, 1)}%, ${nevelo(HAJTAS_NEV[hajtas])} ${HAJTAS_NEV[hajtas]} autók átlaga (DAT, KSH)` : 'ennyit veszít az autó az értékéből' });
+    if (fr.ertekvesztes > 0) h += tetel('Értékvesztés havonta', ftx(fr.ertekvesztes / 12), { forras: fr.ertekBecsles ? 'becsles' : 'sajat', al: fr.ertekBecsles ? `évi ${tized(fr.ertekEvi, 1)}%, ${nevelo(HAJTAS_NEV[hajtas])} ${HAJTAS_NEV[hajtas]} autók átlaga (DAT, KSH), nem garantált` : 'ennyit veszít az autó az értékéből' });
     h += tetel('Minden további kilométer', `${tized(fr.plusKm, 1)}&nbsp;Ft`, { al: 'energia, szerviz, gumi' });
   }
   if (!at.hiba) h += tetel('Ha eladod: a vevő átírási költsége', ftx(at.osszesen), { forras: 'hivatalos', forrasUrl: adat.tetelek.illetek?.[k.ev]?.forras, al: 'a vevő ennyit fizet a vételár mellé' });
@@ -287,7 +287,7 @@ export function osszehasonlitasPanel(adat, r, { szeles = 640 } = {}) {
     const f = r.f, vanVillany = r.autok.some((x) => x.hajtas === 'elektromos' || x.hajtas === 'plugin'), vanUz = r.autok.some((x) => x.hajtas !== 'elektromos');
     const reszek = [];
     if (vanUz) reszek.push(`benzin ${fmt(f.benzin)} Ft/l, dízel ${fmt(f.dizel)} Ft/l ${jel('hivatalos')}`);
-    if (vanVillany) reszek.push(`otthoni áram átlagosan ${tized(r.autok.find((x) => x.otthoniAr)?.otthoniAr || f.aram_piaci, 1)} Ft/kWh, villámtöltő ${fmt(f.tolto)} Ft/kWh ${jel('becsles')}`);
+    if (vanVillany) reszek.push(`otthoni áram átlagosan ${tized(r.autok.find((x) => x.otthoniAr)?.otthoniAr || f.aram_piaci, 1)} Ft/kWh, nyilvános töltő ${fmt(f.tolto)} Ft/kWh ${jel('becsles')}`);
     reszek.push(`értékvesztés ${r.sajatEladas?.every(Boolean) ? 'a megadott eladási árakból ' + jel('sajat') : 'a DAT és a KSH átlagaiból ' + jel('becsles')}`);
     h += `<p class="felteves-sor"><strong>Ezekkel számoltunk:</strong> ${reszek.join('; ')}. Az „Árak és feltevések” résznél átírhatod őket.</p>`;
   }
@@ -328,7 +328,7 @@ export function fenntartasPanel(adat, r, b = {}) {
   h += '<ul class="tetelek">';
   h += tetel('Használattól függ', ftx(r.hasznalat / 12), { al: 'üzemanyag vagy töltés, szerviz, gumi' });
   h += tetel('Akkor is fizeted, ha az autó áll', ftx(r.allo / 12), { al: 'biztosítás, gépjárműadó, egyéb' });
-  if (r.ertekvesztes > 0) h += tetel('Értékvesztés', ftx(r.ertekvesztes / 12), { al: r.ertekBecsles ? `a mostani értékből, évi ${tized(r.ertekEvi, 1)}%-kal (${nevelo(HAJTAS_NEV[b.hajtas || 'benzin'])} ${HAJTAS_NEV[b.hajtas || 'benzin']} autók átlaga, DAT, KSH)` : 'a megadott eladási árból' });
+  if (r.ertekvesztes > 0) h += tetel('Értékvesztés', ftx(r.ertekvesztes / 12), { al: r.ertekBecsles ? `a mostani értékből, évi ${tized(r.ertekEvi, 1)}%-kal: ${nevelo(HAJTAS_NEV[b.hajtas || 'benzin'])} ${HAJTAS_NEV[b.hajtas || 'benzin']} autók átlaga (DAT, KSH), nem a te autód garantált értékvesztése` : 'a megadott eladási árból' });
   h += '</ul>';
   const forras = { energia: 'sajat', biztositas: 'sajat', szerviz: 'sajat', gumi: 'sajat', egyeb: 'sajat', gjado: 'hivatalos', ertekvesztes: r.ertekBecsles ? 'becsles' : 'sajat' };
   h += `<div class="savok">${r.tetelek.filter((t) => t.ev > 0).sort((a, c) => c.ev - a.ev).map((t) => `<div class="sav-sor"><span class="sav-nev">${t.nev} ${jel(forras[t.kulcs], t.kulcs === 'gjado' ? adat.tetelek.gepjarmuado?.[r.gj?.ev]?.forras : '')}</span><span class="sav-sin"><span class="sav-toltes" style="--arany:${(t.ev / max).toFixed(3)}"></span></span><span class="sav-ertek">${ftx(t.ev / 12)}</span></div>`).join('')}</div>`;

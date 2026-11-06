@@ -265,7 +265,7 @@ function automBekotes(form, szamol) {
   });
   $('[data-autom-torol]', form)?.addEventListener('click', () => { tarolo.del(AUTOM); mutat(); if (form.dataset.kalk === 'autom') { form.reset(); szamol(true); } });
   // Az „Az autóm” lapon a mentett autó magától betöltődik: ezért mentetted el. Máshol csak gombnyomásra.
-  if (form.dataset.kalk === 'autom' && tarolo.get(AUTOM) && !urlbol()) $('[data-autom-betolt]', form)?.click();
+  if (form.dataset.kalk === 'autom' && tarolo.get(AUTOM)) $('[data-autom-betolt]', form)?.click();
   ment?.addEventListener('click', () => {
     const e = ertekek(form);
     const a = {};
@@ -308,7 +308,7 @@ function indit() {
   const tipus = form.dataset.kalk;
   const adat = JSON.parse($('#adat').textContent);
   const panel = $('.elsz-tartalom') || $('.szerzodes-elonezet');
-  const u = tipus === 'gyors' ? null : urlbol();
+  const u = tipus === 'gyors' || tipus === 'autom' ? null : urlbol();
   if (u) {
     beallit(form, u);
     if (u.kwEgyseg === 'le') { const me = form.elements.kw?.closest('.beir')?.querySelector('.me'); if (me) me.textContent = 'LE'; }
@@ -330,7 +330,8 @@ function indit() {
     } else {
       frissit(panel, KALK[tipus](adat, ertekek(form), form), valtozott);
     }
-    if (valtozott && tipus !== 'gyors' && tipus !== 'szerzodes') urlbe(form);
+    // Az „Az autóm” lap adatai (név, biztosítás) nem kerülnek a linkbe és a böngészési előzményekbe
+    if (valtozott && !['gyors', 'szerzodes', 'autom'].includes(tipus)) urlbe(form);
   };
   form.addEventListener('input', () => szamol(true));
   form.addEventListener('change', () => szamol(true));
