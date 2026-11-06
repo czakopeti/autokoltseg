@@ -50,5 +50,81 @@
   "hataridok": {
     "gepjarmuado_befizetes": "április 15.",
     "atiras_napok": 15
+  },
+  "energia": {
+    "leiras": "Az összehasonlító és a fenntartási kalkulátor alapértékei. Mind átírható a felületen.",
+    "sav_kwh": 2523,
+    "aram_kedv": 36.9,
+    "aram_piaci": 70.104,
+    "tolto": 219,
+    "veszteseg": 10,
+    "otthoni": 80,
+    "forrasok": [
+      {
+        "nev": "MVM Next: rezsicsökkentett energia 2025. augusztus 1-jétől (2523 kWh/év)",
+        "url": "https://www.mvmnext.hu/contents/kapcsolodo-dokumentumok/rezsibox-tajekoztatas.pdf"
+      },
+      {
+        "nev": "Bank360: kedvezményes áramár (A1, A2 tarifa) 36,9 Ft/kWh",
+        "url": "https://bank360.hu/rezsi-kalkulator"
+      },
+      {
+        "nev": "Telex: lakossági piaci ár a sávhatár felett 70,104 Ft/kWh",
+        "url": "https://telex.hu/belfold/2022/08/05/rezsicsokkentes-csokkentese-tudnivalok-gyorstalpalo"
+      },
+      {
+        "nev": "Infostart: MOL Plugee AC-töltés listaára 219 Ft/kWh (2025)",
+        "url": "https://infostart.hu/gazdasag/2025/04/30/nagy-ajandekot-kapnak-az-autosok-de-nem-mindenki"
+      }
+    ]
+  },
+  "maradvany": {
+    "leiras": "Az első 3 évre a 3 éves autók listaárhoz viszonyított értéke (DAT, Németország, 2026. augusztus), utána évi átlagos értékcsökkenés (KSH-modell, magyar használtautó-piac, 2026. szeptember). A hibridre és a plug-in hibridre nincs külön 3 éves adat, ezért becsült.",
+    "benzin": {
+      "harom": 59.4,
+      "evi": 6.9
+    },
+    "dizel": {
+      "harom": 58,
+      "evi": 7.6
+    },
+    "hibrid": {
+      "harom": 59.4,
+      "evi": 5.5,
+      "becsult": true
+    },
+    "plugin": {
+      "harom": 55.5,
+      "evi": 6.5,
+      "becsult": true
+    },
+    "elektromos": {
+      "harom": 51.5,
+      "evi": 7.6
+    },
+    "forrasok": [
+      {
+        "nev": "Economx (dpa, DAT): a 3 éves autók maradványértéke, 2026. szeptember 27.",
+        "url": "https://www.economx.hu/gazdasag/uzemanyag-aremelkedes-auto-elektromos/"
+      },
+      {
+        "nev": "Economx (KSH, Használtautó.hu): évi értékvesztés hajtás szerint, 2026. október 15.",
+        "url": "https://www.economx.hu/magyar-gazdasag/ksh-hasznalt-auto-dragulas-suzuki-ford-audi/"
+      }
+    ]
+  },
+  "adasvetel": {
+    "elado_bejelentes_nap": 8,
+    "vevo_atiras_nap": 15,
+    "forrasok": [
+      {
+        "nev": "Autónavigátor: bejelentési határidők (eladó 8, vevő 15 nap)",
+        "url": "https://www.autonavigator.hu/cikkek/5-pont-amire-mindenkeppen-figyelj-ha-autot-adsz-el-vagy-veszel/"
+      },
+      {
+        "nev": "Money.hu: a használt autó adásvételének lépései",
+        "url": "https://tudastar.money.hu/ismerteto/igy-zajlik-a-hasznalt-autok-adasvetele-mutatjuk-a-lepeseket-es-a-koltsegeket/"
+      }
+    ]
   }
 }

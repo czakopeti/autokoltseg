@@ -6,7 +6,12 @@ export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '
 export const MENU = [
   { ut: 'gepjarmuado-kalkulator/', nev: 'Gépjárműadó' },
   { ut: 'atirasi-illetek-kalkulator/', nev: 'Átírás' },
+  { ut: 'benzin-vagy-villany/', nev: 'Benzin vagy villany' },
+  { ut: 'autofenntartas-kalkulator/', nev: 'Fenntartás' },
   { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
+];
+export const TOVABBI = [
+  { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
   { ut: 'forrasok/', nev: 'Források' },
 ];
 
@@ -46,9 +51,9 @@ export function pecset(ma, ut = true) {
 <circle cx="65" cy="65" r="61" fill="none" stroke="currentColor" stroke-width="3"/>
 <circle cx="65" cy="65" r="55" fill="none" stroke="currentColor" stroke-width="1.2"/>
 <circle cx="65" cy="65" r="35" fill="none" stroke="currentColor" stroke-width="1.2"/>
-<text fill="currentColor" font-family="Public Sans, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">A NAV TÉTELEIVEL SZÁMOLVA ✶ ELLENŐRIZVE ✶</textPath></text>
-<text x="65" y="64" text-anchor="middle" fill="currentColor" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="21">${ev}</text>
-<text x="65" y="80" text-anchor="middle" fill="currentColor" font-family="Public Sans, sans-serif" font-weight="700" font-size="11">${datumRomai(ma)}</text>
+<text fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">A NAV TÉTELEIVEL SZÁMOLVA ✶ ELLENŐRIZVE ✶</textPath></text>
+<text x="65" y="64" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="800" font-size="21">${ev}</text>
+<text x="65" y="80" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="11">${datumRomai(ma)}</text>
 </svg>`;
 }
 
@@ -112,8 +117,9 @@ function lablec(k, L) {
 <p>A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
 <p>Az adatokat minden reggel összevetjük a NAV oldalával. Legutóbbi ellenőrzés: ${datumHu(ell)}</p>
 </div>
-<div><h2>Kalkulátorok</h2><ul>${MENU.slice(0, 3).map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
+<div><h2>Kalkulátorok</h2><ul>${MENU.map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>
+<li><a href="${L.l('adasveteli-szerzodes-minta/')}">Adásvételi szerződés minta</a></li>
 <li><a href="${L.l('forrasok/')}">Források és frissítés</a></li>
 <li><a href="${L.l('adatvedelem/')}">Adatvédelem</a></li>
 <li><a href="${L.l('impresszum/')}">Impresszum</a></li>
@@ -131,12 +137,12 @@ export function oldalfej(L, { morzsa, cim, bevezeto, fo = false }) {
 export const kod = (k) => `<span class="kod${k ? '' : ' ures'}"${k ? ` title="A forgalmi engedély ${k} sora"` : ''} aria-hidden="true">${k || ''}</span>`;
 export const sor = (k, belso, attr = '') => `<div class="sor"${attr}>${kod(k)}<div class="mezo">${belso}</div></div>`;
 
-export function szamMezo({ id, cim, me = '', ertek = '', sugo = '', min = '', max = '', placeholder = '', szeles = false, extra = '' }) {
-  return `<label for="${id}">${cim}</label><div class="beir${szeles ? ' szeles' : ''}"><input id="${id}" name="${id}" type="number" inputmode="numeric"${min !== '' ? ` min="${min}"` : ''}${max !== '' ? ` max="${max}"` : ''} value="${ertek}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ''}>${me ? `<span class="me">${me}</span>` : ''}</div>${extra}${sugo ? `<span class="sugo">${sugo}</span>` : ''}`;
+export function szamMezo({ id, cim, me = '', ertek = '', sugo = '', min = '', max = '', placeholder = '', szeles = false, extra = '', nev = '', tized = false }) {
+  return `<label for="${id}">${cim}</label><div class="beir${szeles ? ' szeles' : ''}"><input id="${id}" name="${nev || id}" type="${tized ? 'text' : 'number'}" inputmode="${tized ? 'decimal' : 'numeric'}"${tized ? ' pattern="[0-9]+([,.][0-9]+)?" autocomplete="off"' : ''}${min !== '' ? ` min="${min}"` : ''}${max !== '' ? ` max="${max}"` : ''} value="${ertek}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ''}>${me ? `<span class="me">${me}</span>` : ''}</div>${extra}${sugo ? `<span class="sugo">${sugo}</span>` : ''}`;
 }
 
-export function negyzetek(name, cim, opciok, ertek) {
-  const id = `${name}-c`;
+export function negyzetek(name, cim, opciok, ertek, idElotag = '') {
+  const id = `${idElotag}${name}-c`;
   return `<span class="mezo-cim" id="${id}">${cim}</span><div class="negyzetek" role="radiogroup" aria-labelledby="${id}">${opciok.map(([v, t]) => `<label class="negyzet"><input type="radio" name="${name}" value="${v}"${String(v) === String(ertek) ? ' checked' : ''}><span class="n"></span>${t}</label>`).join('')}</div>`;
 }
 
@@ -153,17 +159,19 @@ export const egysegValto = `<div class="egyseg-valto" role="radiogroup" aria-lab
 export const HAJTASOK = [['benzin', 'Benzin'], ['dizel', 'Dízel'], ['hibrid', 'Hibrid'], ['plugin', 'Plug-in hibrid'], ['elektromos', 'Elektromos']];
 
 /** A forgalmi-kártya kerete. */
-export function forgalmi({ cim, al = '', tartalom, kalk, extra = '' }) {
-  return `<form class="forgalmi" data-kalk="${kalk}" novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${tartalom}</form>`;
+export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = false, osztaly = '' }) {
+  const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Elfelejtem</button></div>' : '';
+  const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Megjegyzem ezt az autót</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
+  return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${fent}${tartalom}${lent}</form>`;
 }
 
 /** Az elszámolás kerete a pecséttel. */
-export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labjegy = '' } = {}) {
-  return `<section class="elszamolas" id="eredmeny" aria-labelledby="elsz-cim">
+export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labjegy = '', szeles = false, kesz = false } = {}) {
+  return `<section class="elszamolas${szeles ? ' szeles' : ''}" id="eredmeny" aria-labelledby="elsz-cim">
 <div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2><time datetime="${k.ma}">${datumHu(k.ma)}</time></div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
 ${gombok ? '<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button></div>' : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
-${pecset(k.ma)}
+${pecset(k.ma).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
 </section>
 <a class="mini" href="#eredmeny" hidden><span class="mi"></span><span class="mennyi"></span></a>`;
 }
@@ -187,7 +195,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó-kalkulátor'], ['atirasi-illetek-kalkulator/', 'Átírási illeték kalkulátor'], ['kilometerterites-kalkulator/', 'Kilométertérítés-kalkulátor'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

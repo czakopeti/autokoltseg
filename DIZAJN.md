@@ -10,16 +10,20 @@ Az oldal tárgyi világa a **forgalmi engedély** és a **NAV-határozat**. Mind
 | Beírósor (`.beir`) | Számmező | Aláhúzott mező, mint egy nyomtatványon. Nincs dobozos input. |
 | Négyzet (`.negyzet`) | Rádió és jelölő | Nyomtatványos négyzet pipával. |
 | Elszámolás (`.elszamolas`) | Az eredmény | Perforált felső élű papírlap, tételsorok, a végösszeg alatt könyvelői dupla aláhúzás. |
-| Pecsét (`.pecset`) | Az egyetlen látványos mozzanat | Betöltéskor egyszer rácsapódik. Máshol nincs önmagától induló mozgás. |
+| Pecsét (`.pecset`) | Az egyetlen látványos mozzanat | Az első eredménynél egyszer rácsapódik. Üres űrlapnál nem látszik. |
+| Költséggörbe (`.grafikon`) | Benzin vagy villany | Két vonal, a megtérülés pontja jelölve. A vonal egyszer kirajzolódik, ha új eredmény jön. Keskeny kijelzőn a végcímkék helyett a jelmagyarázat azonosít. |
+| Mentett autó (`.autom`) | Visszatérő látogató | Csak gombnyomásra ment és tölt be. Az űrlap mindig üresen nyílik. |
 
 ## Színek
 
 Papír `#E9EEE5`, lap `#F8FAF5`, tinta `#13312A`, halvány tinta `#4A655D`, guilloche `#A9C3B6`, pecsétvörös `#B3261E`.
 A pecsétvörös csak a pecséten, a logón és a hibaüzenetben szerepel. Sötét módban ugyanezek a szerepek mélyzöld alapon.
 
+Grafikonsorok: A `#B0600C` (borostyán), B `#0E7C9E` (petrol); sötét módban `#CF8027` és `#289ABB`. A dataviz-validátorral ellenőrizve (színtévesztőknél is megkülönböztethető).
+
 ## Betűk
 
-Bricolage Grotesque (címek, összegek, beírt számok), Public Sans (szöveg, űrlap). Mondatkezdő írásmód mindenhol, nincs csupa nagybetűs felirat.
+Egyetlen család: **Overpass** (változó vastagság, SIL OFL). A közúti táblák betűjéből (Highway Gothic) származik, ezért illik az autós témához, és nem a megszokott „generált oldal” betűpárosa. Címek és összegek 800-as, szöveg 400-as, mezőcímkék 600-as vastagsággal. Mondatkezdő írásmód mindenhol, nincs csupa nagybetűs felirat.
 
 ## Amit kerülünk
 

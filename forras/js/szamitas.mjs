@@ -259,3 +259,171 @@ export function munkabaJaras(adat, b) {
   const havi = ft(haviKm * dij);
   return { dij, haviKm, havi, eves: havi * 12 };
 }
+
+/* ---------------- Benzines vagy villany: teljes költség időben ---------------- */
+
+/** Maradványérték: az első 3 évben a 3 éves értékhez vezető egyenletes ütem, utána évi fix csökkenés. */
+export function ertekNEvMulva(ar, hajtas, evek, f) {
+  const m = f.maradvany[hajtas] || f.maradvany.benzin;
+  const r3 = m.harom / 100, d = m.evi / 100;
+  return evek <= 3 ? ar * Math.pow(r3, evek / 3) : ar * r3 * Math.pow(1 - d, evek - 3);
+}
+
+/** Otthoni töltés átlagára a 2523 kWh-s kedvezményes sáv figyelembevételével (határköltség). */
+export function otthoniAr(f, otthoniKwhEv) {
+  // Ha a háztartás fogyasztását nem adják meg, úgy vesszük, hogy a kedvezményes sáv már elfogyott
+  const haztartas = f.haztartas === '' || f.haztartas == null ? f.sav_kwh : Number(f.haztartas);
+  const szabad = Math.max(0, f.sav_kwh - haztartas);
+  if (otthoniKwhEv <= 0) return f.aram_kedv;
+  const kedv = Math.min(otthoniKwhEv, szabad);
+  return (kedv * f.aram_kedv + (otthoniKwhEv - kedv) * f.aram_piaci) / otthoniKwhEv;
+}
+
+/** Egy autó éves energiaköltsége és részletei. */
+export function energiaEv(auto, km, f) {
+  const h = auto.hajtas;
+  const fogy = Number(auto.fogyasztas) || 0;
+  const vesz = 1 + f.veszteseg / 100;
+  if (h === 'elektromos' || h === 'plugin') {
+    const villanyArany = h === 'plugin' ? (Number(auto.villanyArany) || 0) / 100 : 1;
+    const kwh = km * villanyArany * (Number(h === 'plugin' ? auto.kwh : fogy) || 0) / 100 * vesz;
+    const otthon = kwh * f.otthoni / 100, kozt = kwh - otthon;
+    const oAr = otthoniAr(f, otthon);
+    let ft = otthon * oAr + kozt * f.tolto;
+    let liter = 0;
+    if (h === 'plugin') { liter = km * (1 - villanyArany) * fogy / 100; ft += liter * f.benzin; }
+    return { ft, kwh, liter, otthoniAr: oAr };
+  }
+  const ar = h === 'dizel' ? f.dizel : f.benzin;
+  const liter = km * fogy / 100;
+  return { ft: liter * ar, liter, kwh: 0 };
+}
+
+const CEG_SOR = (kw) => (kw <= 50 ? 0 : kw <= 90 ? 1 : kw <= 120 ? 2 : 3);
+
+/**
+ * Két (vagy több) autó teljes költsége az évek során.
+ * b: { km, evek, ceges, autok: [{ nev, hajtas, ar, fogyasztas, kwh, villanyArany, kw, szerviz, biztositas, eladasiAr }], f: feltevések, ev }
+ */
+export function osszehasonlitas(adat, b) {
+  const km = Number(b.km), N = Number(b.evek);
+  if (!(km > 0)) return { hiba: 'Add meg, évente hány kilométert autózol.' };
+  const eredm = [];
+  for (const [i, a] of b.autok.entries()) {
+    const nev = a.nev || (i === 0 ? 'A autó' : 'B autó');
+    const ar = Number(a.ar), kw = Number(a.kw);
+    if (!(ar > 0)) return { hiba: `${nev}: add meg a vételárat.` };
+    if (!(kw > 0)) return { hiba: `${nev}: add meg a teljesítményt (P.2).` };
+    if (!(Number(a.fogyasztas) > 0) && !(a.hajtas === 'plugin' && Number(a.kwh) > 0)) return { hiba: `${nev}: add meg a fogyasztást.` };
+    const gjH = a.hajtas === 'elektromos' ? 'elektromos' : a.hajtas === 'plugin' ? 'plugin' : 'hagyomanyos';
+    const ilH = a.hajtas === 'benzin' || a.hajtas === 'dizel' ? 'hagyomanyos' : a.hajtas;
+    const ill = illetek(adat, { ev: b.ev, kw, gyartasiEv: b.ev, hajtas: ilH, szerzes: 'vetel' }).osszeg;
+    const en = energiaEv(a, km, b.f);
+    const fix = (Number(a.szerviz) || 0) + (Number(a.biztositas) || 0);
+    const evek = [];
+    const ismertEvek = Object.keys(adat.tetelek.gepjarmuado).map(Number);
+    const utolso = Math.max(...ismertEvek);
+    let gjOssz = 0, cegOssz = 0;
+    for (let t = 0; t < N; t++) {
+      const ev = b.ev + t;
+      const tetelEv = Math.min(ev, utolso);
+      const gjr = gepjarmuado(adat, { ev: tetelEv, kw, gyartasiEv: b.ev - (ev - tetelEv), hajtas: gjH });
+      const gj = gjr.hiba ? 0 : gjr.fizetendo;
+      let ceg = 0;
+      if (b.ceges && a.hajtas !== 'elektromos') {
+        const ct = evAdat(adat.tetelek.cegautoado, tetelEv);
+        ceg = Math.max(0, ct.tabla[CEG_SOR(kw)][2] * 12 - gj);
+      }
+      gjOssz += gj; cegOssz += ceg;
+      evek.push({ ev, gj, ceg, energia: en.ft, fix });
+    }
+    const eladas = Number(a.eladasiAr) > 0 ? Number(a.eladasiAr) : ertekNEvMulva(ar, a.hajtas, N, b.f);
+    // Havi lépésű halmozott költség a grafikonhoz és a megtérüléshez
+    const havi = [];
+    let halmozott = ill;
+    for (let m = 0; m <= N * 12; m++) {
+      if (m > 0) { const y = evek[Math.min(N - 1, Math.floor((m - 1) / 12))]; halmozott += (y.energia + y.fix + y.gj + y.ceg) / 12; }
+      const ertek = Number(a.eladasiAr) > 0 && N > 0 ? ar - (ar - eladas) * (m / (N * 12)) : ertekNEvMulva(ar, a.hajtas, m / 12, b.f);
+      havi.push(halmozott + ar - ertek);
+    }
+    const ertekvesztes = ar - eladas;
+    const energia = en.ft * N;
+    const fixOssz = fix * N;
+    const adok = ill + gjOssz + cegOssz;
+    const osszesen = ertekvesztes + energia + fixOssz + adok;
+    eredm.push({
+      nev, hajtas: a.hajtas, ar, eladas, ertekvesztes, energia, fixOssz, adok, ill, gjOssz, cegOssz, osszesen,
+      ftKm: osszesen / (km * N), havi, energiaHavi: en.ft / 12, kwhEv: en.kwh, literEv: en.liter, otthoniAr: en.otthoniAr,
+      szaz: en.ft / km * 100,
+      futoHavi: (en.ft + fix + (evek[0]?.gj || 0) + (evek[0]?.ceg || 0)) / 12,
+      gjElso: evek[0]?.gj || 0, cegElso: evek[0]?.ceg || 0, fixHavi: fix / 12,
+    });
+  }
+  // Megtérülés: az a hónap, amelytől a végén olcsóbb autó halmozott költsége végig a másik alatt marad
+  const [A, B] = eredm;
+  let megterul = null;
+  if (A && B) {
+    const diff = A.havi.map((v, m) => v - B.havi[m]);
+    const vegso = Math.sign(diff[diff.length - 1]);
+    if (vegso !== 0) {
+      let m = diff.length - 1;
+      while (m > 0 && Math.sign(diff[m - 1]) === vegso) m--;
+      if (m > 0) megterul = { auto: vegso > 0 ? 1 : 0, honap: m };
+    }
+    // Évi km, amely fölött B (vagy A) olcsóbb ugyanennyi év alatt: a költség km-ben lineáris
+    const vA = A.energia / (km * N), vB = B.energia / (km * N);
+    const fA = A.osszesen - A.energia, fB = B.osszesen - B.energia;
+    const hatarKm = vA !== vB ? (fB - fA) / ((vA - vB) * N) : null;
+    return { km, evek: N, autok: eredm, megterul, hatarKm: hatarKm > 0 ? hatarKm : null, olcsobb: A.osszesen <= B.osszesen ? 0 : 1, kulonbseg: Math.abs(A.osszesen - B.osszesen) };
+  }
+  return { km, evek: N, autok: eredm };
+}
+
+/* ---------------- Fenntartás: mennyibe kerül havonta a saját autó ---------------- */
+export function fenntartas(adat, b) {
+  const km = Number(b.km);
+  if (!(km > 0)) return { hiba: 'Add meg, évente hány kilométert autózol.' };
+  const kw = Number(b.kw), gy = Number(b.gyartasiEv);
+  if (!(kw > 0)) return { hiba: 'Add meg a teljesítményt (P.2).' };
+  if (!(gy > 1900)) return { hiba: 'Add meg a gyártási évet.' };
+  if (!(Number(b.fogyasztas) > 0)) return { hiba: 'Add meg a fogyasztást.' };
+  const gjH = b.hajtas === 'elektromos' ? 'elektromos' : b.hajtas === 'plugin' ? 'plugin' : 'hagyomanyos';
+  const gj = gepjarmuado(adat, { ev: b.ev, kw, gyartasiEv: gy, hajtas: gjH, phevRegi: false });
+  const en = energiaEv({ hajtas: b.hajtas, fogyasztas: b.fogyasztas, kwh: b.fogyasztas, villanyArany: 0 }, km, b.f);
+  const ertek = Number(b.ertek) || 0, ertekVeg = Number(b.ertekVeg) || 0, evekTartja = Number(b.tartja) || 0;
+  const ertekvesztes = ertek > 0 && evekTartja > 0 ? Math.max(0, (ertek - ertekVeg) / evekTartja) : 0;
+  const tetelek = [
+    { kulcs: 'energia', nev: b.hajtas === 'elektromos' ? 'Töltés' : 'Üzemanyag', ev: en.ft },
+    { kulcs: 'ertekvesztes', nev: 'Értékvesztés', ev: ertekvesztes },
+    { kulcs: 'biztositas', nev: 'Biztosítás', ev: Number(b.biztositas) || 0 },
+    { kulcs: 'szerviz', nev: 'Szerviz és javítás', ev: Number(b.szerviz) || 0 },
+    { kulcs: 'gumi', nev: 'Gumi', ev: Number(b.gumi) || 0 },
+    { kulcs: 'gjado', nev: 'Gépjárműadó', ev: gj.hiba ? 0 : gj.fizetendo },
+    { kulcs: 'egyeb', nev: 'Matrica, parkolás, egyéb', ev: Number(b.egyeb) || 0 },
+  ];
+  const ev = tetelek.reduce((s, t) => s + t.ev, 0);
+  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
+}
+
+/* ---------------- Összeg betűvel (szerződéshez) ---------------- */
+const EGY = ['', 'egy', 'két', 'három', 'négy', 'öt', 'hat', 'hét', 'nyolc', 'kilenc'];
+const TIZ = ['', 'tizen', 'huszon', 'harminc', 'negyven', 'ötven', 'hatvan', 'hetven', 'nyolcvan', 'kilencven'];
+function harom(n, vegso) {
+  const s = Math.floor(n / 100), r = n % 100, t = Math.floor(r / 10), e = r % 10;
+  let x = s ? (s === 1 ? 'száz' : `${EGY[s]}száz`) : '';
+  if (e === 0) x += t === 1 ? 'tíz' : t === 2 ? 'húsz' : TIZ[t];
+  else x += TIZ[t] + (e === 2 && vegso ? 'kettő' : EGY[e]);
+  return x;
+}
+/** 1 500 000 → „egymillió-ötszázezer”; 1 999 → „ezerkilencszázkilencvenkilenc”. */
+export function betuvel(n) {
+  n = Math.floor(Math.abs(Number(n)));
+  if (!n) return 'nulla';
+  const mrd = Math.floor(n / 1e9), mil = Math.floor((n % 1e9) / 1e6), ezr = Math.floor((n % 1e6) / 1e3), egys = n % 1e3;
+  const reszek = [];
+  if (mrd) reszek.push(`${harom(mrd, false)}milliárd`);
+  if (mil) reszek.push(`${harom(mil, false)}millió`);
+  if (ezr) reszek.push(n < 2000 ? 'ezer' : `${harom(ezr, false)}ezer`);
+  if (egys) reszek.push(harom(egys, true));
+  return n > 2000 ? reszek.join('-') : reszek.join('');
+}

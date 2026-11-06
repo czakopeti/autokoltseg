@@ -1,17 +1,18 @@
 # Autóköltség (munkanév)
 
-Magyar autós kalkulátorok hivatalos NAV-tételekkel: gépjárműadó, átírási illeték és regisztrációs adó, kilométertérítés.
+Magyar autós kalkulátorok hivatalos NAV-tételekkel: gépjárműadó, átírási illeték és regisztrációs adó, kilométertérítés, benzin vagy villany összehasonlítás, fenntartási költség, adásvételi szerződés.
+Az űrlapok mindig üresen nyílnak. Aki akarja, elmentheti a saját autóját a böngészőjében (`localStorage`, `autokoltseg-autom-v2`), és gombnyomásra betöltheti.
 Statikus oldal, amely magától frissül. Nincs adatbázis, nincs szerver, nincs süti.
 
 ## Felépítés
 
 | Mappa / fájl | Mi van benne |
 |---|---|
-| `data/` | Minden szám: `uzemanyag.json` (NAV havi árak), `tetelek.json` (évente valorizált tételek), `szabalyok.json` (normák, okmánydíjak), `allapot.json` (utolsó ellenőrzés) |
+| `data/` | Minden szám: `uzemanyag.json` (NAV havi árak), `tetelek.json` (évente valorizált tételek), `szabalyok.json` (normák, okmánydíjak, áramárak, maradványértékek, határidők), `allapot.json` (utolsó ellenőrzés) |
 | `forras/js/szamitas.mjs` | A számítási mag. A böngésző, az építő és a tesztek is ezt használják. |
 | `forras/js/megjelenites.mjs` | Az eredménypanelek. Az építő ezzel írja bele az alaperedményt a HTML-be (a Google is látja), a böngésző ezzel számol élőben. |
 | `forras/oldalak.mjs`, `forras/sablon.mjs` | Az oldalak szövege és kerete. |
-| `forras/css/style.css` | Dizájn: aszfalt + útjelző sárga, világos és sötét mód, mozgás (`prefers-reduced-motion` tiszteletben tartva). |
+| `forras/css/style.css` | Dizájn: forgalmi engedély + NAV-elszámolás + pecsét, Overpass betű, világos és sötét mód, mozgás (`prefers-reduced-motion` tiszteletben tartva). |
 | `frissito/` | NAV-letöltő és -feldolgozó (`nav.mjs`), napi futtatás (`futtat.mjs`). |
 | `tesztek/` | Számítási tesztek a NAV-tájékoztatók példáival, feldolgozótesztek mintaoldalakon. |
 | `web/` | A kész oldal. A Cloudflare Pages ezt szolgálja ki. Kézzel ne szerkeszd, az `epit.mjs` írja. |
@@ -42,6 +43,7 @@ Biztonsági elvek: csak akkor ír át adatot, ha a NAV-oldal felépítése a vá
 
 - **Október vége:** az átírási illeték új tételeit a NAV nem külön oldalon közli. Ha a futás erről jelez, vedd fel a `data/tetelek.json` → `illetek` alá. Addig a kalkulátor az előző évivel számol.
 - **Január:** nézd át a `szabalyok.json` díjait (okmánydíjak, normaköltség, munkába járás), mert ezek jogszabályváltozással módosulnak.
+- **Félévente:** `szabalyok.json` → `energia` (lakossági áram, villámtöltő) és `maradvany` (DAT/KSH maradványértékek). Ezeket nem frissíti gép, mert nincs hivatalos, gépileg olvasható forrásuk.
 
 ## Élesítés
 
