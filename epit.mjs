@@ -19,7 +19,7 @@ const ev = Number(ma.slice(0, 4));
 // Figyelmeztetés, ha élesítés előtt hiányzik valami
 const hianyzik = [];
 if (!cfg.uzemelteto.nev) hianyzik.push('üzemeltető neve');
-if (!cfg.uzemelteto.szekhely) hianyzik.push('székhely');
+if (cfg.uzemelteto.tipus !== 'magánszemély' && !cfg.uzemelteto.szekhely) hianyzik.push('székhely');
 if (!cfg.kapcsolat_email) hianyzik.push('kapcsolati e-mail');
 if (cfg.eles && hianyzik.length) {
   console.error(`HIBA: az eles: true mellett hiányzik: ${hianyzik.join(', ')}. Töltsd ki a config.json-t.`);

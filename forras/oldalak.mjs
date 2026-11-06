@@ -513,11 +513,12 @@ ${oldalfej(L, { morzsa: ['Impresszum'], cim: 'Impresszum' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <div class="tabla-tarto"><table class="tabla"><tbody>
 <tr><td>Weboldal</td><td>${cfg.domain.replace('https://', '')}</td></tr>
-<tr><td>Üzemeltető</td><td>${kitoltendo(u.nev)}</td></tr>
-<tr><td>Székhely</td><td>${kitoltendo(u.szekhely)}</td></tr>
-<tr><td>Adószám</td><td>${kitoltendo(u.adoszam)}</td></tr>
-<tr><td>Nyilvántartási szám</td><td>${kitoltendo(u.nyilvantartasi_szam)}</td></tr>
-<tr><td>E-mail</td><td>${kitoltendo(cfg.kapcsolat_email)}</td></tr>
+<tr><td>Üzemeltető</td><td>${kitoltendo(u.nev ? `${esc(u.nev)}${u.tipus ? ` (${esc(u.tipus)})` : ''}` : '')}</td></tr>
+${u.tipus === 'magánszemély' && !u.szekhely ? '' : `<tr><td>Székhely</td><td>${kitoltendo(u.szekhely)}</td></tr>`}
+${u.tipus === 'magánszemély' && !u.adoszam ? '' : `<tr><td>Adószám</td><td>${kitoltendo(u.adoszam)}</td></tr>`}
+${u.tipus === 'magánszemély' && !u.nyilvantartasi_szam ? '' : `<tr><td>Nyilvántartási szám</td><td>${kitoltendo(u.nyilvantartasi_szam)}</td></tr>`}
+<tr><td>E-mail</td><td>${cfg.kapcsolat_email ? `<a href="mailto:${esc(cfg.kapcsolat_email)}">${esc(cfg.kapcsolat_email)}</a>` : kitoltendo('')}</td></tr>
+${u.telefon ? `<tr><td>Telefon</td><td><a href="tel:${esc(u.telefon.replace(/\s/g, ''))}">${esc(u.telefon)}</a></td></tr>` : ''}
 <tr><td>Tárhelyszolgáltató</td><td>${cfg.tarhely.nev}, ${cfg.tarhely.cim}</td></tr>
 </tbody></table></div>
 <h2>Felelősség</h2>

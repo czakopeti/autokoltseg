@@ -1,10 +1,12 @@
 {
   "marka": "autózom",
   "domain": "https://autozom.hu",
-  "eles": false,
-  "kapcsolat_email": "",
+  "eles": true,
+  "kapcsolat_email": "info@autozom.hu",
   "uzemelteto": {
-    "nev": "",
+    "nev": "Czakó Péter",
+    "tipus": "magánszemély",
+    "telefon": "+36 30 478 2946",
     "szekhely": "",
     "adoszam": "",
     "nyilvantartasi_szam": ""
@@ -14,5 +16,5 @@
     "cim": "101 Townsend St, San Francisco, CA 94107, USA",
     "web": "https://www.cloudflare.com"
   },
-  "megjegyzes": "Az eles: true csak akkor kapcsolható be, ha a márkanév, a domain és az üzemeltető adatai ki vannak töltve. Addig minden oldal noindex, és az építő figyelmeztet."
+  "megjegyzes": "Az eles: true csak akkor kapcsolható be, ha az üzemeltető neve és a kapcsolati e-mail ki van töltve. Magánszemélynél adószám és nyilvántartási szám nem kell; ha cég veszi át, töltsd ki őket és a székhelyet."
 }
