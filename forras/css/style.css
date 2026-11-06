@@ -279,7 +279,7 @@ table.kompakt tr.kiemelt-sor td { color: var(--tinta); }
 .szakasz > .keret > h2 { margin-bottom: 26px; }
 .lista { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--tinta); }
 .lista li { border-bottom: 1px solid var(--vonal2); }
-.lista a { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto; gap: 32px; align-items: baseline; padding: 26px 8px; text-decoration: none; transition: background .15s; }
+.lista a { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) 9.5em; gap: 32px; align-items: baseline; padding: 26px 8px; text-decoration: none; transition: background .15s; }
 .lista a:hover { background: var(--lap); }
 .lista h3 { font-size: 26px; letter-spacing: -.02em; }
 .lista p { color: var(--tinta2); font-size: 16.5px; }
