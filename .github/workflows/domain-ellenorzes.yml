@@ -13,7 +13,7 @@ jobs:
         run: |
           for t in NS A AAAA; do echo "== autozom.hu $t"; dig +short $t autozom.hu @1.1.1.1; done
           echo "== www CNAME/A"; dig +short www.autozom.hu @1.1.1.1
-          echo "== .hu nyilvántartás szerinti delegáció"; dig +short NS autozom.hu @a.hu-servers.hu || true
+          TLD=$(dig +short NS hu. @1.1.1.1 | head -1); echo "== .hu nyilvántartás szerinti delegáció ($TLD)"; dig +norec NS autozom.hu @$TLD | grep -A4 "AUTHORITY SECTION" || true
       - name: HTTP-válaszok
         run: |
           for u in https://autozom.hu/ https://www.autozom.hu/ http://autozom.hu/ https://autozom.hu/robots.txt https://autozom.hu/sitemap.xml https://autokoltseg-7t6.pages.dev/; do
