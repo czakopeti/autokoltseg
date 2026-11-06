@@ -494,3 +494,23 @@ a.jel:hover { text-decoration: underline; }
 .menu a.menu-autom[aria-current="page"] { background: var(--tinta); color: var(--lap); border-bottom-color: var(--tinta); }
 .menu a.menu-autom[aria-current="page"] svg { color: var(--lap); }
 @media (max-width: 640px) { .menu a.menu-autom { border-radius: 6px; padding: 12px 14px; margin: 10px 0 0; justify-content: flex-start; } }
+.menu a.menu-autom svg { width: 17px; height: 17px; }
+/* Szlogen a logó alatt */
+.marka-blokk { display: flex; flex-direction: column; gap: 5px; padding-block: 10px; }
+.fejlec .szlogen { margin: 0; font-size: 12.5px; line-height: 1.2; color: var(--tinta2); white-space: nowrap; letter-spacing: .01em; }
+.menu a { white-space: nowrap; }
+@media (max-width: 1060px) { .fejlec .szlogen { display: none; } .marka-blokk { padding-block: 0; } }
+/* Középső szélességen sűrűbb menü, 860 px alatt lenyíló */
+@media (min-width: 861px) and (max-width: 1000px) {
+  .fejlec .keret { gap: 20px; }
+  .menu { gap: 16px; }
+  .menu a { font-size: 14.5px; }
+}
+@media (max-width: 860px) {
+  .fejlec .keret { min-height: 62px; }
+  .menu { position: fixed; inset: 62px 0 auto 0; z-index: 30; flex-direction: column; gap: 0; background: var(--papir); border-bottom: 2px solid var(--tinta); padding: 6px 18px 14px; display: none; }
+  .menu.nyitva { display: flex; }
+  .menu a { padding: 12px 0; font-size: 17px; border-bottom: 1px solid var(--vonal); }
+  .menu-gomb { display: inline-flex; margin-left: auto; font: inherit; font-weight: 600; font-size: 15px; background: none; border: 1.5px solid var(--tinta); color: var(--tinta); border-radius: 4px; padding: 6px 12px; }
+  .menu a.menu-autom { border-radius: 6px; padding: 12px 14px; margin: 10px 0 0; justify-content: flex-start; }
+}
