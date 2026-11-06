@@ -33,8 +33,6 @@ export function phevSzoveg(ev) {
 }
 
 /* ======================= FŐOLDAL ======================= */
-/** A minta-autó (2019-es, 85 kW, benzines), amivel a „válasz elöl” bekezdések számolnak. */
-const MINTA_AUTO = { kw: 85, gyartasiEv: 2019 };
 
 export function fooldal(k) {
   const { adat } = k;
@@ -63,10 +61,8 @@ ${a.savok.map((x, i) => `<tr><td>${S.GJADO_SAV_ROVID[i]}</td><td>${x} Ft/kW</td>
 
     return `
 ${(() => {
-  const g = S.gepjarmuado(adat, { ev: aktualis, ...MINTA_AUTO, hajtas: 'hagyomanyos' });
-  const at = S.atiras(adat, { ev: aktualis, datum: k.ma, ...MINTA_AUTO, hajtas: 'hagyomanyos', szerzes: 'vetel' });
-  const fr = S.fenntartas(adat, { ev: aktualis, ...MINTA_AUTO, hajtas: 'benzin', fogyasztas: 6.5, km: 15000, biztositas: 150000, szerviz: 120000, gumi: 40000, ertek: 4500000, f: feltevesek(adat) });
-  const valasz = g.hiba || at.hiba || fr.hiba ? '' : `Egy 2019-es, 85 kW-os benzines autó adója ${M.rag(aktualis, 'ban', 'ben')} ${M.ftx(g.fizetendo)}, havi teljes költsége nagyjából ${M.ftx(Math.round(fr.havi / 1000) * 1000)}. A sajátodét a forgalmi adataiból számoljuk ki, a NAV tételeivel.`;
+  const gs = adat.tetelek.gepjarmuado[aktualis].savok, it = S.evAdat(adat.tetelek.illetek, aktualis).tabla.flat();
+  const valasz = `A gépjárműadó kilowattonként ${Math.min(...gs)}–${Math.max(...gs)} Ft, az átírási illeték ${Math.min(...it)}–${Math.max(...it)} Ft, az autó korától függően. A sajátodét a forgalmi adataiból számoljuk ki, a NAV tételeivel.`;
   return oldalfej(L, { cim: 'Mennyibe kerül az autód?', valasz, fo: true });
 })()}
 <div class="keret asztal">
@@ -135,9 +131,8 @@ export function gepjarmuadoOldal(k) {
   const tartalom = (L) => `
 ${(() => {
   const sav = adat.tetelek.gepjarmuado[aktualis].savok;
-  const g0 = S.gepjarmuado(adat, { ev: aktualis, ...MINTA_AUTO, hajtas: 'hagyomanyos' });
-  const g1 = jovo ? S.gepjarmuado(adat, { ev: jovo, ...MINTA_AUTO, hajtas: 'hagyomanyos' }) : null;
-  const valasz = `Kilowattonként ${Math.min(...sav)}–${Math.max(...sav)} Ft, az autó korától függően: egy 2019-es, 85 kW-os autóé ${M.rag(aktualis, 'ban', 'ben')} ${M.ftx(g0.fizetendo)}${g1 && !g1.hiba ? `, ${M.rag(jovo, 'ban', 'ben')} ${M.ftx(g1.fizetendo)}` : ''}. Az elektromos autó mentes.`;
+  const sav1 = jovo ? adat.tetelek.gepjarmuado[jovo]?.savok : null;
+  const valasz = `Kilowattonként ${Math.min(...sav)}–${Math.max(...sav)} Ft${sav1 ? ` (${M.rag(jovo, 'ban', 'ben')} ${Math.min(...sav1)}–${Math.max(...sav1)} Ft)` : ''}: minél idősebb az autó, annál kevesebb. Az elektromos autó mentes, a befizetés határideje április 15.`;
   return oldalfej(L, { morzsa: ['Gépjárműadó'], cim: `Mennyi a gépjárműadó ${M.rag(aktualis, 'ban', 'ben')}${jovo ? ` és ${M.rag(jovo, 'ban', 'ben')}` : ''}?`, valasz });
 })()}
 <div class="keret asztal">
@@ -219,7 +214,7 @@ export function atirasOldal(k) {
   const leiras = `Átírási illeték ${aktualis}: illeték, eredetiségvizsgálat, forgalmi és törzskönyv egy összegben, külföldről hozott autónál regisztrációs adóval. A NAV tételeivel.`;
 
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Átírás'], cim: `Mennyibe kerül az autó átírása ${M.rag(aktualis, 'ban', 'ben')}?`, valasz: r.hiba ? '' : `Egy 2019-es, 85 kW-os autóé ${M.ftx(r.osszesen)}, ebből ${M.ftx(r.illetek.osszeg)} az illeték, a többi a vizsgálat és az okmányok. Elektromos autó után nincs illeték.` })}
+${oldalfej(L, { morzsa: ['Átírás'], cim: `Mennyibe kerül az autó átírása ${M.rag(aktualis, 'ban', 'ben')}?`, valasz: `Az illeték kilowattonként ${Math.min(...il.tabla.flat())}–${Math.max(...il.tabla.flat())} Ft a teljesítménytől és az autó korától függően, erre jön kb. ${M.ftx(Math.round((ok.eredetisegvizsgalat_alap + ok.forgalmi_engedely + ok.torzskonyv + ok.torzskonyv_postazas) / 1000) * 1000)} vizsgálat és okmány. Elektromos autó után nincs illeték.` })}
 <div class="keret asztal">
 ${forgalmi({ kalk: 'atiras', cim: 'Az átírás adatai', extra: ' data-mai-datum="datum"', tartalom: `
 <fieldset><legend>A vásárlás</legend>
@@ -310,7 +305,7 @@ export function kmOldal(k) {
   const leiras = `Kilométertérítés ${lf.ev}: kiküldetési rendelvény a fogyasztási normával és a NAV ${honapi} árával (benzin ${ar.benzin} Ft/l), plusz ${km.normakoltseg_ft_km} Ft/km normaköltség. Munkába járás ${km.munkaba_jaras_ft_km} Ft/km.`;
 
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Kilométertérítés'], cim: `Mennyi a kilométertérítés ${lf.ev} ${['januárjában', 'februárjában', 'márciusában', 'áprilisában', 'májusában', 'júniusában', 'júliusában', 'augusztusában', 'szeptemberében', 'októberében', 'novemberében', 'decemberében'][lf.honap - 1]}?`, valasz: `A NAV ${S.HONAPOK[lf.honap - 1]}i ára benzinre ${ar.benzin}, dízelre ${ar.dizel} Ft/l, ehhez jön ${km.normakoltseg_ft_km} Ft/km normaköltség${r.hiba ? '' : `: egy 100 km-es út egy 1,6 literes benzinessel ${M.ftx(r.osszesen)}`}. Munkába járásnál ${km.munkaba_jaras_ft_km} Ft/km.` })}
+${oldalfej(L, { morzsa: ['Kilométertérítés'], cim: `Mennyi a kilométertérítés ${lf.ev} ${['januárjában', 'februárjában', 'márciusában', 'áprilisában', 'májusában', 'júniusában', 'júliusában', 'augusztusában', 'szeptemberében', 'októberében', 'novemberében', 'decemberében'][lf.honap - 1]}?`, valasz: `A NAV ${S.HONAPOK[lf.honap - 1]}i ára benzinre ${ar.benzin}, dízelre ${ar.dizel} Ft/l: ezt szorozzuk az autó fogyasztási normájával, és hozzáadunk ${km.normakoltseg_ft_km} Ft/km normaköltséget. Munkába járásnál ${km.munkaba_jaras_ft_km} Ft/km adható.` })}
 <div class="keret asztal">
 ${forgalmi({ kalk: 'km', cim: 'Az út és az autó', tartalom: `
 <div class="mod-valto" role="radiogroup" aria-label="Mit számolsz?"><label><input type="radio" name="mod" value="kikuldetes" checked><span>Hivatali út</span></label><label><input type="radio" name="mod" value="munka"><span>Munkába járás</span></label></div>
@@ -604,7 +599,7 @@ export function osszehasonlitoOldal(k) {
   const leiras = `Benzines vagy elektromos autó? Két autó teljes költsége havonta és ${PELDA.evek} évre előre: értékvesztés, üzemanyag vagy töltés a 2523 kWh-s szabállyal, gépjárműadó, illeték, cégautóadó. Megtérülési idő és km-határ.`;
 
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Benzin vagy villany'], cim: 'Benzines vagy elektromos autó: melyik éri meg?', valasz: pr.hiba ? '' : `Évi ${M.fmt(PELDA.km)} km mellett, otthon töltve a mintánkban az elektromos ${PELDA.evek} év alatt ${M.ftx(pr.kulonbseg)}-tal olcsóbb${pr.megterul ? `, és ${M.tized(pr.megterul.honap / 12, 1)} év alatt térül meg` : ''}.${pr.hatarKm ? ` Évi ${M.fmt(Math.ceil(pr.hatarKm / 500) * 500)} km alatt a benzines nyer.` : ''}` })}
+${oldalfej(L, { morzsa: ['Benzin vagy villany'], cim: 'Benzines vagy elektromos autó: melyik éri meg?', valasz: `Otthon töltve 100 km áramból nagyjából harmadannyiba kerül, mint benzinből, de az elektromos autó drágább, és az első években gyorsabban veszít az értékéből. Hogy megéri-e, főleg azon múlik, mennyit autózol és hol töltesz.` })}
 <form class="keret osszevet-urlap" data-kalk="osszevet" novalidate>
 <div class="forgalmi kozos">${''}<div class="forgalmi-fej"><h2>Hogyan használod?</h2><button class="szoveg-gomb pelda-gomb" type="button" data-pelda>Példával kipróbálom</button></div>
 <div class="sorok">
@@ -680,8 +675,8 @@ export function fenntartasOldal(k) {
   const leiras = 'Mennyibe kerül havonta az autód? Üzemanyag, értékvesztés, biztosítás, szerviz, gumi és gépjárműadó egy helyen, kilométerenkénti költséggel.';
   const tartalom = (L) => `
 ${(() => {
-  const fr = S.fenntartas(adat, { ev: aktualis, ...MINTA_AUTO, hajtas: 'benzin', fogyasztas: 6.5, km: 15000, biztositas: 150000, szerviz: 120000, gumi: 40000, ertek: 4500000, f });
-  const valasz = fr.hiba ? '' : `Egy 2019-es, 85 kW-os benzines autó évi 15 000 km-rel nagyjából havi ${M.ftx(Math.round(fr.havi / 1000) * 1000)}, értékvesztéssel együtt. Ebből kb. ${M.ftx(Math.round((fr.ev - fr.ertekvesztes) / 12 / 1000) * 1000)} a tényleges kiadás.`;
+  const ev = ['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => adat.szabalyok.maradvany[h].evi);
+  const valasz = `A két legnagyobb tétel általában az üzemanyag és az értékvesztés (egy használt autó évente az értékének nagyjából ${M.tized(Math.min(...ev), 0)}–${M.tized(Math.max(...ev), 0)}%-át veszíti el), utána a biztosítás és a szerviz jön. A gépjárműadó jellemzően a legkisebb.`;
   return oldalfej(L, { morzsa: ['Fenntartás'], cim: 'Mennyibe kerül egy autó fenntartása havonta?', valasz });
 })()}
 <div class="keret asztal">
