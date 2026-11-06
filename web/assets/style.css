@@ -242,8 +242,8 @@ p { margin: 0; }
 .g-jelmagyarazat i.g-a { background: var(--sor-a); } .g-jelmagyarazat i.g-b { background: var(--sor-b); }
 .g-a-hatter { background: var(--sor-a) !important; } .g-b-hatter { background: var(--sor-b) !important; }
 .ket-oszlop { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--vonal2); }
-.ket-oszlop h3, .hosszu h3 { font-size: 18px; margin-bottom: 10px; }
-.hosszu { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--vonal2); }
+.ket-oszlop h3, section.hosszu h3 { font-size: 18px; margin-bottom: 10px; }
+section.hosszu { margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--vonal2); }
 table.kompakt { font-size: 15px; border-top: 0; }
 table.kompakt td, table.kompakt th { padding: 8px 10px; }
 table.kompakt tr.osszeg td { font-weight: 700; color: var(--tinta); border-top: 1px solid var(--tinta); }
@@ -408,3 +408,8 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
 /* A szövegmezők alapszélessége (size=20) ne tolja ki a keskeny kártyát. */
 .beir { min-width: 0; }
 .beir input { width: 0; }
+
+/* Minta-eredmény: üres űrlapnál ez mutatja meg, mit kapsz. */
+.minta-jelzes { font-size: 14.5px; line-height: 1.5; color: var(--tinta2); border: 1.5px dashed var(--gilos); border-radius: 4px; padding: 10px 14px; margin: 0 0 22px; }
+.minta-jelzes strong { color: var(--tinta); font-weight: 700; }
+@media (max-width: 980px) { .elsz-lab .kicsi { padding-right: 118px; } }

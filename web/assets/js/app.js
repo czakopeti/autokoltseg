@@ -86,13 +86,14 @@ function frissit(panel, html, valtozott) {
   panel.innerHTML = html;
   const kesz = !panel.querySelector('.ures');
   const pecset = $('.pecset');
-  if (pecset && kesz && pecset.hidden) { pecset.hidden = false; if (!csendes) pecset.classList.add('ut'); }
+  // SVG-n nincs .hidden tulajdonság, ezért az attribútumot kezeljük
+  if (pecset && kesz && pecset.hasAttribute('hidden')) { pecset.removeAttribute('hidden'); if (!csendes) pecset.classList.add('ut'); }
   $$('.g-vonal', panel).forEach((v) => !csendes && v.classList.add('rajzol'));
   const m = $('[data-osszeg]', panel);
   const mini = $('.mini');
   if (!m) { elozoOsszeg = null; if (mini) mini.dataset.van = ''; return; }
   const cel = Number(m.dataset.osszeg);
-  if (valtozott && elozoOsszeg !== null && elozoOsszeg !== cel) {
+  if (valtozott && !mintaMutat && elozoOsszeg !== null && elozoOsszeg !== cel) {
     m.closest('.vegosszeg')?.classList.add('villan');
     if (!csendes) {
       const span = $('.ertek', m), tol = elozoOsszeg, t0 = performance.now();
@@ -101,7 +102,8 @@ function frissit(panel, html, valtozott) {
     }
   }
   elozoOsszeg = cel;
-  if (mini) { mini.dataset.van = '1'; $('.mi', mini).textContent = $('.vegosszeg .mi', panel)?.textContent || ''; $('.mennyi', mini).textContent = `${M.fmt(cel)} Ft`; }
+  if (mini && mintaMutat) mini.dataset.van = '';
+  else if (mini) { mini.dataset.van = '1'; $('.mi', mini).textContent = $('.vegosszeg .mi', panel)?.textContent || ''; $('.mennyi', mini).textContent = `${M.fmt(cel)} Ft`; }
 }
 
 const ures = (e, mezok) => mezok.every((k) => e[k] === '' || e[k] == null);
@@ -114,11 +116,40 @@ function grafikonSzeles() {
   const st = getComputedStyle(el);
   return el.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
 }
+/* ---------- Minta: üres űrlapnál egy jelölt példaautó eredménye látszik ---------- */
+const ALAP = { kw: '85', gyartasiEv: '2019', hajtas: 'benzin', cm3: '1498' };
+const MINTAK = {
+  gyors: { adat: ALAP, leiras: 'egy 2019-es, 85 kW-os, 1,5 literes benzines autó' },
+  gepjarmuado: { adat: ALAP, leiras: 'egy 2019-es, 85 kW-os benzines autó' },
+  atiras: { adat: ALAP, leiras: 'egy 2019-es, 85 kW-os benzines autó adásvétele' },
+  km: { adat: { km: '120', odaVissza: true, uzemanyag: 'benzin', cm3: '1498' }, leiras: 'egy 120 km-es hivatali út oda-vissza, 1,5 literes benzines autóval' },
+  munka: { adat: { tav: '18', napok: '20' }, leiras: 'napi 18 km-es út, havi 20 munkanap' },
+  fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, évi 15 000 km' },
+};
+let mintaMutat = false;
+function mintaval(tipus, adat, e, form) {
+  const kulcs = tipus === 'km' && e.mod === 'munka' ? 'munka' : tipus;
+  const m = tipus === 'osszevet' ? { adat: mintaOsszevet(adat), leiras: `${adat.pelda.a.nev} és ${adat.pelda.b.nev}, évi ${M.fmt(adat.pelda.km)} km, ${adat.pelda.evek} év` } : MINTAK[kulcs];
+  if (!m) return M.uresPanel('Töltsd ki az űrlapot.');
+  const be = { ...e };
+  for (const [k, v] of Object.entries(m.adat)) if (be[k] === '' || be[k] == null || be[k] === false) be[k] = v;
+  be.__minta = true;
+  const html = KALK[tipus](adat, be, form);
+  mintaMutat = true;
+  return M.mintaJelzes(m.leiras) + html;
+}
+function mintaOsszevet(adat) {
+  const p = adat.pelda, be = { km: String(p.km), evek: String(p.evek) };
+  for (const [betu, a] of [['a', p.a], ['b', p.b]]) for (const [k, v] of Object.entries(a)) be[`${betu}_${k}`] = String(v);
+  return be;
+}
+
 const KALK = {
   gyors: (adat, e, form) => {
-    if (ures(e, ['kw', 'gyartasiEv'])) return M.uresPanel('Írd be a teljesítményt és a gyártási évet. A hajtást az elektromos és a plug-in hibrid mentessége miatt kérdezzük.');
+    if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('gyors', adat, e, form);
     const b = { kw: kwErtek(e), gyartasiEv: e.gyartasiEv, hajtas: e.hajtas || 'benzin', cm3: e.cm3 };
-    const q = (o) => `?${new URLSearchParams(Object.entries(o).filter(([, v]) => v !== '' && v != null))}`;
+    // a minta adatai nem mennek át a részletes kalkulátorba: ott is üres űrlap fogad
+    const q = (o) => (e.__minta ? '' : `?${new URLSearchParams(Object.entries(o).filter(([, v]) => v !== '' && v != null))}`);
     const linkek = {
       gjado: (ev) => form.dataset.gjado + q({ ev, kw: b.kw, gyartasiEv: b.gyartasiEv, hajtas: e.hajtas }),
       atiras: form.dataset.atiras + q({ kw: b.kw, gyartasiEv: b.gyartasiEv, hajtas: e.hajtas }),
@@ -127,14 +158,14 @@ const KALK = {
     return M.gyorsPanel(adat, b, { ev: adat.ev, ma: adat.ma, linkek });
   },
   gepjarmuado: (adat, e) => {
-    if (ures(e, ['kw', 'gyartasiEv'])) { $$('[data-sav]').forEach((tr) => tr.classList.remove('kiemelt')); return M.uresPanel('Add meg a teljesítményt és a gyártási évet.'); }
+    if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('gepjarmuado', adat, e);
     const b = { ev: Number(e.ev), kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: gjHajtas(e.hajtas), phevRegi: !!e.phevRegi, evkozbenHonap: e.evkozben ? Number(e.evkozbenHonap) : 0, mozgaskorlatozott: !!e.mozgaskorlatozott };
     const r = S.gepjarmuado(adat, b);
     $$('[data-sav]').forEach((tr) => tr.classList.toggle('kiemelt', !r.hiba && !r.mentes && Number(tr.dataset.sav) === r.sav));
     return r.hiba ? M.hianyPanel(r.hiba) : M.gjadoPanel(adat, r, b);
   },
   atiras: (adat, e) => {
-    if (ures(e, ['kw', 'gyartasiEv'])) { $$('[data-ill]').forEach((td) => td.classList.remove('kiemelt')); return M.uresPanel('Add meg a teljesítményt és a gyártási évet.'); }
+    if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('atiras', adat, e);
     const datum = e.datum || new Date().toISOString().slice(0, 10);
     const b = { ev: Number(datum.slice(0, 4)), datum, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: ilHajtas(e.hajtas), szerzes: e.szerzes, hanyad: szam(e.hanyad) || 100, behozott: e.honnan === 'kulfold', elsoForgalom: e.elsoForgalom, osztaly: e.osztaly, eredetiseg: !!e.eredetiseg, eredetisegDij: szam(e.eredetisegDij) || undefined, postazas: !!e.postazas, vetelar: szam(e.vetelar) || 0 };
     const r = S.atiras(adat, b);
@@ -149,12 +180,13 @@ const KALK = {
     const vd = $('[data-vedett]'); if (vd) vd.hidden = !vedettVan || e.mod === 'munka';
     if (e.mod === 'munka') {
       $$('[data-arhonap],[data-norma]').forEach((x) => x.classList.remove('kiemelt'));
-      if (ures(e, ['tav', 'napok'])) return M.uresPanel('Add meg a távolságot és a munkába járós napok számát.');
+      if (ures(e, ['tav', 'napok'])) return mintaval('km', adat, e);
       const r = S.munkabaJaras(adat, { km: e.tav, napok: e.napok });
       return r.hiba ? M.hianyPanel(r.hiba) : M.munkaPanel(adat, r);
     }
     $$('[data-arhonap]').forEach((tr) => tr.classList.toggle('kiemelt', tr.dataset.arhonap === `${ev}-${honap}`));
-    if (ures(e, ['km']) || !e.uzemanyag) { $$('[data-norma]').forEach((x) => x.classList.remove('kiemelt')); return M.uresPanel('Add meg a távolságot, az üzemanyagot és a hengerűrtartalmat.'); }
+    if (ures(e, ['km', 'uzemanyag', 'cm3'])) return mintaval('km', adat, e);
+    if (ures(e, ['km']) || !e.uzemanyag) { $$('[data-norma]').forEach((x) => x.classList.remove('kiemelt')); return M.hianyPanel('Add meg a távolságot és az üzemanyagot is.'); }
     const b = { km: e.km, odaVissza: !!e.odaVissza, uzemanyag: e.uzemanyag, motor: e.motor, cm3: e.cm3, ev, honap, vedett: vedettVan && !!e.vedett, sajatAr: e.sajatAr };
     const r = S.kikuldetes(adat, b);
     const hatar = motor === 'dizel' ? [1500, 2000, 3000] : [1000, 1500, 2000, 3000];
@@ -171,14 +203,14 @@ const KALK = {
         szerviz: szam(e[`${p}_szerviz`]) || 0, biztositas: szam(e[`${p}_biztositas`]) || 0, eladasiAr: szam(e[`${p}_eladasiAr`]) || 0,
       };
     };
-    if (ures(e, ['km', 'a_ar', 'b_ar', 'a_kw', 'b_kw'])) return M.uresPanel('Add meg az évi kilométert, és mindkét autónál a vételárat, a teljesítményt és a fogyasztást. Vagy próbáld ki a példával.');
+    if (ures(e, ['km', 'a_ar', 'b_ar', 'a_kw', 'b_kw'])) return mintaval('osszevet', adat, e);
     const f = { ...adat.f, maradvany: adat.szabalyok.maradvany, benzin: szam(e.benzinAr) || adat.f.benzin, dizel: szam(e.dizelAr) || adat.f.dizel, aram_kedv: szam(e.aramKedv) || adat.f.aram_kedv, aram_piaci: szam(e.aramPiaci) || adat.f.aram_piaci, tolto: szam(e.tolto) || adat.f.tolto, veszteseg: Number.isFinite(szam(e.veszteseg)) ? szam(e.veszteseg) : adat.f.veszteseg, otthoni: Number.isFinite(szam(e.otthoni)) ? Math.min(100, szam(e.otthoni)) : adat.f.otthoni, haztartas: e.haztartas };
     const r = S.osszehasonlitas(adat, { km: szam(e.km), evek: Number(e.evek) || 8, ceges: !!e.ceges, ev: adat.ev, f, autok: [auto('a'), auto('b')] });
     osszevetR = r.hiba ? null : r;
     return r.hiba ? M.hianyPanel(r.hiba) : M.osszehasonlitasPanel(adat, r, { szeles: grafikonSzeles() });
   },
   fenntartas: (adat, e) => {
-    if (ures(e, ['kw', 'gyartasiEv', 'fogyasztas', 'kwh', 'km'])) return M.uresPanel('Add meg a teljesítményt, a gyártási évet, a fogyasztást és az évi kilométert.');
+    if (ures(e, ['kw', 'gyartasiEv', 'fogyasztas', 'kwh', 'km'])) return mintaval('fenntartas', adat, e);
     const h = e.hajtas || 'benzin';
     const r = S.fenntartas(adat, { ev: adat.ev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek), ertekVeg: szam(e.ertekVeg), tartja: szam(e.tartja), f: { ...adat.f, haztartas: '' } });
     return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r);
@@ -258,6 +290,7 @@ function indit() {
   egysegValto(form);
   const szamol = (valtozott) => {
     lathatosag(form);
+    mintaMutat = false;
     if (tipus === 'osszevet') {
       // a grafikon súgójához a nyers eredmény is kell
       frissit(panel, KALK.osszevet(adat, ertekek(form)), valtozott);

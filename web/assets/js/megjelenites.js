@@ -160,6 +160,8 @@ export function gyorsPanel(adat, b, k) {
 export function uresPanel(mi) {
   return `<div class="ures"><p class="ures-cim">Itt lesz az elszámolás.</p><p>${mi}</p><ul class="tetelek ures-sorok" aria-hidden="true"><li><span></span><span></span></li><li><span></span><span></span></li><li><span></span><span></span></li></ul></div>`;
 }
+/** Felirat a minta-eredmény fölött: világos, hogy nem a látogató autója. */
+export const mintaJelzes = (leiras) => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. Írd be a sajátodat, és erre cseréljük.</p>`;
 export const hianyPanel = (uz) => `<div class="ures"><p class="ures-cim">Még egy adat hiányzik.</p><p>${esc(uz)}</p></div>`;
 
 /* ---------- Benzines vagy villany ---------- */
