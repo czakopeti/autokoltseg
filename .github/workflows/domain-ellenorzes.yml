@@ -2,6 +2,11 @@ name: Domain-ellenőrzés
 # Kézzel indítható: névszerverek, DNS, az oldal válasza és a JavaScript-fájlok frissessége az autozom.hu-n.
 on:
   workflow_dispatch:
+    inputs:
+      proba:
+        description: 'Küldjön egy próba-visszajelzést (GitHub-jegyet nyit)'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -32,3 +37,11 @@ jobs:
           echo "== GET /api/visszajelzes"; curl -sS -m 20 -w "\n%{http_code}\n" https://autozom.hu/api/visszajelzes || true
           echo "== doboz a vétlen baleset oldalon"; curl -sS -m 20 https://autozom.hu/vetlen-baleset/ | grep -c data-visszajelzes || true
           echo "== idegen oldalról tiltva (403 várható)"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" -X POST -H 'origin: https://pelda.example' -H 'content-type: application/json' -d '{"ut":"/x/","ertek":"fel"}' https://autozom.hu/api/visszajelzes || true
+      - name: Próba-visszajelzés (csak ha kérik)
+        if: ${{ inputs.proba }}
+        run: |
+          curl -sS -m 20 -w "\n%{http_code}\n" -X POST -H 'origin: https://autozom.hu' -H 'content-type: application/json' \
+            -d '{"ut":"/gepjarmuado-kalkulator/","ertek":"szoveg","szoveg":"Próba: a visszajelzés-doboz beállításának ellenőrzése. Ezt a jegyet nyugodtan le lehet zárni.","cim":"Gépjárműadó | autózom"}' \
+            https://autozom.hu/api/visszajelzes || true
+          curl -sS -m 20 -X POST -H 'origin: https://autozom.hu' -H 'content-type: application/json' -d '{"ut":"/gepjarmuado-kalkulator/","ertek":"fel"}' https://autozom.hu/api/visszajelzes || true
+          echo; curl -sS -m 20 https://autozom.hu/api/visszajelzes || true
