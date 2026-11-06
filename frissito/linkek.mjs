@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import { GYOKER } from '../forras/adat.mjs';
 
 const W = join(GYOKER, 'web');
-// Ezek az oldalak a robotokat (vagy a GitHub gépeit) tiltják, böngészőből viszont működnek: 2026. november 6-án kézzel ellenőrizve.
-const ROBOTTILTO = ['abt.hu', 'njt.hu'];
+// Ezek az oldalak a robotokat vagy a külföldi (GitHub) gépeket tiltják, böngészőből viszont működnek: 2026. november 6-án ellenőrizve.
+const ROBOTTILTO = ['abt.hu', 'njt.hu', 'adozona.hu', 'merkantil.hu', 'alk.mnb.hu', 'penzugyibekeltetotestulet.hu'];
 const linkek = new Map();
 (function jar(d) {
   for (const f of readdirSync(d)) {
