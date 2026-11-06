@@ -179,7 +179,7 @@ export function gyorsPanel(adat, b, k) {
   for (const g of gjk.slice(1)) {
     const d = g.fizetendo - g0.fizetendo;
     const kz = adat.tetelek.gepjarmuado[g.ev]?.kozzeteve;
-    h += tetel(`Gépjárműadó, ${g.ev}`, ftx(g.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g.ev]?.forras, al: `${d === 0 ? 'ugyanannyi, mint idén' : `${ftx(Math.abs(d))}-tal ${d < 0 ? 'kevesebb' : 'több'}, mint idén`}${kz ? `. A NAV ${datumNapon(kz)} közzétette.` : ''}`, href: k.linkek.gjado(g.ev) });
+    h += tetel(`Gépjárműadó, ${g.ev}`, ftx(g.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g.ev]?.forras, al: `${d === 0 ? 'ugyanannyi, mint idén' : `${ftx(Math.abs(d))}-tal ${d < 0 ? 'kevesebb' : 'több'}, mint idén`}${kz ? `. A tételt a NAV ${datumNapon(kz)} tette közzé.` : ''}`, href: k.linkek.gjado(g.ev) });
   }
   if (!at.hiba) h += tetel('Átírás, ha most veszed meg', ftx(at.osszesen), { forras: 'hivatalos', forrasUrl: adat.tetelek.illetek?.[k.ev]?.forras, al: at.illetek.mentes ? 'illetékmentes, csak a vizsgálat és az okmányok' : `ebből illeték ${ftx(at.illetek.osszeg)}`, href: k.linkek.atiras });
   if (!km.hiba) h += tetel('100 km hivatali út', ftx(km.osszesen), { forras: 'hivatalos', forrasUrl: adat.uzemanyag?.forras, al: `${honapBan(lf.honap)}, NAV-áron, normaköltséggel`, href: k.linkek.km });
@@ -204,12 +204,12 @@ export function automPanel(adat, b, k) {
   const km = S.kikuldetes(adat, { km: 100, uzemanyag: uz, motor: 'benzin', cm3: Number(b.cm3) || 1598, ev: lf.ev, honap: lf.honap });
   const g0 = gjk[0];
   let h = fr.hiba
-    ? vegosszeg(`Gépjárműadó, ${g0.ev}`, g0.fizetendo, 'Add meg a fogyasztást és az évi kilométert is, és a havi költséget is kiszámoljuk.')
+    ? vegosszeg(`Gépjárműadó, ${g0.ev}`, g0.fizetendo, 'Add meg a fogyasztást és az évi kilométert, és a havi költséget is kiszámoljuk.')
     : vegosszeg(b.nev ? `${esc(b.nev)}, havonta` : 'Az autód havonta', fr.havi, `Évente ${ftx(fr.ev)}, kilométerenként ${tized(fr.ftKm, 1)} Ft.`);
   h += '<ul class="tetelek">';
   for (const g of gjk) {
     const kz = adat.tetelek.gepjarmuado[g.ev]?.kozzeteve;
-    h += tetel(`Gépjárműadó, ${g.ev}`, g.mentes ? 'mentes' : ftx(g.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g.ev]?.forras, al: g === g0 ? `határidő: ${g.ev}. április 15.` : (kz ? `a NAV ${datumNapon(kz)} közzétette` : '') });
+    h += tetel(`Gépjárműadó, ${g.ev}`, g.mentes ? 'mentes' : ftx(g.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g.ev]?.forras, al: g === g0 ? `határidő: ${g.ev}. április 15.` : (kz ? `a tételt a NAV ${datumNapon(kz)} tette közzé` : '') });
   }
   if (!fr.hiba) {
     h += tetel('Tényleges kiadás havonta', ftx((fr.ev - fr.ertekvesztes) / 12), { forras: 'sajat', al: 'üzemanyag, biztosítás, szerviz, gumi, adó' });
@@ -227,7 +227,7 @@ export function uresPanel(mi) {
   return `<div class="ures"><p class="ures-cim">Itt lesz az elszámolás.</p><p>${mi}</p><ul class="tetelek ures-sorok" aria-hidden="true"><li><span></span><span></span></li><li><span></span><span></span></li><li><span></span><span></span></li></ul></div>`;
 }
 /** Felirat a minta-eredmény fölött: világos, hogy nem a látogató autója. */
-export const mintaJelzes = (leiras) => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. Add meg a saját autód adatait, és rögtön a rád vonatkozó összeget látod.</p>`;
+export const mintaJelzes = (leiras) => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. Írd be a saját autódat, és a minta helyett azzal számolunk.</p>`;
 export const hianyPanel = (uz) => `<div class="ures"><p class="ures-cim">Még egy adat hiányzik.</p><p>${esc(uz)}</p></div>`;
 
 /* ---------- Benzines vagy villany ---------- */
@@ -345,7 +345,7 @@ export function szerzodes(adat, d) {
   const dt = (iso) => (iso ? datumHu(iso) : pont('', 18));
   const fel = (p) => `<p><b>${esc(p === 'e' ? 'Eladó' : 'Vevő')}:</b> ${pont(d[p + 'Nev'])}, született ${pont(d[p + 'SzulHely'], 14)}, ${dt(d[p + 'SzulIdo'])}, anyja neve: ${pont(d[p + 'Anyja'])}, lakcím: ${pont(d[p + 'Cim'], 34)}, személyazonosító okmány száma: ${pont(d[p + 'Okmany'], 12)}.</p>`;
   return `<article class="szerzodes-lap">
-<h2>Gépjármű adásvételi szerződés</h2>
+<h2>Gépjármű-adásvételi szerződés</h2>
 <p class="kozep">amely létrejött az alábbi felek között:</p>
 ${fel('e')}${fel('v')}
 <h3>1. A szerződés tárgya</h3>

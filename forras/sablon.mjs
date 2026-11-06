@@ -187,13 +187,13 @@ export const HOL_TALALOM = `<details class="hol-talalom"><summary>Hol találom e
 </svg>
 <ul>
 <li><b>P.2:</b> a teljesítmény kilowattban. Ha csak a lóerőt tudod, válts lóerőre a mező alatt, és átszámoljuk.</li>
-<li><b>P.3:</b> a hajtóanyag. A hibrid és a plug-in hibrid megkülönböztetése az adó miatt fontos.</li>
-<li><b>Gyártási év:</b> az adó és az illeték ebből számol, nem az első forgalomba helyezésből (B). Ha a forgalmin nem találod, a törzskönyvben szerepel.</li>
+<li><b>P.3:</b> a hajtóanyag. A hibridet és a plug-in hibridet az adó miatt kérdezzük külön.</li>
+<li><b>Gyártási év:</b> az adót és az illetéket ebből számolják, nem az első forgalomba helyezés (B) dátumából. Ha a forgalmin nem találod, a törzskönyvben szerepel.</li>
 </ul></div></details>`;
 
 /** A forgalmi-kártya kerete. */
 export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = false, osztaly = '' }) {
-  const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Elfelejtem</button></div>' : '';
+  const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Törlöm</button></div>' : '';
   const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Elmentem az autómat</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
   return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${['gyors', 'gepjarmuado', 'atiras', 'fenntartas'].includes(kalk) ? HOL_TALALOM : ''}${fent}${tartalom}${lent}</form>`;
 }
