@@ -586,10 +586,10 @@ export function osszehasonlitoOldal(k) {
     { k: 'Kell gépjárműadót és illetéket fizetni villanyautó után?', v: ['Nem. A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó mentes a gépjárműadó, az átírási illeték és a cégautóadó alól is. A plug-in hibrid és a hagyományos hibrid nem mentes.'] },
     { k: 'Mennyit ér egy villanyautó 3 év múlva?', v: [`A német DAT adatai szerint 2026 nyarán a 3 éves villanyautók átlagosan az újkori listaáruk ${M.tized(m.elektromos.harom)}%-át érték, a benzinesek ${M.tized(m.benzin.harom)}%-át, a dízelek ${M.tized(m.dizel.harom)}%-át. A különbség az utóbbi egy évben szűkült. A magyar használtautó-piacon a KSH modellje szerint utána a benzinesek évente ${M.tized(m.benzin.evi)}%-ot, a villanyautók és a dízelek ${M.tized(m.elektromos.evi)}%-ot veszítenek az értékükből.`] },
   ];
-  const leiras = `Benzines vagy villanyautó? Két autó teljes költsége havonta és ${PELDA.evek} évre előre: értékvesztés, üzemanyag vagy töltés a 2523 kWh-s szabállyal, gépjárműadó, illeték, cégautóadó. Megtérülési idő és km-határ.`;
+  const leiras = `Benzines vagy elektromos autó? Két autó teljes költsége havonta és ${PELDA.evek} évre előre: értékvesztés, üzemanyag vagy töltés a 2523 kWh-s szabállyal, gépjárműadó, illeték, cégautóadó. Megtérülési idő és km-határ.`;
 
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Benzin vagy villany'], cim: 'Benzines vagy villanyautó?', bevezeto: 'Írd be a két autót. Megmutatjuk, mennyit fizetsz értük havonta, mennyibe kerülnek évek alatt az értékvesztéssel együtt, és mikor jön vissza a drágább vételár.' })}
+${oldalfej(L, { morzsa: ['Benzin vagy villany'], cim: 'Benzines vagy villanyautó?', bevezeto: 'Benzines, dízel, hibrid vagy elektromos: írd be a két autót. Megmutatjuk, mennyit fizetsz értük havonta, mennyibe kerülnek évek alatt az értékvesztéssel együtt, és mikor jön vissza a drágább vételár.' })}
 <form class="keret osszevet-urlap" data-kalk="osszevet" novalidate>
 <div class="forgalmi kozos">${''}<div class="forgalmi-fej"><h2>Hogyan használod?</h2><button class="szoveg-gomb pelda-gomb" type="button" data-pelda>Példával kipróbálom</button></div>
 <div class="sorok">
@@ -644,10 +644,10 @@ ${tovabb(L, ut)}
 </article></div>`;
 
   return oldal(k, {
-    cim: `Benzines vagy villanyautó ${aktualis}: melyik éri meg?`,
+    cim: `Benzines vagy elektromos autó ${aktualis}: melyik éri meg?`,
     leiras, ut, tartalom,
     adatJson: { tetelek: adat.tetelek, szabalyok: { maradvany: m, energia: adat.szabalyok.energia }, f: { ...f, lf: undefined }, ev: aktualis, pelda: PELDA },
-    jsonld: [alkalmazasLd(k.cfg, 'Benzines vagy villanyautó kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Benzin vagy villany', ut }])],
+    jsonld: [alkalmazasLd(k.cfg, 'Benzines vagy elektromos autó kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Benzin vagy villany', ut }])],
   });
 }
 

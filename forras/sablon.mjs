@@ -60,6 +60,8 @@ export function pecset(ma, ut = true, marka = 'autózom', link = false) {
 </svg>`;
 }
 
+/** A jel kicsiben, a menü „Az autóm” gombjához. */
+const JEL_KICSI = '<svg viewBox="30 0 150 190" aria-hidden="true"><g fill="none" stroke-width="24" stroke-linecap="round"><circle cx="100" cy="116" r="58" stroke="currentColor"/><path d="M100 116L115.8 83.6" style="stroke:var(--pecset)" stroke-width="14.4"/><circle cx="100" cy="116" r="13.2" style="fill:var(--pecset)" stroke="none"/><path d="M135.9 42.3L149.1 15.3" style="stroke:var(--pecset)"/></g></svg>';
 /** A szókép: az „ó” a számlap, benne a mutató (marka/rajz.py). */
 const LOGO = '<svg class="logo" viewBox="-8 56 820 144" role="img" aria-label="autózom"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="152" r="40"/><path d="M88 112V192"/><path d="M126 112V152A40 40 0 0 0 206 152M206 112V192"/><path d="M264 76V160A32 32 0 0 0 296 192M240 112H296"/><circle cx="368" cy="152" r="40"/><path d="M444 112H516L444 192H516"/><circle cx="590" cy="152" r="40"/><path d="M668 192V112M668 144A32 32 0 0 1 732 144V192M732 144A32 32 0 0 1 796 144V192"/><path d="M394.3 98.1L406.6 72.9" style="stroke:var(--pecset)"/><path d="M368 152L376.8 134.0" style="stroke:var(--pecset)" stroke-width="9"/><circle cx="368" cy="152" r="8" style="fill:var(--pecset)" stroke="none"/></g></svg>';
 
@@ -100,7 +102,7 @@ ${ld}
 <header class="fejlec"><div class="keret">
 <a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a>
 <button class="menu-gomb" type="button" aria-expanded="false" aria-controls="fomenu">Menü</button>
-<nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}>${m.nev}</a>`).join('')}</nav>
+<nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}${m.ut === 'autom/' ? ' class="menu-autom"' : ''}>${m.ut === 'autom/' ? JEL_KICSI : ''}${m.nev}</a>`).join('')}</nav>
 </div></header>
 <main id="tartalom">
 ${tartalom(L)}
