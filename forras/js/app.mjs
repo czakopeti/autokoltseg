@@ -14,8 +14,16 @@ const tarolo = {
 const AUTOM = 'autokoltseg-autom-v2';
 
 /* ---------- Menü ---------- */
-const mg = $('.menu-gomb'), menu = $('.menu');
-mg?.addEventListener('click', () => mg.setAttribute('aria-expanded', menu.classList.toggle('nyitva')));
+// Balról beúszó panel. A <dialog> kezeli a fókuszt és az Esc-et; a háttérre kattintva is bezárul.
+const fg = $('.fiok-gomb'), fiok = $('#fiok');
+if (fg && fiok?.showModal) {
+  const zar = () => { fiok.classList.add('zarul'); setTimeout(() => { fiok.close(); fiok.classList.remove('zarul'); }, csendes ? 0 : 180); };
+  fg.addEventListener('click', () => { fiok.showModal(); fg.setAttribute('aria-expanded', 'true'); });
+  fiok.addEventListener('close', () => { fg.setAttribute('aria-expanded', 'false'); fg.focus(); });
+  $('.fiok-zar', fiok)?.addEventListener('click', zar);
+  fiok.addEventListener('click', (ev) => { if (ev.target === fiok) zar(); });
+  fiok.addEventListener('cancel', (ev) => { ev.preventDefault(); zar(); });
+}
 
 /* ---------- Űrlap-segédek ---------- */
 function ertekek(form) {

@@ -41,3 +41,13 @@ test('cégautóadó-tábla', () => {
   assert.equal(c.ev, 2027);
   assert.deepEqual(c.tabla[3], [102000, 77000, 51500]);
 });
+
+import { esedekesek, utolsoEsedekesseg } from '../frissito/karbantartas.mjs';
+test('karbantartás: éves és egyszeri esedékesség', () => {
+  assert.equal(utolsoEsedekesseg('--12-01', '2026-11-06'), '2025-12-01');
+  assert.equal(utolsoEsedekesseg('--12-01', '2026-12-01'), '2026-12-01');
+  assert.equal(utolsoEsedekesseg('2027-01-05', '2026-11-06'), null);
+  const k = { teendok: [{ id: 'a', mikor: '--12-01', utoljara: '2026-11-06' }, { id: 'b', mikor: '2026-11-01', utoljara: null }, { id: 'c', mikor: '2026-11-01', utoljara: '2026-11-02' }] };
+  assert.deepEqual(esedekesek(k, '2026-11-06').map((t) => t.id), ['b']);
+  assert.deepEqual(esedekesek(k, '2026-12-02').map((t) => t.id), ['a', 'b']);
+});

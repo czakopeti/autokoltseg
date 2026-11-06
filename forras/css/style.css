@@ -73,7 +73,6 @@ p { margin: 0; }
 .menu a { text-decoration: none; font-size: 15.5px; font-weight: 600; color: var(--tinta2); padding: 6px 0; border-bottom: 2px solid transparent; }
 .menu a:hover { color: var(--tinta); }
 .menu a[aria-current="page"] { color: var(--tinta); border-bottom-color: var(--tinta); }
-.menu-gomb { display: none; }
 
 /* ---------- Hős / oldalfej ---------- */
 .oldalfej { padding-block: 64px 44px; display: grid; gap: 20px; }
@@ -355,10 +354,6 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
   body { font-size: 16.5px; }
   .keret { padding: 0 18px; }
   .fejlec .keret { min-height: 62px; }
-  .menu { position: fixed; inset: 62px 0 auto 0; z-index: 30; flex-direction: column; gap: 0; background: var(--papir); border-bottom: 2px solid var(--tinta); padding: 6px 18px 14px; display: none; }
-  .menu.nyitva { display: flex; }
-  .menu a { padding: 12px 0; font-size: 17px; border-bottom: 1px solid var(--vonal); }
-  .menu-gomb { display: inline-flex; margin-left: auto; font: inherit; font-weight: 600; font-size: 15px; background: none; border: 1.5px solid var(--tinta); color: var(--tinta); border-radius: 4px; padding: 6px 12px; }
   .oldalfej, .oldalfej.fo { padding-block: 40px 30px; }
   .forgalmi, .elszamolas { padding: 22px 18px; }
   .forgalmi { border-radius: 14px; }
@@ -493,7 +488,6 @@ a.jel:hover { text-decoration: underline; }
 .menu a.menu-autom:hover { background: var(--lap); }
 .menu a.menu-autom[aria-current="page"] { background: var(--tinta); color: var(--lap); border-bottom-color: var(--tinta); }
 .menu a.menu-autom[aria-current="page"] svg { color: var(--lap); }
-@media (max-width: 640px) { .menu a.menu-autom { border-radius: 6px; padding: 12px 14px; margin: 10px 0 0; justify-content: flex-start; } }
 .menu a.menu-autom svg { width: 17px; height: 17px; }
 /* Szlogen a logó alatt */
 .marka-blokk { display: flex; flex-direction: column; gap: 5px; padding-block: 10px; }
@@ -508,11 +502,6 @@ a.jel:hover { text-decoration: underline; }
 }
 @media (max-width: 860px) {
   .fejlec .keret { min-height: 62px; }
-  .menu { position: fixed; inset: 62px 0 auto 0; z-index: 30; flex-direction: column; gap: 0; background: var(--papir); border-bottom: 2px solid var(--tinta); padding: 6px 18px 14px; display: none; }
-  .menu.nyitva { display: flex; }
-  .menu a { padding: 12px 0; font-size: 17px; border-bottom: 1px solid var(--vonal); }
-  .menu-gomb { display: inline-flex; margin-left: auto; font: inherit; font-weight: 600; font-size: 15px; background: none; border: 1.5px solid var(--tinta); color: var(--tinta); border-radius: 4px; padding: 6px 12px; }
-  .menu a.menu-autom { border-radius: 6px; padding: 12px 14px; margin: 10px 0 0; justify-content: flex-start; }
 }
 
 /* „Válasz elöl”: a cím kérdésére felelő első bekezdés, utána a bevezető és a frissesség */
@@ -557,3 +546,34 @@ a.jel:hover { text-decoration: underline; }
 .idovonal .kit { font-size: 14.5px; color: var(--tinta2); margin-top: 3px; }
 @media (max-width: 560px) { .idovonal li { grid-template-columns: minmax(0, 1fr); } }
 .forgalmi.atvalto .ket .sor { border-top: 0; }
+
+/* ---------- Balról beúszó menü ---------- */
+.fiok-gomb { display: inline-flex; align-items: center; gap: 7px; font: inherit; font-weight: 600; font-size: 14.5px; color: var(--tinta); background: none; border: 1.5px solid var(--tinta); border-radius: 8px; padding: 6px 12px 6px 9px; cursor: pointer; flex-shrink: 0; }
+.fiok-gomb svg { width: 20px; height: 20px; }
+.fiok-gomb:hover { background: var(--lap); }
+.fejlec .keret { gap: 22px; }
+.fiok { position: fixed; inset: 0 auto 0 0; margin: 0; width: min(380px, 88vw); max-width: none; height: 100dvh; max-height: none; padding: 0; border: 0; border-right: 2px solid var(--tinta); background: var(--papir); color: var(--tinta); overflow-y: auto; overscroll-behavior: contain; transform: translateX(0); transition: transform .2s ease, display .2s allow-discrete, overlay .2s allow-discrete; }
+.fiok::backdrop { background: rgb(15 28 24 / .38); transition: background .2s, display .2s allow-discrete, overlay .2s allow-discrete; }
+@starting-style { .fiok[open] { transform: translateX(-100%); } .fiok[open]::backdrop { background: rgb(15 28 24 / 0); } }
+.fiok.zarul { transform: translateX(-100%); }
+.fiok.zarul::backdrop { background: rgb(15 28 24 / 0); }
+@media (prefers-reduced-motion: reduce) { .fiok, .fiok::backdrop { transition: none; } }
+.fiok-fej { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--vonal); position: sticky; top: 0; background: var(--papir); }
+.fiok-fej .logo { height: 26px; width: auto; }
+.fiok-zar { font: inherit; font-size: 18px; line-height: 1; width: 38px; height: 38px; border-radius: 8px; border: 1.5px solid var(--tinta); background: none; color: var(--tinta); cursor: pointer; }
+.fiok nav { padding: 6px 20px 28px; }
+.fiok h2 { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: var(--tinta2); margin: 20px 0 6px; }
+.fiok ul { list-style: none; margin: 0; padding: 0; }
+.fiok li a { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; margin: 0 -10px; border-radius: 8px; text-decoration: none; color: var(--tinta); }
+.fiok li a:hover { background: var(--lap); }
+.fiok li a[aria-current="page"] { background: var(--lap); box-shadow: inset 3px 0 0 var(--tinta); }
+.fiok li a b { display: block; font-size: 16px; font-weight: 700; }
+.fiok li a small { display: block; font-size: 13.5px; color: var(--tinta2); margin-top: 2px; line-height: 1.35; }
+.fiok li a svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.fiok-autom b { color: var(--tinta); }
+@media (max-width: 960px) {
+  .menu { margin-left: auto; gap: 0; }
+  .menu a:not(.menu-autom) { display: none; }
+  .fejlec .keret { gap: 14px; }
+}
+@media (max-width: 420px) { .fiok-gomb span { display: none; } .fiok-gomb { padding: 7px; } .menu a.menu-autom { padding: 5px 11px 5px 8px; font-size: 14px; } }

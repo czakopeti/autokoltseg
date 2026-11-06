@@ -1,0 +1,86 @@
+{
+  "leiras": "A kézi teendők naptára. Amit a napi futás magától frissít (NAV-üzemanyagár, gépjárműadó, regisztrációs adó, cégautóadó), az nincs itt. A 'mikor' teljes dátum (egyszeri) vagy '--HH-NN' (minden évben). Ha elvégezted, írd az 'utoljara' mezőbe a napot: a jelzés addig marad nyitva.",
+  "teendok": [
+    {
+      "id": "matrica-dijak",
+      "mikor": "--12-01",
+      "mit": "A következő évi e-matrica díjai",
+      "hol": "data/szabalyok.json → matrica (ev, d1, potdij)",
+      "forras": "https://ematrica.nemzetiutdij.hu/",
+      "hogyan": "Decemberben jelennek meg. Írd át a díjakat és az évet, a kalkulátor és a táblázat magától követi.",
+      "utoljara": "2026-11-06"
+    },
+    {
+      "id": "jogszabalyi-dijak",
+      "mikor": "--01-10",
+      "mit": "Okmánydíjak, eredetiségvizsgálat, kilométertérítés (normaköltség, munkába járás), mozgáskorlátozott-kedvezmény",
+      "hol": "data/szabalyok.json → okmanyok, km; data/tetelek.json → gepjarmuado_mozgaskorlatozott",
+      "forras": "https://nav.gov.hu/",
+      "hogyan": "Év elején változhatnak. Ha egyik sem változott, csak írd be a mai napot.",
+      "utoljara": "2026-11-06"
+    },
+    {
+      "id": "eredetiseg-forras",
+      "mikor": "2026-11-06",
+      "mit": "Az eredetiségvizsgálat átlagárának forrása",
+      "hol": "data/szabalyok.json → okmanyok.eredetisegvizsgalat_*",
+      "forras": null,
+      "hogyan": "Most becslésként jelöljük. Keress rá forrást (vizsgálóállomások árlistái), és írd be a forrást.",
+      "utoljara": null
+    },
+    {
+      "id": "hitel-hfm",
+      "mikor": "2026-11-06",
+      "mit": "Az MNB hitelfedezeti korlátja autóhitelnél (75%) és lízingnél (80%)",
+      "hol": "data/szabalyok.json → hitel",
+      "forras": "https://www.mnb.hu/",
+      "hogyan": "A mostani forrás egy 2015-ös cikk. Ellenőrizd az MNB hatályos rendeletében, és cseréld a forrást.",
+      "utoljara": null
+    },
+    {
+      "id": "budapest-parkolas",
+      "mikor": "2026-12-15",
+      "mit": "Budapest: tényleg megszűnik január 1-jén a zöld rendszámos autók ingyenes parkolása?",
+      "hol": "data/szabalyok.json → phev.budapest_ingyenes_parkolas_vege; a plug-in hibrid oldal szövegei",
+      "forras": "https://budapest.hu/",
+      "hogyan": "Októberben egy kedvezményes javaslat nem ment át, csak tanulmány készül. Ha decemberig mégis döntenek, módosítsd a szöveget.",
+      "utoljara": null
+    },
+    {
+      "id": "phev-multido",
+      "mikor": "2027-01-05",
+      "mit": "A plug-in hibrid oldal szövegei a határidők után",
+      "hol": "forras/oldalak.mjs → phevOldal",
+      "forras": null,
+      "hogyan": "A rendszámcsere és a mentesség már lejárt: a kérdéseket és a bevezetőt tedd múlt időbe, a cím lehet „Mennyit fizet egy plug-in hibrid 2027-ben?”.",
+      "utoljara": null
+    },
+    {
+      "id": "energia-arak",
+      "mikor": "--01-15",
+      "mit": "Áramár (rezsicsökkentett és piaci sáv) és töltőár",
+      "hol": "data/szabalyok.json → energia",
+      "forras": "https://www.mvmnext.hu/",
+      "hogyan": "Ha változott, írd át az árakat és a forrás időszakát.",
+      "utoljara": "2026-11-06"
+    },
+    {
+      "id": "energia-arak-nyar",
+      "mikor": "--07-15",
+      "mit": "Áramár és töltőár, félévi ellenőrzés",
+      "hol": "data/szabalyok.json → energia",
+      "forras": "https://www.mvmnext.hu/",
+      "hogyan": "Ha változott, írd át az árakat és a forrás időszakát.",
+      "utoljara": "2026-11-06"
+    },
+    {
+      "id": "ertekvesztes",
+      "mikor": "--10-01",
+      "mit": "Értékvesztés hajtás szerint (DAT 3 éves maradványérték, KSH éves csökkenés)",
+      "hol": "data/szabalyok.json → maradvany",
+      "forras": "https://www.ksh.hu/",
+      "hogyan": "Évente egyszer frissülnek. Írd át a százalékokat és a források időszakát.",
+      "utoljara": "2026-11-06"
+    }
+  ]
+}

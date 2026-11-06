@@ -11,6 +11,33 @@ export const MENU = [
   { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
   { ut: 'autom/', nev: 'Az autóm' },
 ];
+/** A balról beúszó menü: minden oldal, csoportosítva, egy rövid mondattal. */
+export const FIOK = [
+  { cim: 'Adók és díjak', elemek: [
+    ['gepjarmuado-kalkulator/', 'Gépjárműadó', 'Mennyit fizetsz idén és jövőre'],
+    ['atirasi-illetek-kalkulator/', 'Átírás', 'Illeték, vizsgálat, okmányok'],
+    ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027', 'Lejár a mentesség, cserélni kell a rendszámot'],
+    ['autopalya-matrica-kalkulator/', 'Autópálya-matrica', 'Melyik matrica a legolcsóbb neked'],
+    ['kilometerterites-kalkulator/', 'Kilométertérítés', 'Hivatali út és munkába járás'],
+  ] },
+  { cim: 'Vásárlás és fenntartás', elemek: [
+    ['benzin-vagy-villany/', 'Benzin vagy villany', 'Két autó teljes költsége, megtérülés'],
+    ['autofenntartas-kalkulator/', 'Fenntartás', 'Mennyibe kerül havonta az autód'],
+    ['autohitel-kalkulator/', 'Autóhitel', 'Törlesztő és az autó valódi költsége'],
+    ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés', 'Kitölthető, nyomtatható minta'],
+  ] },
+  { cim: 'Eszközök', elemek: [
+    ['autom/', 'Az autóm', 'A mentett autód minden költsége egy lapon'],
+    ['le-kw-atvaltas/', 'LE–kW átváltás', 'Hány kW egy lóerő'],
+  ] },
+  { cim: 'Az oldalról', elemek: [
+    ['forrasok/', 'Honnan vannak a számok?', ''],
+    ['valtozasok/', 'Mi változott?', ''],
+    ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
+  ] },
+];
+const HAMBURGER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
 /** Kalkulátorok, amelyek nem férnek a fő menübe: a láblécben és a főoldalon vannak. */
 export const TOBB_KALK = [
   { ut: 'plug-in-hibrid-2027/', nev: 'Plug-in hibrid 2027' },
@@ -121,10 +148,14 @@ ${ld}
 <body>
 <a class="ugras" href="#tartalom">Ugrás a tartalomra</a>
 <header class="fejlec"><div class="keret">
+<button class="fiok-gomb" type="button" aria-haspopup="dialog" aria-controls="fiok" aria-expanded="false">${HAMBURGER}<span>Menü</span></button>
 <div class="marka-blokk"><a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a><p class="szlogen">Az autód. A költségeid. A döntéseid.</p></div>
-<button class="menu-gomb" type="button" aria-expanded="false" aria-controls="fomenu">Menü</button>
 <nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}${m.ut === 'autom/' ? ' class="menu-autom"' : ''}>${m.ut === 'autom/' ? JEL_KICSI : ''}${m.nev}</a>`).join('')}</nav>
 </div></header>
+<dialog class="fiok" id="fiok" aria-label="Minden oldal">
+<div class="fiok-fej"><a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a><button class="fiok-zar" type="button" aria-label="Menü bezárása">✕</button></div>
+<nav aria-label="Minden oldal">${FIOK.map((cs) => `<h2>${cs.cim}</h2><ul>${cs.elemek.map(([u, n, d]) => `<li><a href="${L.l(u)}"${u === ut ? ' aria-current="page"' : ''}${u === 'autom/' ? ' class="fiok-autom"' : ''}>${u === 'autom/' ? JEL_KICSI : ''}<span><b>${n}</b>${d ? `<small>${d}</small>` : ''}</span></a></li>`).join('')}</ul>`).join('')}</nav>
+</dialog>
 <main id="tartalom">
 ${tartalom(L)}
 </main>

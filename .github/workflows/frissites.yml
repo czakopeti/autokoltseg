@@ -11,6 +11,7 @@ on:
     paths: ["forras/**", "data/**", "epit.mjs", "config.json", "tesztek/**"]
 permissions:
   contents: write
+  issues: write
 concurrency:
   group: frissites
   cancel-in-progress: false
@@ -45,6 +46,21 @@ jobs:
             sleep 10
           done
           exit 1
+      - name: Karbantartási jelzés (GitHub-issue, e-mail értesítéssel)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node frissito/karbantartas.mjs jelentes.md
+          gh label create karbantartas --color B3261E --description "Az oldal kézi teendői" 2>/dev/null || true
+          SZAM=$(gh issue list --label karbantartas --state open --json number --jq '.[0].number')
+          if [ -s jelentes.md ]; then
+            if [ -n "$SZAM" ]; then gh issue edit "$SZAM" --body-file jelentes.md
+            else gh issue create --title "Karbantartás: frissítendő adatok" --label karbantartas --body-file jelentes.md; fi
+          elif [ -n "$SZAM" ]; then
+            gh issue close "$SZAM" --comment "Minden teendő elvégezve, a napi ellenőrzés rendben."
+          fi
       - name: Jelzés, ha a NAV-ellenőrzés hibát talált
         if: steps.nav.outcome == 'failure'
         run: |
