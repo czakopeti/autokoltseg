@@ -20,6 +20,8 @@ export function datumNapon(iso) {
   const rg = n === 1 || n === 21 || n === 31 ? 'jén' : [20, 30].includes(n) ? 'án' : [3, 6, 8].includes(d) ? 'án' : 'én';
   return `${e}. ${S.HONAPOK[h - 1]} ${n}-${rg}`;
 }
+/** „2026. november 30-ig” */
+export const datumIg = (iso) => datumHu(iso).replace(/\.$/, '-ig');
 export function datumRomai(iso) {
   const [, h, n] = iso.slice(0, 10).split('-').map(Number);
   return `${ROMAI[h - 1]} ${n}.`;
@@ -228,7 +230,7 @@ export function uresPanel(mi) {
   return `<div class="ures"><p class="ures-cim">Itt lesz az elszámolás.</p><p>${mi}</p><ul class="tetelek ures-sorok" aria-hidden="true"><li><span></span><span></span></li><li><span></span><span></span></li><li><span></span><span></span></li></ul></div>`;
 }
 /** Felirat a minta-eredmény fölött: világos, hogy nem a látogató autója. */
-export const mintaJelzes = (leiras) => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. Írd be a saját autódat, és a minta helyett azzal számolunk.</p>`;
+export const mintaJelzes = (leiras, kerd = 'Írd be a saját autódat, és a minta helyett azzal számolunk.') => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. ${esc(kerd)}</p>`;
 export const hianyPanel = (uz) => `<div class="ures"><p class="ures-cim">Még egy adat hiányzik.</p><p>${esc(uz)}</p></div>`;
 
 /* ---------- Benzines vagy villany ---------- */
@@ -370,3 +372,64 @@ ${fel('e')}${fel('v')}
 </article>`;
 }
 function betuvelElso(n) { return S.betuvel(n); }
+
+/* ---------- Plug-in hibrid 2027 ---------- */
+export function phevPanel(adat, r, ma = '') {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const p = adat.szabalyok.phev, [a, c] = r.evek;
+  const gjUrl = (ev) => adat.tetelek.gepjarmuado[ev]?.forras;
+  const cegUrl = adat.tetelek.cegautoado?.[2027]?.forras;
+  let h = vegosszeg('2027-től évente', r.ev2027, r.ev2027 === r.kulonbseg && r.kulonbseg > 0 ? 'Ez mind új kiadás: 2026-ban ezekért nem fizettél.' : r.kulonbseg > 0 ? `Ez ${ftx(r.kulonbseg)}-tal több, mint amennyit 2026-ban rendszeresen fizettél.` : 'Ugyanannyi, mint 2026-ban.');
+  h += '<ul class="tetelek">';
+  h += tetel('Gépjárműadó, 2027', ftx(c.gj.fizetendo), { forras: 'hivatalos', forrasUrl: gjUrl(2027), al: `${fmt(r.kw)} kW × ${c.gj.ftKw} Ft/kW. 2026-ban ${a.gj.mentes ? 'mentes' : ftx(a.gj.fizetendo)}` });
+  if (r.ceges) h += tetel('Cégautóadó, 2027', ftx(c.ceg), { forras: 'hivatalos', forrasUrl: cegUrl, al: `havi ${ftx(c.cegHavi)} × 12, a gépjárműadóval csökkentve. 2026-ban ${a.cegMentes ? 'mentes' : ftx(a.ceg)}` });
+  if (r.zold && r.park) h += tetel('Parkolás Budapesten, 2027', ftx(c.parkolas), { forras: 'sajat', al: `havi ${ftx(r.park)}. A rendszámcsere után, 2026 decemberétől már fizetős` });
+  h += tetel('Évente összesen', ftx(r.ev2027), { cls: 'vegso' });
+  h += '</ul>';
+  if (r.zold) {
+    h += '<ul class="tetelek masodik">';
+    h += tetel('Rendszámcsere, egyszer', ftx(p.rendszam_uj_karakter_ft), { forras: 'hivatalos', forrasUrl: p.forrasok[1]?.url, al: `új karakterekkel. Ha a régi rendszámot tartod meg, ${ftx(p.rendszam_azonos_karakter_ft)}` });
+    h += '</ul>';
+  }
+  h = jelekkel(h);
+  if (r.zold && (!ma || ma <= p.rendszam_hatarido)) h += megjegyzes(`A zöld rendszámot ${datumIg(p.rendszam_hatarido)} le kell cserélni fehérre. Utána az autóval zöld rendszámmal nem lehet közlekedni.`, 'figyelem');
+  if (r.regi) h += megjegyzes('A 2025 előtt forgalomba helyezett plug-in hibridek adómentessége 2026. december 31-én lejár. 2027-ben a NAV márciusban küldi az első határozatot, a befizetés határideje április 15.');
+  return h;
+}
+
+/* ---------- Autópálya-matrica ---------- */
+export function matricaPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const m = adat.szabalyok.matrica, d = m.d1;
+  let h = vegosszeg('Neked ez a legolcsóbb', r.legjobb.ft, `${esc(r.legjobb.nev)}. ${r.megtakaritas > 0 ? `${ftx(r.megtakaritas)}-tal olcsóbb, mint a másik lehetőség.` : 'A két lehetőség ugyanannyiba kerül.'}`);
+  h += '<ul class="tetelek">';
+  for (const l of r.lehetosegek) h += tetel(esc(l.nev), ftx(l.ft), { forras: 'hivatalos', forrasUrl: m.forrasok[0]?.url, al: esc(l.al), cls: l === r.legjobb ? 'kiemelt-sor' : '' });
+  h += '</ul>';
+  h = jelekkel(h);
+  h += `<p class="igy">Az éves országos matrica (${ftx(d.eves)}) akkor éri meg, ha egy évben legalább <strong>${r.hatar.napi} napi</strong>, <strong>${r.hatar.tiznapos} tíznapos</strong> vagy <strong>${r.hatar.havi} havi</strong> matricát vennél helyette, vagy ha <strong>${r.hatar.varmegyei} vármegyében</strong> autópályázol rendszeresen.</p>`;
+  h += megjegyzes(`${m.ev}-es díjakkal számolunk. A következő évi díjakat még nem tették közzé, de a ${m.ev}-es éves matrica ${m.eves_ervenyes} érvényes.`);
+  return h;
+}
+
+/* ---------- Autóvásárlás hitelből ---------- */
+export function hitelPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const h0 = adat.szabalyok.hitel;
+  let h = vegosszeg('Havi törlesztőrészlet', r.havi, `${tized(r.evek, 1)} évig, ${tized(r.thm, 2)}% THM-mel. Összesen ${ftx(r.visszafizet)}-ot fizetsz vissza.`);
+  h += '<ul class="tetelek">';
+  h += tetel('Vételár', ftx(r.ar), { forras: 'sajat' });
+  h += tetel('Önerő', `−${ftx(r.onero)}`, { cls: 'levonas', forras: 'sajat', al: `a vételár ${tized(100 - r.hfm, 0)}%-a` });
+  h += tetel('Hitelösszeg', ftx(r.hitel), { al: `a vételár ${tized(r.hfm, 0)}%-a` });
+  h += tetel('Kamat és díjak a futamidő alatt', ftx(r.kamat), { forras: 'sajat', al: `${r.honapok} × ${ftx(r.havi)} − a hitelösszeg` });
+  h += '</ul>';
+  h += '<ul class="tetelek masodik">';
+  h += tetel('Önerő és törlesztők', ftx(r.onero + r.visszafizet));
+  if (r.atirasFt) h += tetel('Átírás', ftx(r.atirasFt), { forras: 'hivatalos', forrasUrl: adat.tetelek.illetek?.[r.at?.illetek?.ev]?.forras, al: 'illeték, vizsgálat, okmányok' });
+  if (r.ertekVeg != null) h += tetel(`Amennyit az autó ${tized(r.evek, 1)} év múlva ér`, `−${ftx(r.ertekVeg)}`, { cls: 'levonas', forras: 'becsles', al: 'átlagos értékvesztéssel' });
+  h += tetel(r.ertekVeg != null ? 'Az autó valódi költsége a futamidő alatt' : 'Összesen', ftx(r.valodi), { cls: 'vegso', al: r.ertekVeg != null ? `havonta nagyjából ${ftx(r.valodiHavi)}, üzemanyag és biztosítás nélkül` : '' });
+  h += '</ul>';
+  h = jelekkel(h);
+  if (r.hfmTul) h += megjegyzes(`A hitel a vételár ${tized(r.hfm, 0)}%-a. Az MNB szabálya szerint forintban felvett autóhitelnél ez legfeljebb ${h0.hfm_hitel}%, ${r.hfmLizingTul ? `pénzügyi lízingnél ${h0.hfm_lizing}% lehet. Ehhez több önerő kell.` : `pénzügyi lízingnél ${h0.hfm_lizing}%. Hitelhez több önerő kell, lízinggel ennyi is elég lehet.`}`, 'figyelem');
+  if (r.ertekVeg == null) h += megjegyzes('Add meg a gyártási évet is, és megmutatjuk, mennyit ér az autó a futamidő végén, és mennyibe kerül valójában.');
+  return h;
+}

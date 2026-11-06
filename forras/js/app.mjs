@@ -126,6 +126,9 @@ const MINTAK = {
   munka: { adat: { tav: '18', napok: '20' }, leiras: 'napi 18 km-es út, havi 20 munkanap' },
   autom: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
   fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
+  phev: { adat: { kw: '135', gyartasiEv: '2022', regi: true, zold: true, parkolasHavi: '15000' }, leiras: 'egy 2022-es, 135 kW-os, zöld rendszámos plug-in hibrid, amellyel havonta 15 000 forint parkolást spórolsz Budapesten' },
+  matrica: { adat: { napi: '3', tiznapos: '1', varmegyek: '1' }, leiras: 'évente három egynapos és egy tíznapos út, és rendszeres autópályázás egy vármegyében', kerd: 'Írd be a saját útjaidat, és a minta helyett azzal számolunk.' },
+  hitel: { adat: { ar: '6000000', onero: '1500000', evek: '5', thm: '11,9', kw: '110', gyartasiEv: '2021', hajtas: 'benzin' }, leiras: 'egy 6 millió forintos, 2021-es benzines autó 1,5 millió önerővel, 5 évre, 11,9% THM-mel', kerd: 'Írd be a saját autódat és a bank ajánlatát, és a minta helyett azzal számolunk.' },
 };
 let mintaMutat = false;
 function mintaval(tipus, adat, e, form) {
@@ -137,7 +140,7 @@ function mintaval(tipus, adat, e, form) {
   be.__minta = true;
   const html = KALK[tipus](adat, be, form);
   mintaMutat = true;
-  return M.mintaJelzes(m.leiras) + html;
+  return M.mintaJelzes(m.leiras, m.kerd) + html;
 }
 function mintaOsszevet(adat) {
   const p = adat.pelda, be = { km: String(p.km), evek: String(p.evek) };
@@ -217,6 +220,21 @@ const KALK = {
     return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r, e);
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),
+  phev: (adat, e) => {
+    if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('phev', adat, e);
+    const r = S.phev(adat, { kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), regi: !!e.regi, zold: !!e.zold, ceges: !!e.ceges, parkolasHavi: szam(e.parkolasHavi) });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.phevPanel(adat, r, adat.ma);
+  },
+  matrica: (adat, e) => {
+    if (ures(e, ['napi', 'tiznapos', 'havi', 'varmegyek'])) return mintaval('matrica', adat, e);
+    const r = S.matrica(adat, { napi: szam(e.napi), tiznapos: szam(e.tiznapos), havi: szam(e.havi), varmegyek: szam(e.varmegyek), m1: !!e.m1 });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.matricaPanel(adat, r);
+  },
+  hitel: (adat, e) => {
+    if (ures(e, ['ar', 'onero', 'evek', 'thm'])) return mintaval('hitel', adat, e);
+    const r = S.autohitel(adat, { ar: szam(e.ar), onero: szam(e.onero), evek: szam(e.evek), thm: e.thm === '' ? '' : szam(e.thm), kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: e.hajtas || 'benzin', ev: adat.ev, datum: adat.ma });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.hitelPanel(adat, r);
+  },
   autom: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('autom', adat, e);
     const h = e.hajtas || 'benzin';
@@ -301,11 +319,27 @@ function grafikonSugo(panel, adat) {
   svg.addEventListener('pointerleave', el);
 }
 
+/* ---------- LE–kW átváltó: a két mező egymást frissíti ---------- */
+function lekw(form) {
+  const le = form.elements.le, kw = form.elements.kwAt, ki = $('[data-lekw-ki]');
+  const tiz = (x) => new Intl.NumberFormat('hu-HU', { maximumFractionDigits: 1 }).format(x);
+  const ir = (forras) => {
+    const v = szam(forras.value);
+    if (!(v > 0)) { (forras === le ? kw : le).value = ''; if (ki) ki.textContent = ''; return; }
+    if (forras === le) { kw.value = String(Math.round(v * 0.73549875 * 10) / 10).replace('.', ','); if (ki) ki.innerHTML = `${tiz(v)} lóerő = <b>${tiz(v * 0.73549875)} kW</b>. Kerekítve ${Math.round(v / 1.35962)} kW.`; }
+    else { le.value = String(Math.round(v * 1.35962 * 10) / 10).replace('.', ','); if (ki) ki.innerHTML = `${tiz(v)} kW = <b>${tiz(v * 1.35962)} lóerő</b>.`; }
+  };
+  le.addEventListener('input', () => ir(le));
+  kw.addEventListener('input', () => ir(kw));
+  form.addEventListener('submit', (ev) => ev.preventDefault());
+}
+
 /* ---------- Indítás ---------- */
 function indit() {
   const form = $('form[data-kalk]');
   if (!form) return;
   const tipus = form.dataset.kalk;
+  if (tipus === 'lekw') return lekw(form);
   const adat = JSON.parse($('#adat').textContent);
   const panel = $('.elsz-tartalom') || $('.szerzodes-elonezet');
   const u = tipus === 'gyors' || tipus === 'autom' ? null : urlbol();

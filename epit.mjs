@@ -52,10 +52,15 @@ const oldalak = [
   ['kilometerterites-kalkulator/', O.kmOldal(k)],
   ['benzin-vagy-villany/', O.osszehasonlitoOldal(k)],
   ['autofenntartas-kalkulator/', O.fenntartasOldal(k)],
+  ['plug-in-hibrid-2027/', O.phevOldal(k)],
+  ['autohitel-kalkulator/', O.hitelOldal(k)],
+  ['autopalya-matrica-kalkulator/', O.matricaOldal(k)],
+  ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
   ['autom/', O.automOldal(k)],
   ['forrasok/', O.forrasokOldal(k)],
   ['valtozasok/', O.valtozasokOldal(k)],
+  ['rolunk/', O.rolunkOldal(k)],
   ['impresszum/', O.impresszumOldal(k)],
   ['adatvedelem/', O.adatvedelemOldal(k)],
 ];
@@ -105,6 +110,10 @@ https://:version.:project.pages.dev/*
 - [Benzines vagy elektromos autó](${cfg.domain}/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
 - [Fenntartás](${cfg.domain}/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
 - [Kilométertérítés](${cfg.domain}/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap), fogyasztási norma, munkába járás
+- [Plug-in hibrid 2027](${cfg.domain}/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
+- [Autóhitel](${cfg.domain}/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt
+- [Autópálya-matrica](${cfg.domain}/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (${adat.szabalyok.matrica.ev}. évi díjak)
+- [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
 - [Adásvételi szerződés](${cfg.domain}/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
 
@@ -112,6 +121,7 @@ https://:version.:project.pages.dev/*
 
 - [Honnan vannak a számok?](${cfg.domain}/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
 - [Mi változott?](${cfg.domain}/valtozasok/): az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel
+- [Rólunk és szerkesztői elvek](${cfg.domain}/rolunk/): független, ingyenes, forrással; mi hivatalos, mi saját adat, mi becslés
 `);
 }
 

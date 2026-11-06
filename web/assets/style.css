@@ -534,3 +534,26 @@ a.jel:hover { text-decoration: underline; }
   .oldalfej:has(.valasz) h1 { font-size: 30px; }
   .oldalfej .valasz { font-size: 16px; }
 }
+
+/* ---------- Új kalkulátorok (plug-in hibrid, matrica, hitel, LE–kW) ---------- */
+.megjegyzes.figyelem { border-left-color: var(--pecset); }
+.tetelek li.kiemelt-sor > span:first-child { font-weight: 700; }
+.tetelek li.kiemelt-sor .ossz-ertek { color: var(--pecset); }
+.tetelek.masodik { margin-top: 6px; border-top: 2px solid var(--tinta); }
+.hatarido-sav { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; justify-content: space-between; padding: 16px 20px; border: 2px solid var(--pecset); border-radius: 10px; background: var(--lap); }
+.hatarido-sav p { margin: 0; max-width: 64ch; line-height: 1.5; }
+.hatarido-sav a { font-weight: 700; white-space: nowrap; color: var(--pecset); }
+.forgalmi.atvalto { max-width: 720px; }
+.forgalmi.atvalto .ket { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 24px; }
+.atvalto-ki { min-height: 1.6em; margin: 6px 0 10px; font-size: 17px; position: relative; }
+@media (max-width: 560px) { .forgalmi.atvalto .ket { grid-template-columns: minmax(0, 1fr); } }
+.idovonal { list-style: none; margin: 18px 0 8px; padding: 0; border-left: 2px solid var(--tinta); }
+.idovonal li { display: grid; grid-template-columns: 11em minmax(0, 1fr); gap: 4px 20px; padding: 12px 0 12px 20px; position: relative; }
+.idovonal li::before { content: ''; position: absolute; left: -7px; top: 18px; width: 12px; height: 12px; border-radius: 50%; background: var(--papir); border: 2px solid var(--tinta); }
+.idovonal li.kozel::before { background: var(--pecset); border-color: var(--pecset); }
+.idovonal li.kozel time { color: var(--pecset); }
+.idovonal time { font-weight: 700; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.idovonal p { margin: 0; }
+.idovonal .kit { font-size: 14.5px; color: var(--tinta2); margin-top: 3px; }
+@media (max-width: 560px) { .idovonal li { grid-template-columns: minmax(0, 1fr); } }
+.forgalmi.atvalto .ket .sor { border-top: 0; }

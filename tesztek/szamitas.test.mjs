@@ -91,3 +91,39 @@ test('munkába járás', () => {
   const r = S.munkabaJaras(adat, { km: 25, napok: 20 });
   assert.equal(r.havi, 30000); assert.equal(r.eves, 360000);
 });
+
+test('plug-in hibrid: 2027-ben lejár a mentesség', () => {
+  const r = S.phev(adat, { kw: 100, gyartasiEv: 2022, regi: true, zold: true, ceges: true, parkolasHavi: 20000 });
+  const [a, c] = r.evek;
+  assert.equal(a.gj.fizetendo, 0);
+  assert.equal(a.cegMentes, true);
+  assert.equal(a.egyszeri, 18060);
+  assert.equal(a.parkolas, 20000); // 2026 decembere
+  assert.equal(c.gj.fizetendo, 100 * adat.tetelek.gepjarmuado[2027].savok[1]);
+  assert.equal(c.ceg, 25500 * 12 - c.gj.fizetendo);
+  assert.equal(r.ev2027, c.gj.fizetendo + c.ceg + 240000);
+  // 2025 után forgalomba helyezett: már 2026-ban is fizet
+  assert.ok(S.phev(adat, { kw: 100, gyartasiEv: 2025, regi: false }).evek[0].gj.fizetendo > 0);
+});
+
+test('autópálya-matrica: a legolcsóbb kombináció', () => {
+  const d = adat.szabalyok.matrica.d1;
+  const r = S.matrica(adat, { napi: 3, tiznapos: 1 });
+  assert.equal(r.legjobb.ft, 3 * d.napi + d.tiznapos);
+  assert.equal(S.matrica(adat, { napi: 12 }).legjobb.kulcs, 'eves');
+  assert.equal(S.matrica(adat, { varmegyek: 4, m1: true }).legjobb.kulcs, 'm1');
+  assert.equal(S.matrica(adat, { varmegyek: 2, m1: true }).legjobb.ft, 2 * d.varmegyei);
+  assert.equal(r.hatar.napi, Math.ceil(d.eves / d.napi));
+});
+
+test('autóhitel: annuitás THM-ből', () => {
+  // 0% THM: egyenlő részletek
+  assert.equal(Math.round(S.torleszto(1200000, 12, 0)), 100000);
+  // 12,68% THM ≈ havi 1%: 1 000 000 Ft 12 hónapra 88 849 Ft
+  assert.equal(Math.round(S.torleszto(1000000, 12, (Math.pow(1.01, 12) - 1) * 100)), 88849);
+  const r = S.autohitel(adat, { ar: 6000000, onero: 1000000, evek: 5, thm: 10, ev: 2026, datum: '2026-11-06' });
+  assert.equal(r.hitel, 5000000);
+  assert.equal(r.hfmTul, true);
+  assert.equal(r.ertekVeg, null);
+  assert.ok(S.autohitel(adat, { ar: 5, onero: 5, evek: 1, thm: 5 }).hiba);
+});

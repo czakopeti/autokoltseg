@@ -79,6 +79,7 @@ ${sor('P.1', szamMezo({ id: 'cm3', cim: 'Hengerűrtartalom', me: 'cm³', placeho
 ${elszamolas(k, M.uresPanel('Írd be a teljesítményt és a gyártási évet.'), { gombok: false, labjegy: 'Bármelyik sorra kattintva a részletes kalkulátor nyílik meg, ugyanezekkel az adatokkal.' })}
 </div>
 
+${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div class="keret"><div class="hatarido-sav"><p><strong>${(() => { const d = M.datumNapon(adat.szabalyok.phev.rendszam_hatarido).replace(/^\d+\. /, ''); return d[0].toUpperCase() + d.slice(1); })()} lejár a határidő: eddig kell fehérre cserélni a plug-in hibridek zöld rendszámát.</strong> Utána zöld rendszámmal nem lehet közlekedni, 2027-től pedig adót is fizetsz az autó után.</p><a href="${L.l('plug-in-hibrid-2027/')}">Mennyibe kerül?</a></div></div></section>` : ''}
 <section class="szakasz"><div class="keret">
 <h2>Részletesen</h2>
 <ul class="lista">
@@ -88,9 +89,13 @@ ${elszamolas(k, M.uresPanel('Írd be a teljesítményt és a gyártási évet.')
 <li><a href="${L.l('autofenntartas-kalkulator/')}"><h3>Fenntartás</h3><p>Mennyibe kerül havonta a saját autód, ha mindent beleszámolsz: üzemanyag, értékvesztés, biztosítás, szerviz, adó.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet a munkáltató, ha a saját autóddal utazol: hivatali út a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával és a fogyasztási normával, munkába járás ${adat.szabalyok.km.munkaba_jaras_ft_km} Ft/km-rel.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('autom/')}"><h3>Az autóm</h3><p>Mentsd el az autódat, és egy lapon látod az adót idén és jövőre, a havi költséget és az értékvesztést.</p><span class="ugrik">Megnyitom</span></a></li>
+<li><a href="${L.l('plug-in-hibrid-2027/')}"><h3>Plug-in hibrid 2027</h3><p>Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('autohitel-kalkulator/')}"><h3>Autóhitel</h3><p>Havi törlesztő a THM-mel, és mennyibe kerül valójában az autó, ha a kamatot és az értékvesztést is beleszámolod.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('autopalya-matrica-kalkulator/')}"><h3>Autópálya-matrica</h3><p>Éves, vármegyei vagy alkalmi: melyik a legolcsóbb annak, ahogy te autózol.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}"><h3>Adásvételi szerződés</h3><p>Kitölthető, nyomtatható minta használt autó eladásához.</p><span class="ugrik">Kitöltöm</span></a></li>
+<li><a href="${L.l('le-kw-atvaltas/')}"><h3>LE–kW átváltás</h3><p>Hány kW egy lóerő, és melyik szerepel a forgalmiban.</p><span class="ugrik">Átváltom</span></a></li>
 </ul>
-<p class="kesz">Hamarosan: autóhitel és lízing, és hogy megéri-e lecserélni az autódat.</p>
+<p class="kesz">Hamarosan: lízing, és hogy megéri-e lecserélni az autódat.</p>
 </div></section>
 ${jovoreBlokk}`;
   };
@@ -788,4 +793,230 @@ ${tovabb(L, ut)}
     adatJson: { szabalyok: { adasvetel: n } },
     jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Adásvételi szerződés', ut }])],
   });
+}
+
+const forrasbol = (lista) => lista.map((f) => ({ nev: f.nev, url: f.url, d: f.idoszak || f.d || '' }));
+
+/* ======================= PLUG-IN HIBRID 2027 ======================= */
+export function phevOldal(k) {
+  const { adat } = k;
+  const ut = 'plug-in-hibrid-2027/';
+  const p = adat.szabalyok.phev;
+  const gj27 = adat.tetelek.gepjarmuado[2027];
+  const ct27 = adat.tetelek.cegautoado[2027];
+  const hataridoElott = k.ma <= p.rendszam_hatarido;
+  const kerdesek = [
+    { k: 'Mennyi gépjárműadót fizet egy plug-in hibrid 2027-ben?', v: [`Ugyanannyit, mint egy benzines autó: a teljesítményt (kW) szorozzák az autó korához tartozó tétellel. 2027-ben ez kilowattonként ${Math.min(...gj27.savok)}–${Math.max(...gj27.savok)} Ft, minél idősebb az autó, annál kevesebb.`] },
+    { k: 'Mi történik, ha nem cserélem le a zöld rendszámot november 30-ig?', v: ['December 1-jétől zöld rendszámmal nem lehet közlekedni. Ha ellenőrzik az autót, a hatóság a helyszínen bevonhatja a forgalmi engedélyt és a rendszámot.'] },
+    { k: 'Új rendszámot kérjek, vagy tartsam meg a régit?', v: [`Új karakterekkel ${M.ftx(p.rendszam_uj_karakter_ft)}, és egy alkalommal elintézhető. Ha a régi karaktereket tartod meg, ${M.ftx(p.rendszam_azonos_karakter_ft)}, de kétszer kell menni. Előnye, hogy a biztosítás, a parkolási bérlet és a matrica a régi rendszámhoz kötve marad.`, 'Ha új rendszámot kérsz, az e-matricát díjmentesen átvezetik az új rendszámra, de a biztosítónak és a parkolási szolgáltatónak neked kell szólnod.'] },
+    { k: 'Mennyi cégautóadót fizet egy céges plug-in hibrid?', v: [`A cégautóadó havi tétele a teljesítménytől függ, a plug-in hibrid a legalacsonyabb oszlopban van: 2027-ben havonta ${ct27.tabla.map((x) => fmt(x[2])).join(', ')} Ft a négy teljesítménysávban. Az éves összegből levonható a befizetett gépjárműadó.`] },
+    { k: 'A villanyautók is fizetnek a budapesti parkolásért 2027-től?', v: ['Igen. 2027. január 1-jétől Budapesten a zöld rendszámos, tisztán elektromos autók is fizetnek a közterületi parkolásért. Más városokban a helyi rendelet dönt.'] },
+    { k: 'Az illeték és a regisztrációs adó is változik?', v: ['Nem, ezek már 2025. január 1. óta vonatkoznak a plug-in hibridekre. Az átírási illetéket az Átírás kalkulátorban számolhatod ki.'] },
+  ];
+  const leiras = 'Mennyivel drágul a plug-in hibrid 2027-ben? Gépjárműadó, cégautóadó, budapesti parkolás és a zöld rendszám cseréje, a NAV 2027-es tételeivel.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Plug-in hibrid 2027'], cim: 'Mennyivel drágul a plug-in hibrid 2027-ben?', valasz: `2027-től minden plug-in hibrid fizet gépjárműadót, a céges autók cégautóadót is, és Budapesten megszűnik az ingyenes parkolás. A zöld rendszámot ${M.datumIg(p.rendszam_hatarido)} fehérre kell cserélni.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'phev', cim: 'Az autó adatai', tartalom: `
+${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 135', min: 1, max: 2000, extra: egysegValto, sugo: 'A rendszerteljesítmény, ahogy a forgalmiban szerepel.' }))}
+${sor('', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2022', min: 1990, max: k.ev + 1 }))}
+${sor('B', jelolo('regi', '2025. január 1. előtt helyezték forgalomba', 'Ilyenkor 2026 végéig mentes a gépjárműadó és a cégautóadó alól.'))}
+${sor('', jelolo('zold', 'Zöld rendszáma van', 'A 2024. szeptember 1. előtt forgalomba helyezett plug-in hibridek kaptak zöld rendszámot.'))}
+${sor('', szamMezo({ id: 'parkolasHavi', cim: 'Mennyit fizetnél havonta parkolásért Budapesten?', me: 'Ft', placeholder: 'pl. 15 000', min: 0, sugo: 'Amennyit most a zöld rendszámmal megspórolsz. Ha nem parkolsz fizetős helyen, hagyd üresen.' }), ' data-mutat="zold"')}
+${sor('', jelolo('ceges', 'Céges autó', 'A cég nevén van, vagy a cég költségként számolja el. Ilyenkor cégautóadót is fizetni kell.'))}` })}
+${elszamolas(k, M.uresPanel('Add meg a teljesítményt és a gyártási évet.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>Mi változik, és mikor?</h2>
+<ol class="idovonal">
+<li${hataridoElott ? ' class="kozel"' : ''}><time datetime="${p.rendszam_hatarido}">${datumHu(p.rendszam_hatarido)}</time><div><p><strong>Lejár a zöld rendszám cseréjének határideje.</strong> Utána zöld rendszámmal nem lehet közlekedni.</p><p class="kit">Az „5P” és „5N” jelzésű, zöld rendszámos plug-in hibrideket érinti.</p></div></li>
+<li><time datetime="${p.mentesseg_vege}">${datumHu(p.mentesseg_vege)}</time><div><p><strong>Lejár a gépjárműadó- és a cégautóadó-mentesség.</strong></p><p class="kit">A 2025. január 1. előtt forgalomba helyezett plug-in hibrideket érinti. A később forgalomba helyezettek már most is fizetnek.</p></div></li>
+<li><time datetime="${p.budapest_ingyenes_parkolas_vege}">${datumHu(p.budapest_ingyenes_parkolas_vege)}</time><div><p><strong>Megszűnik az ingyenes közterületi parkolás Budapesten.</strong></p><p class="kit">Minden zöld rendszámos autót érint, a tisztán elektromosakat is.</p></div></li>
+</ol>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([
+  { nev: 'NAV: belföldi gépjárműadó 2027. évre valorizált mértéke', url: gj27.forras, d: `közzétéve: ${datumHu(gj27.kozzeteve)}` },
+  { nev: 'NAV: a cégautóadó 2027. évre valorizált mértéke', url: ct27.forras, d: `közzétéve: ${datumHu(ct27.kozzeteve)}` },
+  ...forrasbol(p.forrasok),
+])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Plug-in hibrid 2027: adó, cégautóadó, parkolás és rendszámcsere',
+    leiras, ut, tartalom,
+    adatJson: { tetelek: { gepjarmuado: adat.tetelek.gepjarmuado, gepjarmuado_mozgaskorlatozott: adat.tetelek.gepjarmuado_mozgaskorlatozott, cegautoado: adat.tetelek.cegautoado }, szabalyok: { phev: p }, ma: k.ma },
+    jsonld: [alkalmazasLd(k.cfg, 'Plug-in hibrid 2027 kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Plug-in hibrid 2027', ut }])],
+  });
+}
+
+/* ======================= AUTÓPÁLYA-MATRICA ======================= */
+export function matricaOldal(k) {
+  const { adat } = k;
+  const ut = 'autopalya-matrica-kalkulator/';
+  const m = adat.szabalyok.matrica, d = m.d1;
+  const r = S.matrica(adat, { napi: 1 });
+  const kerdesek = [
+    { k: 'Mennyibe kerül az éves autópálya-matrica?', v: [`Személyautóra (D1) az éves országos matrica ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)} vármegyénként. Az éves matrica ${m.eves_ervenyes} érvényes, vagyis 13 hónapig.`] },
+    { k: 'Mikor éri meg az éves matrica?', v: [`Ha egy évben legalább ${r.hatar.napi} napi, ${r.hatar.tiznapos} tíznapos vagy ${r.hatar.havi} havi matricát vennél helyette, vagy ha legalább ${r.hatar.varmegyei} vármegyében autópályázol rendszeresen. Ha a kettő keveredik, a kalkulátor kiszámolja.`] },
+    { k: 'Mi az M1 regionális matrica?', v: [`${M.ftx(d.m1_regionalis)}-ért egy évig használhatod a díjköteles utakat ${m.m1_varmegyek.slice(0, -1).join(', ')} és ${m.m1_varmegyek.at(-1)} vármegyében. Négy vármegyei matrica ${M.ftx(4 * d.varmegyei)} lenne, három ${M.ftx(3 * d.varmegyei)}.`] },
+    { k: 'Mennyi a pótdíj, ha nincs matricám?', v: [`Személyautóval ${M.ftx(m.potdij.alap)}. Ha 60 napon belül nem fizeted be, ${M.ftx(m.potdij.hatvan_nap_utan)}.`] },
+    { k: 'Kapható már a 2027-es matrica?', v: [`A 2027-es díjakat még nem tették közzé. Ha most veszel éves matricát, az ${m.eves_ervenyes} érvényes, így 2027 januárját is lefedi.`] },
+    { k: 'Hol vehetek matricát?', v: ['A Nemzeti Útdíjfizetési Szolgáltató oldalán, a mobilos alkalmazásokban és a benzinkutakon. Az e-matrica a rendszámhoz kötődik, az autóra nem kell semmit ragasztani.'] },
+  ];
+  const leiras = 'Melyik autópálya-matricát érdemes megvenni? Éves, havi, tíznapos, napi és vármegyei e-matrica személyautóra: kiszámoljuk, neked melyik a legolcsóbb.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Autópálya-matrica'], cim: 'Melyik autópálya-matricát érdemes megvenni?', valasz: `Személyautóra az éves országos matrica ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)}, a napi ${M.ftx(d.napi)}. Az éves akkor éri meg, ha egy évben legalább ${r.hatar.napi} napot vagy ${r.hatar.tiznapos} tíznapos utat autópályázol.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'matrica', cim: 'Merre és mennyit autózol?', tartalom: `
+<fieldset><legend>Alkalmi utak egy évben</legend>
+${sor('', szamMezo({ id: 'napi', cim: 'Egynapos utak', me: 'db', placeholder: 'pl. 3', min: 0, max: 365 }))}
+${sor('', szamMezo({ id: 'tiznapos', cim: 'Legfeljebb tíznapos utak', me: 'db', placeholder: 'pl. 1', min: 0, max: 36, sugo: 'Például a nyaralás. A tíznapos matrica egymást követő tíz napra szól.' }))}
+${sor('', szamMezo({ id: 'havi', cim: 'Hónapok, amikor sokat autópályázol', me: 'db', placeholder: 'pl. 0', min: 0, max: 12 }))}
+</fieldset>
+<fieldset><legend>Rendszeres utak</legend>
+${sor('', szamMezo({ id: 'varmegyek', cim: 'Hány vármegyében autópályázol rendszeresen?', me: 'db', placeholder: 'pl. 1', min: 0, max: 19, sugo: 'Például munkába járáskor. Minden vármegyéhez külön vármegyei matrica kell.' }))}
+${sor('', jelolo('m1', 'Ezek mind M1 menti vármegyék', `${m.m1_varmegyek.join(', ')}. Ide ${M.ftx(d.m1_regionalis)}-ért regionális matrica is kapható.`))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg, évente hányszor és hol autópályázol.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2 id="dijak">Az e-matrica díjai személyautóra</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Matrica</th><th>Díj, ${m.ev}</th><th>Meddig érvényes?</th></tr></thead><tbody>
+<tr><td>Napi</td><td>${M.ftx(d.napi)}</td><td>a megadott napon</td></tr>
+<tr><td>Tíznapos</td><td>${M.ftx(d.tiznapos)}</td><td>tíz egymást követő napon</td></tr>
+<tr><td>Havi</td><td>${M.ftx(d.havi)}</td><td>a kezdőnaptól a következő hónap azonos napjáig</td></tr>
+<tr><td>Éves országos</td><td>${M.ftx(d.eves)}</td><td>${m.eves_ervenyes}</td></tr>
+<tr><td>Éves vármegyei</td><td>${M.ftx(d.varmegyei)}</td><td>egy vármegyére, ${m.eves_ervenyes}</td></tr>
+<tr><td>M1 regionális</td><td>${M.ftx(d.m1_regionalis)}</td><td>a négy M1 menti vármegyére, egy évre</td></tr>
+</tbody><caption>D1 kategória: személyautó. A ${m.ev + 1}. évi díjakat még nem tették közzé.</caption></table></div>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(m.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `Autópálya-matrica ${m.ev}: melyik éri meg? Kalkulátor`,
+    leiras, ut, tartalom,
+    adatJson: { szabalyok: { matrica: m } },
+    jsonld: [alkalmazasLd(k.cfg, 'Autópálya-matrica kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Autópálya-matrica', ut }])],
+  });
+}
+
+/* ======================= AUTÓVÁSÁRLÁS HITELBŐL ======================= */
+export function hitelOldal(k) {
+  const { adat } = k;
+  const ut = 'autohitel-kalkulator/';
+  const h = adat.szabalyok.hitel;
+  const kerdesek = [
+    { k: 'Mekkora önerő kell az autóhitelhez?', v: [`Az MNB szabálya szerint forintban felvett autóhitelnél a hitel legfeljebb az autó értékének ${h.hfm_hitel}%-a lehet, vagyis legalább ${100 - h.hfm_hitel}% önerő kell. Pénzügyi lízingnél a határ ${h.hfm_lizing}%. A bank ennél többet is kérhet.`] },
+    { k: 'Mi a THM, és miért azzal számolunk?', v: ['A teljes hiteldíj mutató a kamaton felül a kötelező díjakat is tartalmazza, ezért ezzel lehet összevetni a bankok ajánlatait. A törlesztőt is ebből számoljuk. A pontos összeget a bank ajánlata tartalmazza, mert a díjak egy része nem havonta jelentkezik.'] },
+    { k: 'Mit jelent az autó valódi költsége?', v: ['Amennyit a futamidő alatt összesen kifizetsz (önerő, törlesztők, átírás), mínusz amennyit az autó a végén még ér. Ez mutatja meg, mennyibe került ténylegesen az, hogy évekig autód volt. Az üzemanyag, a biztosítás és a szerviz nincs benne, azokat a Fenntartás kalkulátor számolja.'] },
+    { k: 'Kell casco az autóhitelhez?', v: ['Általában igen: a bankok a hitel vagy a lízing teljes idejére casco-t kérnek. Ez évente több tízezer, drágább autónál több százezer forint is lehet, ezért kérj rá ajánlatot még a szerződés előtt.'] },
+    { k: 'Hitel vagy lízing?', v: ['Hitelnél az autó a te neveden van, a bank zálogjogot jegyeztet be. Pénzügyi lízingnél a futamidő alatt a lízingcég a tulajdonos, te vagy az üzembentartó. A lízinghez kevesebb önerő is elég lehet, cégnél pedig másképp számolják el az áfát és a költségeket.'] },
+  ];
+  const leiras = 'Autóhitel-kalkulátor: havi törlesztő THM-mel, a kamat és a díjak összege, az átírás költsége és az autó értékvesztése, vagyis hogy mennyibe kerül valójában az autó hitelből.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Autóhitel'], cim: 'Mennyibe kerül valójában az autó hitelből?', valasz: `A havi törlesztő a hitelösszegből, a futamidőből és a THM-ből jön ki. Forintban felvett autóhitelnél a bank legfeljebb az autó értékének ${h.hfm_hitel}%-át hitelezheti, vagyis legalább ${100 - h.hfm_hitel}% önerő kell.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'hitel', cim: 'Az autó és a hitel', tartalom: `
+<fieldset><legend>A hitel</legend>
+${sor('', szamMezo({ id: 'ar', cim: 'Vételár', me: 'Ft', placeholder: 'pl. 6 000 000', min: 0 }))}
+${sor('', szamMezo({ id: 'onero', cim: 'Önerő', me: 'Ft', placeholder: 'pl. 1 500 000', min: 0 }))}
+${sor('', szamMezo({ id: 'evek', cim: 'Futamidő', me: 'év', placeholder: 'pl. 5', min: 1, max: 10 }))}
+${sor('', szamMezo({ id: 'thm', cim: 'THM', me: '%', placeholder: 'pl. 11,9', tized: true, sugo: 'A bank ajánlatában szerepel.' }))}
+</fieldset>
+<fieldset><legend>Az autó</legend>
+<p class="fieldset-megj">Ebből számoljuk az átírás költségét és az értékvesztést.</p>
+${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, max: 2000, extra: egysegValto }))}
+${sor('', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2021', min: 1950, max: k.ev + 1 }))}
+${sor('P.3', negyzetek('hajtas', 'Hajtás', HAJTASOK, ''))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg a vételárat, az önerőt, a futamidőt és a THM-et.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>Mire figyelj a szerződés előtt?</h2>
+<ul>
+<li><strong>A THM-et hasonlítsd össze, ne a kamatot.</strong> Két ajánlat közül az olcsóbb az, amelyiknek alacsonyabb a THM-je azonos futamidőre.</li>
+<li><strong>Kérdezd meg az előtörlesztés díját.</strong> Ha a futamidő előtt eladnád az autót, a hitelt egy összegben vissza kell fizetni.</li>
+<li><strong>Számolj a casco-val.</strong> A bankok általában kötelezővé teszik, és ez a törlesztőn felüli kiadás.</li>
+<li><strong>A futamidő végén az autó kevesebbet ér.</strong> Hosszú futamidőnél előfordulhat, hogy egy ideig többel tartozol, mint amennyit az autó ér.</li>
+</ul>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([...forrasbol(h.forrasok), { nev: 'NAV: a gépjárműadó és az illeték tételei', url: 'https://nav.gov.hu/gepjarmuado/az-ado-szamitasa' }, ...adat.szabalyok.maradvany.forrasok?.slice?.(0, 2).map((x) => ({ nev: x.nev, url: x.url, d: x.idoszak || '' })) || []])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Autóhitel-kalkulátor: törlesztő és az autó valódi költsége',
+    leiras, ut, tartalom,
+    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany, hitel: h }, ev: k.ev, ma: k.ma },
+    jsonld: [alkalmazasLd(k.cfg, 'Autóhitel-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Autóhitel', ut }])],
+  });
+}
+
+/* ======================= LE–kW ÁTVÁLTÁS ======================= */
+export function lekwOldal(k) {
+  const ut = 'le-kw-atvaltas/';
+  const tiz = (x) => M.tized(x, 1);
+  const sorok = [60, 75, 90, 100, 110, 120, 130, 150, 170, 190, 200, 250, 300];
+  const kerdesek = [
+    { k: 'Hány kW egy lóerő?', v: ['1 lóerő 0,7355 kW, 1 kW pedig 1,36 lóerő. Fejben: a lóerőt oszd el 1,36-tal, és megkapod a kW-ot.'] },
+    { k: 'Melyik szerepel a forgalmi engedélyben?', v: ['A kW. A forgalmi engedély P.2 sorában a teljesítmény kilowattban szerepel, és a gépjárműadót, az átírási illetéket és a cégautóadót is ebből számolják.'] },
+    { k: 'Miért más a lóerő az autó hirdetésében?', v: ['A gyártók gyakran kerekítve adják meg a lóerőt, és a hirdetések egy része a brit lóerőt (hp) használja, ami 0,7457 kW. Az adóhoz mindig a forgalmiban szereplő kW-ot használd.'] },
+  ];
+  const leiras = 'Lóerő–kW átváltás: 1 LE = 0,7355 kW, 1 kW = 1,36 LE. Átváltó és táblázat, és hogy a forgalmi engedélyben melyik szerepel.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['LE–kW átváltás'], cim: 'Hány kW egy lóerő?', valasz: '1 lóerő 0,7355 kW, 1 kW 1,36 lóerő. A forgalmi engedély P.2 sorában kW szerepel, az adót és az illetéket is ebből számolják.' })}
+<div class="keret">
+<form class="forgalmi atvalto" data-kalk="lekw" novalidate>${''}<div class="forgalmi-fej"><h2>Átváltó</h2><p>Bármelyik mezőbe írhatsz.</p></div>
+<div class="ket">${sor('', szamMezo({ id: 'le', cim: 'Lóerő', me: 'LE', placeholder: 'pl. 115', tized: true }))}${sor('P.2', szamMezo({ id: 'kwAt', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 85', tized: true }))}</div>
+<p class="atvalto-ki" data-lekw-ki aria-live="polite"></p>
+<p class="kicsi">Ha megvan a kW, <a href="${L.l('gepjarmuado-kalkulator/')}">számold ki a gépjárműadót</a> vagy <a href="${L.l('atirasi-illetek-kalkulator/')}">az átírás költségét</a>.</p>
+</form>
+</div>
+<div class="keret"><article class="cikk">
+<h2>Átváltási táblázat</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Lóerő (LE)</th><th>Kilowatt (kW)</th><th>Kerekítve</th></tr></thead><tbody>
+${sorok.map((le) => `<tr><td>${le} LE</td><td>${tiz(le * 0.73549875)} kW</td><td>${Math.round(le / 1.35962)} kW</td></tr>`).join('')}
+</tbody><caption>A forgalmi engedélyben egész kW szerepel.</caption></table></div>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'LE–kW átváltás: hány kW egy lóerő?',
+    leiras, ut, tartalom,
+    jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'LE–kW átváltás', ut }])],
+    adatJson: {},
+  });
+}
+
+/* ======================= RÓLUNK ======================= */
+export function rolunkOldal(k) {
+  const { cfg } = k;
+  const ut = 'rolunk/';
+  const marka = cfg.marka;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Rólunk'], cim: 'Kik vagyunk, és hogyan dolgozunk?', valasz: `${M.nevelo(marka).replace(/^a/, 'A')} ${marka} független, ingyenes oldal. A számokat a NAV és a jogszabályok közzétett adataiból vesszük, és minden eredménynél jelöljük, mi hivatalos, mi a te adatod és mi becslés.` })}
+<div class="keret"><article class="cikk">
+<h2>Ki készíti?</h2>
+<p>${cfg.uzemelteto.nev ? `Az oldalt ${esc(cfg.uzemelteto.nev)} üzemelteti.` : 'Az üzemeltető adatai az oldal indulásakor kerülnek ide és az Impresszumba.'} Nem vagyunk a NAV, bank, biztosító vagy autókereskedés, és egyiktől sem kapunk pénzt azért, hogy mit írunk.</p>
+<h2>Szerkesztői elvek</h2>
+<ul>
+<li><strong>Forrás nélkül nincs szám.</strong> Minden tételnél ott a forrás és a közzététel napja. A <a href="${L.l('forrasok/')}">Források</a> oldalon egy helyen is megtalálod őket.</li>
+<li><strong>Megmondjuk, mi biztos és mi nem.</strong> Az eredményekben minden sor jelölést kap: <em>hivatalos</em>, ha a NAV vagy jogszabály szerinti tétel, <em>saját</em>, ha te adtad meg, <em>becslés</em>, ha a mi feltevésünk. A becslések módszerét leírjuk.</li>
+<li><strong>Minden reggel ellenőrzünk.</strong> Egy program minden nap összeveti az adatainkat a NAV oldalával. Ha a NAV új tételt tesz közzé, átvesszük, és a <a href="${L.l('valtozasok/')}">Változások</a> oldalon jelezzük, mikor és mi változott.</li>
+<li><strong>A hibát kijavítjuk, és leírjuk.</strong> ${cfg.kapcsolat_email ? `Ha hibát találsz, írj a <a href="mailto:${esc(cfg.kapcsolat_email)}">${esc(cfg.kapcsolat_email)}</a> címre, vagy használd az eredmény alatti „Szerinted hibás?” gombot.` : 'A hibabejelentés címe hamarosan itt lesz.'} A javítást a Változások oldalon is feltüntetjük.</li>
+<li><strong>Nincs fizetett sorrend.</strong> Nem ajánlunk bankot, biztosítót vagy autót pénzért. Ha egyszer hirdetés vagy támogatás jelenik meg az oldalon, azt egyértelműen jelöljük, és nem befolyásolja a számokat.</li>
+<li><strong>Nem gyűjtünk rólad adatot.</strong> Nincs regisztráció és nincs követő süti. Amit beírsz, a böngésződben marad, a mentett autód is. Részletek az <a href="${L.l('adatvedelem/')}">Adatvédelem</a> oldalon.</li>
+</ul>
+<h2>Amit nem vállalunk</h2>
+<p>A kalkulátorok tájékoztató jellegűek, és nem helyettesítik az adótanácsadást vagy a bank ajánlatát. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, { cim: `Rólunk és szerkesztői elveink`, leiras: `Ki készíti ${M.nevelo(marka)} ${marka} oldalt, honnan vannak a számok, hogyan ellenőrizzük és javítjuk őket.`, ut, tartalom });
 }

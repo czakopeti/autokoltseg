@@ -4,44 +4,17 @@
     "normakoltseg_ft_km": 15,
     "munkaba_jaras_ft_km": 30,
     "norma_benzin": [
-      [
-        1000,
-        7.6
-      ],
-      [
-        1500,
-        8.6
-      ],
-      [
-        2000,
-        9.5
-      ],
-      [
-        3000,
-        11.4
-      ],
-      [
-        null,
-        13.3
-      ]
+      [1000, 7.6],
+      [1500, 8.6],
+      [2000, 9.5],
+      [3000, 11.4],
+      [null, 13.3]
     ],
     "norma_dizel": [
-      [
-        1500,
-        5.7
-      ],
-      [
-        2000,
-        6.7
-      ],
-      [
-        3000,
-        7.6
-      ],
-      [
-        null,
-        9.5
-      ]
+      [1500, 5.7],
+      [2000, 6.7],
+      [3000, 7.6],
+      [null, 9.5]
     ],
     "lpg_szorzo": 1.2,
     "cng_kg_per_l": 0.64,
@@ -158,6 +131,90 @@
       {
         "nev": "Money.hu: a használt autó adásvételének lépései",
         "url": "https://tudastar.money.hu/ismerteto/igy-zajlik-a-hasznalt-autok-adasvetele-mutatjuk-a-lepeseket-es-a-koltsegeket/"
+      }
+    ]
+  },
+  "phev": {
+    "leiras": "A plug-in hibridek („5P”, „5N”) 2027-es változásai. Kézzel karbantartva, forrással.",
+    "mentesseg_vege": "2026-12-31",
+    "mentesseg_feltetel": "forgalomba helyezés 2025. január 1. előtt",
+    "rendszam_hatarido": "2026-11-30",
+    "rendszam_uj_karakter_ft": 18060,
+    "rendszam_azonos_karakter_ft": 16605,
+    "zold_rendszam_vege_uj_autonal": "2024-09-01",
+    "budapest_ingyenes_parkolas_vege": "2027-01-01",
+    "forrasok": [
+      {
+        "nev": "NAV: a cégautóadót érintő változások",
+        "url": "https://nav.gov.hu/ado/egyeb/A_cegautoadot_erinto_valtozasok",
+        "idoszak": "2025–2026"
+      },
+      {
+        "nev": "Kormányhivatalok: november végéig kell lecserélni a plug-in hibrid autók zöld rendszámát",
+        "url": "https://kormanyhivatalok.hu/hirek/november-vegeig-kell-lecserelni-plug-hibrid-autok-zold-rendszamat",
+        "idoszak": "közzétéve: 2026. szeptember 15."
+      },
+      {
+        "nev": "Economx: rendszámcsere a plug-in hibrideken, 2027-től Budapesten sincs ingyenes parkolás",
+        "url": "https://www.economx.hu/belfold/2026/03/16/rendszamtabla-csere-plug-in-hibrid-825516/",
+        "idoszak": "2026. március 16."
+      },
+      {
+        "nev": "Ayvens: adóemelések és szabályozási változások 2026-tól",
+        "url": "https://www.ayvens.com/hu-hu/rolunk/hirek/flottakezeles/2026-adoemelesek-es-szabalyozasi-valtozasok/",
+        "idoszak": "2025. december 29."
+      }
+    ]
+  },
+  "matrica": {
+    "leiras": "Országos és vármegyei e-matrica, D1 kategória (személyautó). A 2027-es díjakat még nem tették közzé, addig a 2026-os díjakkal számolunk.",
+    "ev": 2026,
+    "d1": {
+      "napi": 5550,
+      "tiznapos": 6900,
+      "havi": 11170,
+      "eves": 61760,
+      "varmegyei": 7190,
+      "m1_regionalis": 15000
+    },
+    "m1_varmegyek": [
+      "Pest",
+      "Fejér",
+      "Komárom-Esztergom",
+      "Győr-Moson-Sopron"
+    ],
+    "potdij": {
+      "alap": 27790,
+      "hatvan_nap_utan": 95730
+    },
+    "eves_ervenyes": "a következő év január 31-ig",
+    "forrasok": [
+      {
+        "nev": "Economx: éves autópálya-matrica, díjak",
+        "url": "https://www.economx.hu/gazdasag/eves-autopalya-matrica-vasarlas-dijak.820523.html",
+        "idoszak": "2026"
+      },
+      {
+        "nev": "Nemzeti Útdíjfizetési Szolgáltató (ematrica.nemzetiutdij.hu)",
+        "url": "https://ematrica.nemzetiutdij.hu/",
+        "idoszak": "hivatalos vásárlási felület"
+      }
+    ]
+  },
+  "hitel": {
+    "leiras": "Autóhitel. A kamat és a THM a bank ajánlatából jön, mi csak a hitelfedezeti szabályt és a számítás módját rögzítjük.",
+    "hfm_hitel": 75,
+    "hfm_lizing": 80,
+    "forrasok": [
+      {
+        "nev": "Economx: az MNB adósságfék-szabályai (gépjárműhitelnél 75%-os hitelfedezeti mutató)",
+        "url": "https://www.economx.hu/magyar-gazdasag/2015/01/01/matol_szigoritanak_a_hitelfelvetelben-591573/",
+        "idoszak": "hatályos 2015. január 1-jétől"
+      },
+      {
+        "nev": "Bank360: a hitelfedezeti mutató",
+        "url": "https://bank360.hu/hitelfedezeti-mutato",
+        "idoszak": "2024"
       }
     ]
   }

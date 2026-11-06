@@ -11,6 +11,13 @@ export const MENU = [
   { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
   { ut: 'autom/', nev: 'Az autóm' },
 ];
+/** Kalkulátorok, amelyek nem férnek a fő menübe: a láblécben és a főoldalon vannak. */
+export const TOBB_KALK = [
+  { ut: 'plug-in-hibrid-2027/', nev: 'Plug-in hibrid 2027' },
+  { ut: 'autohitel-kalkulator/', nev: 'Autóhitel' },
+  { ut: 'autopalya-matrica-kalkulator/', nev: 'Autópálya-matrica' },
+  { ut: 'le-kw-atvaltas/', nev: 'LE–kW átváltás' },
+];
 export const TOVABBI = [
   { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
   { ut: 'forrasok/', nev: 'Források' },
@@ -137,11 +144,12 @@ function lablec(k, L) {
 <p><strong>Független oldal, nem a NAV hivatalos oldala.</strong> A NAV közzétett adatai alapján számolunk. A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
 <p>Az adatokat minden reggel összevetjük a NAV oldalával. ${adat.allapot.utolso_ellenorzes ? `Legutóbbi ellenőrzés: ${datumHu(ell)}` : `A legfrissebb NAV-adat: ${datumHu(adatDatum(adat).iso)}`}</p>
 </div>
-<div><h2>Kalkulátorok</h2><ul>${MENU.map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
+<div><h2>Kalkulátorok</h2><ul>${[...MENU, ...TOBB_KALK].map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}">Adásvételi szerződés minta</a></li>
 <li><a href="${L.l('forrasok/')}">Források és frissítés</a></li>
 <li><a href="${L.l('valtozasok/')}">Mi változott?</a></li>
+<li><a href="${L.l('rolunk/')}">Rólunk és szerkesztői elvek</a></li>
 <li><a href="${L.l('adatvedelem/')}">Adatvédelem</a></li>
 <li><a href="${L.l('impresszum/')}">Impresszum</a></li>
 </ul></div>
@@ -238,7 +246,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

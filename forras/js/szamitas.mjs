@@ -438,3 +438,105 @@ export function betuvel(n) {
   if (egys) reszek.push(harom(egys, true));
   return n > 2000 ? reszek.join('-') : reszek.join('');
 }
+
+/* ---------------- Plug-in hibrid: 2026 és 2027 ---------------- */
+/**
+ * Mit fizet egy plug-in hibrid 2026-ban és 2027-ben.
+ * b: { kw, gyartasiEv, regi: 2025.01.01. előtt forgalomba helyezve, zold: zöld rendszáma van, ceges, parkolasHavi }
+ * A zöld rendszámot 2026. november 30-ig le kell cserélni, ezért 2026 decemberében már nincs ingyenes parkolás.
+ */
+export function phev(adat, b) {
+  const kw = Math.round(Number(b.kw)), gy = Number(b.gyartasiEv);
+  if (!(kw > 0)) return { hiba: 'Add meg a teljesítményt (P.2).' };
+  if (!(gy > 1900)) return { hiba: 'Add meg a gyártási évet.' };
+  const p = adat.szabalyok.phev;
+  const park = b.zold ? Math.max(0, Number(b.parkolasHavi) || 0) : 0;
+  const evek = [2026, 2027].map((ev) => {
+    const gj = gepjarmuado(adat, { ev, kw, gyartasiEv: gy, hajtas: 'plugin', phevRegi: !!b.regi });
+    if (gj.hiba) return { ev, hiba: gj.hiba };
+    let ceg = 0, cegMentes = false, cegHavi = 0;
+    if (b.ceges) {
+      if (b.regi && ev <= 2026) cegMentes = true;
+      else {
+        const ct = evAdat(adat.tetelek.cegautoado, ev);
+        cegHavi = ct.tabla[CEG_SOR(kw)][2];
+        ceg = Math.max(0, cegHavi * 12 - gj.fizetendo);
+      }
+    }
+    const parkolas = ev === 2026 ? park : park * 12;
+    const egyszeri = ev === 2026 && b.zold ? p.rendszam_uj_karakter_ft : 0;
+    return { ev, gj, ceg, cegMentes, cegHavi, parkolas, egyszeri, osszes: gj.fizetendo + ceg + parkolas + egyszeri, rendszeres: gj.fizetendo + ceg + (ev === 2026 ? 0 : park * 12) };
+  });
+  const hiba = evek.find((x) => x.hiba);
+  if (hiba) return { hiba: hiba.hiba };
+  const [a, c] = evek;
+  return { kw, gy, regi: !!b.regi, zold: !!b.zold, ceges: !!b.ceges, park, evek, kulonbseg: c.rendszeres - a.rendszeres, ev2027: c.rendszeres };
+}
+
+/* ---------------- Autópálya-matrica ---------------- */
+const ezres = (x) => new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(Math.round(x));
+/**
+ * A legolcsóbb matrica-kombináció egy évre, személyautóval (D1).
+ * b: { napi, tiznapos, havi: alkalmi utak száma, varmegyek: rendszeresen használt vármegyék száma, m1: mind az M1 menti négy vármegyében van }
+ */
+export function matrica(adat, b) {
+  const d = adat.szabalyok.matrica.d1;
+  const n = (x) => Math.max(0, Math.round(Number(x) || 0));
+  const napi = n(b.napi), tiz = n(b.tiznapos), havi = n(b.havi), vm = n(b.varmegyek);
+  if (!napi && !tiz && !havi && !vm) return { hiba: 'Add meg, évente hányszor és hol autópályázol.' };
+  const alkalmi = napi * d.napi + tiz * d.tiznapos + havi * d.havi;
+  const alkalmiAl = [napi && `${napi} napi`, tiz && `${tiz} tíznapos`, havi && `${havi} havi`].filter(Boolean).join(', ');
+  const lehetosegek = [{ kulcs: 'eves', nev: 'Éves országos matrica', ft: d.eves, al: `minden díjköteles útra, ${adat.szabalyok.matrica.eves_ervenyes}` }];
+  if (vm) {
+    const varm = vm * d.varmegyei;
+    const m1 = b.m1 && d.m1_regionalis < varm;
+    const rendszeres = m1 ? d.m1_regionalis : varm;
+    lehetosegek.push({ kulcs: m1 ? 'm1' : 'varmegyei', nev: `${m1 ? 'M1 regionális matrica' : `${vm} vármegyei matrica`}${alkalmi ? ' és alkalmi matricák' : ''}`, ft: rendszeres + alkalmi, al: [m1 ? 'a négy M1 menti vármegyére' : `vármegyénként ${ezres(d.varmegyei)} Ft`, alkalmiAl].filter(Boolean).join(', ') });
+  } else {
+    lehetosegek.push({ kulcs: 'alkalmi', nev: 'Alkalmi matricák', ft: alkalmi, al: alkalmiAl });
+  }
+  lehetosegek.sort((x, y) => x.ft - y.ft);
+  const legjobb = lehetosegek[0];
+  return {
+    napi, tiz, havi, vm, alkalmi, lehetosegek, legjobb, megtakaritas: lehetosegek[1].ft - legjobb.ft,
+    hatar: { napi: Math.ceil(d.eves / d.napi), tiznapos: Math.ceil(d.eves / d.tiznapos), havi: Math.ceil(d.eves / d.havi), varmegyei: Math.ceil(d.eves / d.varmegyei) },
+  };
+}
+
+/* ---------------- Autóvásárlás hitelből ---------------- */
+/** Havi törlesztő THM-ből (a THM éves, tényleges kamatláb: a havi ráta (1+THM)^(1/12)−1). */
+export function torleszto(hitel, honapok, thm) {
+  const r = Math.pow(1 + thm / 100, 1 / 12) - 1;
+  return r > 0 ? hitel * r / (1 - Math.pow(1 + r, -honapok)) : hitel / honapok;
+}
+/**
+ * b: { ar, onero, evek, thm, kw, gyartasiEv, hajtas, ev, datum }
+ * A valódi költség: önerő + összes törlesztő + átírás − amennyit az autó a futamidő végén ér.
+ */
+export function autohitel(adat, b) {
+  const ar = Number(b.ar), onero = Math.max(0, Number(b.onero) || 0), evek = Number(b.evek), thm = Number(b.thm);
+  if (!(ar > 0)) return { hiba: 'Add meg a vételárat.' };
+  if (onero >= ar) return { hiba: 'Az önerő eléri a vételárat, így nincs szükség hitelre.' };
+  if (!(evek > 0)) return { hiba: 'Add meg a futamidőt.' };
+  if (!(thm >= 0) || b.thm === '' || b.thm == null) return { hiba: 'Add meg a THM-et a bank ajánlatából.' };
+  const hitel = ar - onero, honapok = Math.round(evek * 12);
+  const havi = torleszto(hitel, honapok, thm);
+  const visszafizet = havi * honapok, kamat = visszafizet - hitel;
+  const hfm = hitel / ar * 100, h = adat.szabalyok.hitel;
+  const kw = Number(b.kw), gy = Number(b.gyartasiEv), hajtas = b.hajtas || 'benzin';
+  let atirasFt = 0, at = null;
+  if (kw > 0 && gy > 1900) {
+    at = atiras(adat, { ev: b.ev, datum: b.datum, kw, gyartasiEv: gy, hajtas: hajtas === 'benzin' || hajtas === 'dizel' ? 'hagyomanyos' : hajtas, szerzes: 'vetel' });
+    if (!at.hiba) atirasFt = at.osszesen; else at = null;
+  }
+  // Értékvesztés: a hajtás szerinti átlagos görbéből, az autó mostani korától a futamidő végéig (becslés)
+  let ertekVeg = null;
+  if (gy > 1900) {
+    const f = { maradvany: adat.szabalyok.maradvany };
+    const kor = Math.max(0, b.ev - gy);
+    const v = (t) => ertekNEvMulva(1, hajtas, t, f);
+    ertekVeg = ar * v(kor + evek) / v(kor);
+  }
+  const valodi = onero + visszafizet + atirasFt - (ertekVeg ?? 0);
+  return { ar, onero, hitel, evek, honapok, thm, havi, visszafizet, kamat, hfm, hfmTul: hfm > h.hfm_hitel, hfmLizingTul: hfm > h.hfm_lizing, atirasFt, at, ertekVeg, ertekvesztes: ertekVeg == null ? null : ar - ertekVeg, valodi, valodiHavi: valodi / honapok };
+}
