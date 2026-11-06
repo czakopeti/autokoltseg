@@ -1,87 +1,59 @@
 <!DOCTYPE html>
-<html lang="hu" data-tema="sotet">
+<html lang="hu">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Adatvédelem | Autóköltség</title>
-<meta name="description" content="Adatvédelmi tájékoztató: a(z) Autóköltség nem használ sütit és követőkódot, a számítás a böngészőben fut.">
+<meta name="description" content="A(z) Autóköltség nem használ sütit és követőkódot, a számítás a böngészőben fut.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://autokoltseg.pages.dev/adatvedelem/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="hu_HU">
 <meta property="og:site_name" content="Autóköltség">
 <meta property="og:title" content="Adatvédelem">
-<meta property="og:description" content="Adatvédelmi tájékoztató: a(z) Autóköltség nem használ sütit és követőkódot, a számítás a böngészőben fut.">
+<meta property="og:description" content="A(z) Autóköltség nem használ sütit és követőkódot, a számítás a böngészőben fut.">
 <meta property="og:url" content="https://autokoltseg.pages.dev/adatvedelem/">
 <meta property="og:image" content="https://autokoltseg.pages.dev/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#111316">
+<meta name="theme-color" content="#E9EEE5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1C18" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<script>try{var t=JSON.parse(localStorage.getItem('ak-tema'));if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'vilagos':'sotet';document.documentElement.dataset.tema=t}catch(e){}</script>
-<link rel="stylesheet" href="/assets/style.css?v=4d0153f0">
+<link rel="stylesheet" href="/assets/style.css?v=a56c0e97">
 
 </head>
 <body>
 <a class="ugras" href="#tartalom">Ugrás a tartalomra</a>
-<header class="fejlec">
-<div class="wrap">
-<a class="logo" href="/" aria-label="Autóköltség – főoldal"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#FFC83D"/><path d="M6.5 21.5a9.5 9.5 0 0 1 19 0" fill="none" stroke="#111316" stroke-width="2.6" stroke-linecap="round"/><g class="tu"><path d="M16 19 L16 9.5" stroke="#111316" stroke-width="2.6" stroke-linecap="round"/></g><circle cx="16" cy="19" r="2.6" fill="#111316"/></svg><span>Autóköltség</span></a>
-<button class="menu-gomb" type="button" aria-expanded="false" aria-controls="fomenu" aria-label="Menü"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-<nav class="menu" id="fomenu" aria-label="Fő menü"><a href="/gepjarmuado-kalkulator/">Gépjárműadó</a><a href="/atirasi-illetek-kalkulator/">Átírás</a><a href="/kilometerterites-kalkulator/">Kilométertérítés</a><a href="/forrasok/">Források</a><button class="tema-gomb" type="button" aria-label="Világos mód"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button></nav>
-</div>
-</header>
+<header class="fejlec"><div class="keret">
+<a class="jegy" href="/"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="15" cy="15" r="9.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M10 15.5l3.4 3.2L20.5 11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Autóköltség</span></a>
+<button class="menu-gomb" type="button" aria-expanded="false" aria-controls="fomenu">Menü</button>
+<nav class="menu" id="fomenu" aria-label="Fő menü"><a href="/gepjarmuado-kalkulator/">Gépjárműadó</a><a href="/atirasi-illetek-kalkulator/">Átírás</a><a href="/kilometerterites-kalkulator/">Kilométertérítés</a><a href="/forrasok/">Források</a></nav>
+</div></header>
 <main id="tartalom">
 
-<section class="wrap"><div class="oldalfej">
-<ol class="morzsa" aria-label="Morzsamenü"><li><a href="/">Főoldal</a></li><li aria-current="page">Adatvédelem</li></ol>
-<h1 class="cim cim-1 sor-be">Adatvédelem</h1>
-<p class="bevezeto">Röviden: nem gyűjtünk rólad semmit. A kalkulátorok a böngésződben számolnak, és a beírt adatokat nem küldjük el.</p>
-
-</div></section>
-<section class="wrap" style="padding-bottom:80px"><article class="cikk" style="max-width:760px">
-<h2>Mit tárol a böngésződ?</h2>
-<p>Két dolgot, és csak a saját gépeden, a böngésző helyi tárolójában (localStorage):</p>
-<ul><li>a választott megjelenést (világos vagy sötét);</li><li>az autód adatait (teljesítmény, gyártási év, hajtás, hengerűrtartalom), de csak ha a „Megjegyzem ezt az autót” gombra kattintasz.</li></ul>
-<p>Ezek nem sütik, és nem jutnak el hozzánk. Bármikor törölheted őket az „Elfelejtés” gombbal vagy a böngésző beállításaiban.</p>
-<h2>Sütik, statisztika, hirdetés</h2>
-<p>Sütit nem használunk, követő- és statisztikai kódot nem futtatunk, hirdetés jelenleg nincs az oldalon. A betűtípusokat is saját tárhelyről töltjük, így harmadik fél nem kap adatot a látogatásodról. Ha ez változik, előre itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
+<div class="keret oldalfej"><ol class="morzsa" aria-label="Hol vagy"><li><a href="/">Főoldal</a></li><li aria-current="page">Adatvédelem</li></ol><h1>Adatvédelem</h1><p class="bevezeto">Nem gyűjtünk rólad adatot. A kalkulátorok a böngésződben számolnak, amit beírsz, az nem jut el hozzánk.</p></div>
+<div class="keret"><article class="cikk" style="padding-top:12px">
+<h2>Sütik és követés</h2>
+<p>Nem használunk sütit, statisztikai vagy követőkódot, és jelenleg hirdetés sincs az oldalon. A betűtípusokat is magunk szolgáljuk ki, így más cég sem értesül a látogatásodról. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
 <h2>Szervernapló</h2>
-<p>Az oldalt a Cloudflare, Inc. (101 Townsend St, San Francisco, CA 94107, USA) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző típusa) a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk fel, és nem kapcsoljuk személyhez.</p>
+<p>Az oldalt a Cloudflare, Inc. (101 Townsend St, San Francisco, CA 94107, USA) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző), a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk, és nem kötjük személyhez.</p>
 <h2>Adatkezelő és jogaid</h2>
-<p>Adatkezelő: <span class="cimke cimke-sarga">kitöltés alatt</span>. Jogod van tájékoztatást, helyesbítést, törlést és korlátozást kérni, és tiltakozhatsz az adatkezelés ellen. Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH, 1055 Budapest, Falk Miksa utca 9–11., <a href="https://naih.hu" rel="noopener">naih.hu</a>) fordulhatsz.</p>
-</article></section>
+<p>Adatkezelő: <em class="halk">kitöltés alatt</em>. Kérhetsz tájékoztatást, helyesbítést, törlést és korlátozást, és tiltakozhatsz az adatkezelés ellen. Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhatsz (NAIH, 1055 Budapest, Falk Miksa utca 9–11., naih.hu).</p>
+</article></div>
 </main>
-<footer class="lablec">
-<div class="wrap">
-<div class="lablec-racs">
+<footer class="lablec"><div class="keret">
 <div>
-<a class="logo" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#FFC83D"/><path d="M6.5 21.5a9.5 9.5 0 0 1 19 0" fill="none" stroke="#111316" stroke-width="2.6" stroke-linecap="round"/><g class="tu"><path d="M16 19 L16 9.5" stroke="#111316" stroke-width="2.6" stroke-linecap="round"/></g><circle cx="16" cy="19" r="2.6" fill="#111316"/></svg><span>Autóköltség</span></a>
-<p style="margin-top:16px">Ingyenes autós kalkulátorok hivatalos tételekkel. A számítás a böngésződben fut, a beírt adatokat nem küldjük el sehova.</p>
+<p>A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
+<p>Az adatokat minden reggel összevetjük a NAV oldalával. Legutóbbi ellenőrzés: 2026. november 6.</p>
 </div>
-<div><h2>Kalkulátorok</h2><ul>
-<li><a href="/gepjarmuado-kalkulator/">Gépjárműadó</a></li>
-<li><a href="/atirasi-illetek-kalkulator/">Átírási illeték</a></li>
-<li><a href="/kilometerterites-kalkulator/">Kilométertérítés</a></li>
-</ul></div>
-<div><h2>Tudnivalók</h2><ul>
+<div><h2>Kalkulátorok</h2><ul><li><a href="/gepjarmuado-kalkulator/">Gépjárműadó</a></li><li><a href="/atirasi-illetek-kalkulator/">Átírás</a></li><li><a href="/kilometerterites-kalkulator/">Kilométertérítés</a></li></ul></div>
+<div><h2>Autóköltség</h2><ul>
 <li><a href="/forrasok/">Források és frissítés</a></li>
 <li><a href="/adatvedelem/">Adatvédelem</a></li>
 <li><a href="/impresszum/">Impresszum</a></li>
 </ul></div>
-<div><h2>Adatok</h2><ul>
-<li><a href="/kilometerterites-kalkulator/#nav-arak">NAV-üzemanyagárak</a></li>
-<li><a href="/gepjarmuado-kalkulator/#tetelek">Gépjárműadó-tételek</a></li>
-<li><a href="/atirasi-illetek-kalkulator/#tetelek">Illetéktételek</a></li>
-</ul></div>
-</div>
-<div class="lablec-also">
-<span>A számítások tájékoztató jellegűek, nem adótanácsadás. A fizetendő összeget a NAV határozata tartalmazza.</span>
-<span>Adatok ellenőrizve: 2026. november 6.</span>
-</div>
-</div>
-</footer>
+</div></footer>
 
-<script type="module" src="/assets/js/app.js?v=4d0153f0"></script>
+<script type="module" src="/assets/js/app.js?v=a56c0e97"></script>
 </body>
 </html>

@@ -18,5 +18,7 @@ Minden nyilvános szövegre érvényes (kalkulátorok, GYIK, útmutatók, közö
 - Gépies fordulatok és tükörfordítások („hozza vissza az árát”, „szemben egy másik autó átírásával”, „példa, írd át” a címkében).
 - Félkész szöveg kint: helyőrző, „Tervezet”, szögletes zárójel. Ami nincs kész, az nem kerül ki.
 - Belső zsargon a felületen („statikus táblázat”, „localStorage” magyarázat nélkül).
+- Gépi szövegre valló szerkezetek: kettőspontos „csattanó” („nem kérünk tőled semmit: se…, se…”), „nem X, hanem Y” fordulat ott, ahol nincs valódi szembeállítás, hármas felsorolás csak a ritmus kedvéért, „Röviden:” bevezetés, túl sok gondolatjel.
+- Reklámnyelv: „pár másodperc alatt”, „minden lépést megmutatunk”, „a legjobb”. Mondd meg, mit csinál az oldal, és kész.
 
 **Formátum:** ezres tagolás szóközzel (27 625 Ft), dátum „2026. november 6.” alakban, tizedesvessző, gondolatjel a tartományokban (150–375 Ft/kW).
