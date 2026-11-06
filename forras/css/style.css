@@ -525,3 +525,12 @@ a.jel:hover { text-decoration: underline; }
   .oldalfej .valasz + .bevezeto { font-size: 15.5px; }
   .oldalfej .friss { font-size: 13px; }
 }
+/* Számoló oldalak: rövid fej, hogy a kalkulátor rögtön látsszon */
+.oldalfej:has(.valasz) { padding-block: 44px 28px; gap: 12px; }
+.oldalfej:has(.valasz) h1 { font-size: clamp(32px, 4.4vw, 54px); line-height: 1.06; }
+.oldalfej .valasz { font-size: clamp(17px, 1.6vw, 19.5px); margin-top: 4px; max-width: 46em; }
+@media (max-width: 640px) {
+  .oldalfej:has(.valasz) { padding-block: 26px 18px; gap: 8px; }
+  .oldalfej:has(.valasz) h1 { font-size: 30px; }
+  .oldalfej .valasz { font-size: 16px; }
+}
