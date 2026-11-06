@@ -130,7 +130,7 @@ export function gepjarmuadoOldal(k) {
     { k: 'Kell fizetni elektromos autó után?', v: ['Nem. A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó mentes, és ehhez semmit nem kell intézned: a NAV a nyilvántartásból tudja, és nem vet ki adót.'] },
     { k: 'Mi a helyzet a plug-in hibridekkel?', v: [phevSzoveg(aktualis)] },
     { k: 'Mikor és hogyan kell befizetni?', v: ['A NAV márciusban küldi a határozatot. Az adót egy összegben április 15-ig kell befizetni, a határozatban lévő linken, a NAV-Mobilban vagy átutalással. Magánszemélyek és egyéni vállalkozók legfeljebb öthavi, pótlékmentes részletfizetést kérhetnek.', 'Ha az adókötelezettség év közben kezdődik, például új autó forgalomba helyezésekor, a határozat véglegessé válásától számított 15 napon belül kell fizetni.'] },
-    { k: 'Ki fizet, ha év közben eladom az autót?', v: ['A NAV az év eleji nyilvántartás szerint vet ki adót, ezért az adott évet általában még az eladó fizeti, a vevő a következő évtől. Ha másképp osztanátok el, írjátok bele az adásvételi szerződésbe.'] },
+    { k: 'Ki fizet, ha év közben eladom az autót?', v: ['Az egész évit az eladó, mert az éves adót az fizeti, aki január 1-jén a nyilvántartásban szerepel. A vevő a következő évtől fizet. Ha egymás közt másképp osztanátok el, írjátok bele az adásvételi szerződésbe, a NAV ettől még az eladótól kéri. Kivétel, ha az autót kivonják a forgalomból, például kereskedésbe adod: akkor csak a kivonás hónapjának végéig kell fizetni, és a többi visszajár. A kalkulátorban a „Mi történt az autóval abban az évben?” kérdésnél mindegyik esetet kiszámolhatod.'] },
   ];
   const honapok = S.HONAPOK.map((h, i) => [i + 1, h]);
   const leiras = `Gépjárműadó ${aktualis}${jovo ? ` és ${jovo}` : ''}: a kW és a gyártási év alapján kiszámoljuk az éves adót a NAV tételeivel. Elektromos és plug-in hibrid mentesség.`;
@@ -150,9 +150,10 @@ ${sor('', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 
 ${sor('P.3', negyzetek('hajtas', 'Hajtás', HAJTASOK, ''))}
 ${lathato.some((e) => e <= 2026) ? sor('B', jelolo('phevRegi', '2025. január 1. előtt helyezték forgalomba', 'Ilyenkor az „5P” és „5N” jelzésű plug-in hibrid 2026 végéig mentes.'), ' data-mutat="hajtas=plugin"') : ''}
 <fieldset><legend>Ha rád is vonatkozik</legend>
-${sor('', jelolo('evkozben', 'Az idén került forgalomba', 'Új vagy behozott autó. A forgalomba helyezést követő hónaptól kell fizetni.'))}
-<div class="sor" data-mutat="evkozben"><span class="kod ures"></span><div class="mezo">${valaszto('evkozbenHonap', 'Melyik hónapban?', honapok, 3)}</div></div>
-${sor('', jelolo('mozgaskorlatozott', 'Súlyos mozgáskorlátozott vagyok', 'Egy legfeljebb 100 kW-os autóra évi 13 000 forintig nem kell adót fizetni.'))}
+${sor('', negyzetek('valtozas', 'Mi történt az autóval abban az évben?', [['', 'Semmi, egész évben az enyém'], ['vett', 'Használtan vettem meg'], ['eladta', 'Eladtam'], ['uj', 'Forgalomba helyezték a nevemen'], ['kivonta', 'Kivonták a forgalomból']], ''))}
+<div class="sor" data-mutat="valtozas=uj"><span class="kod ures"></span><div class="mezo">${valaszto('evkozbenHonap', 'Melyik hónapban helyezték forgalomba?', honapok, 3, 'Új, külföldről behozott, vagy forgalomból kivonva vett autó. A következő hónaptól kell fizetni.')}</div></div>
+<div class="sor" data-mutat="valtozas=kivonta"><span class="kod ures"></span><div class="mezo">${valaszto('kivonasHonap', 'Melyik hónapban vonták ki?', honapok, 6, 'Például kereskedésbe adtad, bontóba vitted, vagy kérésre kivonták. Annak a hónapnak a végéig kell fizetni.')}</div></div>
+${sor('', jelolo('mozgaskorlatozott', 'Súlyosan mozgáskorlátozott vagy fogyatékossággal élő vagyok, vagy ilyen hozzátartozómat szállítom', 'Egy legfeljebb 100 kW-os személyautóra évi 13 000 forintig nem kell adót fizetni. A hozzátartozónak veled közös háztartásban kell élnie. Egyszer kell bejelenteni a NAV-nak.'))}
 </fieldset>`, autom: true })}
 ${elszamolas(k, M.uresPanel('Add meg a teljesítményt és a gyártási évet.'))}
 </div>
@@ -167,7 +168,7 @@ ${ra.savok.map((x, i) => `<tr data-sav="${i}"${i === r.sav ? ' class="kiemelt"' 
 <ul>
 <li><strong>Elektromos autó.</strong> Az „5E” és „5Z” környezetvédelmi osztályú autó mentes.</li>
 <li><strong>Plug-in hibrid.</strong> ${phevSzoveg(aktualis)}</li>
-<li><strong>Súlyos mozgáskorlátozott személy.</strong> Egy legfeljebb 100 kW-os autója után évi 13 000 forintig mentes. A kedvezményt a NAV-nál kell kérni.</li>
+<li><strong>Súlyosan mozgáskorlátozott vagy fogyatékossággal élő személy.</strong> Egy legfeljebb 100 kW-os személyautója után évi 13 000 forintig mentes. Ugyanez jár a vele közös háztartásban élő közeli hozzátartozónak, aki rendszeresen szállítja. Több autó esetén a legkisebb teljesítményűre. A mentességet egyszer kell bejelenteni a NAV-nak a GJADO-adatlapon.</li>
 </ul>
 <p>A nem tölthető hibrid nem mentes, ugyanúgy a teljesítménye szerint fizet, mint a benzines vagy a dízeles autó.</p>
 <h2>Gyakori kérdések</h2>

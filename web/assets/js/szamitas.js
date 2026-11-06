@@ -46,8 +46,15 @@ export function gepjarmuado(adat, b) {
   const sav = gjadoSav(kor);
   const ftKw = tetel.savok[sav];
   const evesTeljes = kw * ftKw;
-  const honap = Number(b.evkozbenHonap) || 0;
-  const honapok = honap ? 12 - honap : 12;
+  // Mi történt az autóval az adóévben (NAV GYIK, Gjt. 2–3. §):
+  //   uj      – az adóévben helyezték forgalomba a nevén: a következő hónaptól, időarányosan
+  //   vett    – használtan vette: az egész évit az fizeti, aki január 1-jén a nyilvántartásban szerepelt
+  //   eladta  – eladta: az egész évit ő fizeti, a vevő a következő évtől
+  //   kivonta – kivonták a forgalomból: a kivonás hónapjának végéig, a többi túlfizetésként visszajár
+  const valtozas = b.valtozas || (Number(b.evkozbenHonap) ? 'uj' : '');
+  const honap = Math.min(12, Math.max(1, Number(b.evkozbenHonap) || 1));
+  const kivonas = Math.min(12, Math.max(1, Number(b.kivonasHonap) || 12));
+  const honapok = valtozas === 'uj' ? 12 - honap : valtozas === 'kivonta' ? kivonas : valtozas === 'vett' ? 0 : 12;
 
   let mentes = null;
   if (b.hajtas === 'elektromos') mentes = 'A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó mentes a gépjárműadó alól.';
@@ -59,20 +66,20 @@ export function gepjarmuado(adat, b) {
   let mkMegjegyzes = null;
   if (!mentes && b.mozgaskorlatozott) {
     if (kw <= mk.max_kw) kedvezmeny = Math.min(mk.max_ft, aranyosOsszeg);
-    else mkMegjegyzes = `A kedvezmény csak ${mk.max_kw} kW-ig jár.`;
+    else mkMegjegyzes = `A kedvezmény csak ${mk.max_kw} kW-ig jár, ennél erősebb autóra nem.`;
   }
   const fizetendo = mentes ? 0 : aranyosOsszeg - kedvezmeny;
+  const hatarido = valtozas === 'uj' ? 'a NAV határozatában megadott időpontig' : valtozas === 'vett' ? null : `${b.ev}. április 15-ig, egy összegben`;
   return {
-    ev: b.ev, kw, kor, sav, ftKw, honapok, evesTeljes,
+    ev: b.ev, kw, kor, sav, ftKw, honapok, evesTeljes, valtozas, kivonas, honap,
     aranyos: mentes ? 0 : aranyosOsszeg, kedvezmeny, mkMegjegyzes, mentes,
-    fizetendo, havi: ft(fizetendo / 12),
-    hatarido: honap ? 'a NAV határozatában megadott időpontig' : `${b.ev}. április 15-ig, egy összegben`,
+    fizetendo, havi: ft(fizetendo / 12), hatarido,
   };
 }
 
 /** Ugyanannak az autónak az adója minden olyan évre, amelyre van tétel (a megadott évtől). */
 export function gjadoEvek(adat, b) {
-  return Object.keys(adat.tetelek.gepjarmuado).map(Number).sort().map((ev) => gepjarmuado(adat, { ...b, ev, evkozbenHonap: 0 }));
+  return Object.keys(adat.tetelek.gepjarmuado).map(Number).sort().map((ev) => gepjarmuado(adat, { ...b, ev, evkozbenHonap: 0, valtozas: '', kivonasHonap: 0 }));
 }
 
 /* ---------------- Átírási (vagyonszerzési) illeték ---------------- */

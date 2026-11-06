@@ -39,6 +39,23 @@ test('gépjárműadó: év közbeni forgalomba helyezés és mozgáskorlátozott
   assert.equal(S.gepjarmuado(adat, { ev: 2026, kw: 110, gyartasiEv: 2019, hajtas: 'hagyomanyos', mozgaskorlatozott: true }).kedvezmeny, 0);
 });
 
+test('gépjárműadó: évközi adásvétel és forgalomból kivonás (NAV GYIK)', () => {
+  const alap = { ev: 2026, kw: 85, gyartasiEv: 2019, hajtas: 'hagyomanyos' };
+  // használtan vett autó: az idei adót az eladó fizeti
+  assert.equal(S.gepjarmuado(adat, { ...alap, valtozas: 'vett' }).fizetendo, 0);
+  assert.equal(S.gepjarmuado(adat, { ...alap, valtozas: 'vett', mozgaskorlatozott: true }).kedvezmeny, 0);
+  // eladta: az egész évit ő fizeti
+  assert.equal(S.gepjarmuado(adat, { ...alap, valtozas: 'eladta' }).fizetendo, 27625);
+  // júniusban kivonták: január–június, 6 hónap
+  assert.equal(S.gepjarmuado(adat, { ...alap, valtozas: 'kivonta', kivonasHonap: 6 }).fizetendo, Math.round(27625 * 6 / 12));
+  // a mentesség az időarányos adóra is legfeljebb 13 000 Ft
+  assert.equal(S.gepjarmuado(adat, { ...alap, valtozas: 'kivonta', kivonasHonap: 3, mozgaskorlatozott: true }).fizetendo, 0);
+  // a régi „evkozbenHonap” paraméter továbbra is az új forgalomba helyezést jelenti
+  assert.equal(S.gepjarmuado(adat, { ...alap, evkozbenHonap: 3 }).valtozas, 'uj');
+  // a következő évek sávja nem örökli az idei változást
+  assert.ok(S.gjadoEvek(adat, { ...alap, valtozas: 'vett' }).every((x) => x.fizetendo > 0));
+});
+
 test('illeték: NAV-tájékoztató példái', () => {
   assert.equal(S.illetek(adat, { ev: 2026, kw: 100, gyartasiEv: 2026, hajtas: 'hagyomanyos', szerzes: 'vetel' }).osszeg, 85000);
   assert.equal(S.illetek(adat, { ev: 2026, kw: 50, gyartasiEv: 2021, hajtas: 'hagyomanyos', szerzes: 'vetel' }).osszeg, 27500);

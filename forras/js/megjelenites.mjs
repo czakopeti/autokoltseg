@@ -85,23 +85,38 @@ export const hibaPanel = (uz) => `<p class="hiba" role="alert">${esc(uz)}</p>`;
 /* ---------- Gépjárműadó ---------- */
 export function gjadoPanel(adat, r, b) {
   if (r.hiba) return hibaPanel(r.hiba);
-  let h = vegosszeg(`Gépjárműadó, ${r.ev}`, r.fizetendo, r.mentes ? null : (r.honapok < 12 ? `${r.honapok} hónapra. A befizetés határidejét a NAV határozata tartalmazza.` : `Egy összegben, ${r.ev}. április 15-ig. Havonta nagyjából ${ftx(r.havi)}.`));
+  const kov = adat.tetelek.gepjarmuado[r.ev + 1] ? S.gepjarmuado(adat, { ...b, ev: r.ev + 1, valtozas: '', evkozbenHonap: 0, kivonasHonap: 0 }) : null;
+  const kovSzoveg = kov && !kov.hiba ? `${rag(kov.ev, 'tól', 'től')} te fizeted, ${kov.mentes ? 'de az autó mentes' : `akkor ${ftx(kov.fizetendo)} évente`}.` : 'A következő évtől te fizeted.';
+  if (r.valtozas === 'vett') {
+    return vegosszeg(`A te gépjárműadód, ${r.ev}`, 0, `Az idei adót az eladó fizeti. ${kovSzoveg}`)
+      + megjegyzes(`Az éves gépjárműadót az fizeti, aki január 1-jén üzembentartóként (ha nincs ilyen, tulajdonosként) szerepel a járműnyilvántartásban. Használt autó évközi vételekor ez az eladó, akkor is, ha az autót januárban adta el. Kivétel, ha az autót forgalomból kivonva vetted, és a te nevedre helyezték újra forgalomba: akkor a következő hónaptól időarányosan te fizetsz. Ezt a „Forgalomba helyezték a nevemen” válasszal számolhatod ki.`);
+  }
+  const al = r.mentes ? null
+    : r.valtozas === 'uj' ? `${r.honapok} hónapra. A befizetés határidejét a NAV határozata tartalmazza.`
+    : r.valtozas === 'kivonta' ? `${r.honapok} hónapra, a kivonás hónapjának végéig. Ha az egész évit már befizetted, a különbözet visszajár.`
+    : `Egy összegben, ${r.ev}. április 15-ig. Havonta nagyjából ${ftx(r.havi)}.`;
+  let h = vegosszeg(`Gépjárműadó, ${r.ev}`, r.fizetendo, al);
   if (r.mentes) return h + megjegyzes(r.mentes, 'mentes') + evSav(adat, r, b);
   h += '<ul class="tetelek">';
   h += tetel('Teljesítmény (P.2)', `${fmt(r.kw)} kW`, { forras: 'sajat' });
   h += tetel('Az autó kora', `${r.kor}. naptári év`, { al: `korsáv: ${S.GJADO_SAV_ROVID[r.sav]}`, forras: 'sajat' });
   h += tetel('Adótétel', `${r.ftKw} Ft/kW`, { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[r.ev]?.forras, al: adat.tetelek.gepjarmuado[r.ev]?.kozzeteve ? `NAV, közzétéve ${datumHu(adat.tetelek.gepjarmuado[r.ev].kozzeteve)}` : '' });
-  if (r.honapok < 12) h += tetel('Időarány', `${r.honapok}/12`, { forras: 'hivatalos' });
-  if (r.kedvezmeny) h += tetel('Mozgáskorlátozott kedvezmény', `−${ftx(r.kedvezmeny)}`, { cls: 'levonas', forras: 'hivatalos' });
+  if (r.honapok < 12) h += tetel('Időarány', `${r.honapok}/12`, { al: r.valtozas === 'uj' ? `${S.HONAPOK[r.honap - 1]} végéig nem kell fizetni` : `${S.HONAPOK[r.kivonas - 1]} végéig kell fizetni`, forras: 'sajat' });
+  if (r.kedvezmeny) h += tetel('Mozgáskorlátozotti mentesség', `−${ftx(r.kedvezmeny)}`, { al: 'évi 13 000 Ft-ig', cls: 'levonas', forras: 'hivatalos' });
   h += tetel('Fizetendő', ftx(r.fizetendo), { cls: 'vegso' });
   h += '</ul>';
-  h += `<p class="igy">Így jön ki: <strong>${fmt(r.kw)} kW × ${r.ftKw} Ft/kW = ${ftx(r.evesTeljes)}</strong>${r.honapok < 12 ? `, ebből ${r.honapok} hónapra <strong>${ftx(r.aranyos)}</strong>` : ''}${r.kedvezmeny ? `, a kedvezménnyel <strong>${ftx(r.fizetendo)}</strong>` : ''}.</p>`;
+  h += `<p class="igy">Így jön ki: <strong>${fmt(r.kw)} kW × ${r.ftKw} Ft/kW = ${ftx(r.evesTeljes)}</strong>${r.honapok < 12 ? `, ebből ${r.honapok} hónapra <strong>${ftx(r.aranyos)}</strong>` : ''}${r.kedvezmeny ? `, a mentességgel <strong>${ftx(r.fizetendo)}</strong>` : ''}.</p>`;
+  if (r.valtozas === 'eladta') h += megjegyzes(`Az idei adót akkor is te fizeted, ha év közben eladod az autót, mert január 1-jén a te nevedre szólt. A vevő a következő évtől fizet. Ha az autót kereskedésbe adod, és a kereskedő kivonja a forgalomból, a kivonás hónapja utáni rész visszajár: ezt a „Kivonták a forgalomból” válasszal számolhatod ki.`);
+  if (r.kedvezmeny) h += megjegyzes('A mentességet egyszer kell bejelenteni a NAV-nak a GJADO-adatlapon, utána nem kell évente megismételni. Ha több autód van, csak a legkisebb teljesítményűre jár.');
   if (r.mkMegjegyzes) h += megjegyzes(r.mkMegjegyzes);
   return jelekkel(h) + evSav(adat, r, b);
 }
 
 function evSav(adat, r, b) {
-  const evek = S.gjadoEvek(adat, b).filter((x) => !x.hiba);
+  // eladás vagy forgalomból kivonás után a következő évek nem a látogatóra vonatkoznak
+  if (r.valtozas === 'eladta' || r.valtozas === 'kivonta') return '';
+  // a kiválasztott évnél a ténylegesen fizetendő (időarányos) összeg látszik
+  const evek = S.gjadoEvek(adat, b).filter((x) => !x.hiba).map((x) => (x.ev === r.ev ? { ...x, fizetendo: r.fizetendo } : x));
   if (evek.length < 2) return '';
   let h = `<div class="ev-sav" aria-label="Ugyanez az autó évenként">${evek.map((x) => `<div class="${x.ev === r.ev ? 'aktiv' : ''}"><span class="ev">${x.ev}</span><span class="ennyi">${ftx(x.fizetendo)}</span>${adat.tetelek.gepjarmuado[x.ev]?.kozzeteve ? `<span class="statusz">NAV-tétel, közzétéve ${datumHu(adat.tetelek.gepjarmuado[x.ev].kozzeteve)}</span>` : ''}</div>`).join('')}</div>`;
   const valt = evek.find((x, i) => i > 0 && x.sav !== evek[i - 1].sav && !x.mentes);

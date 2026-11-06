@@ -173,7 +173,7 @@ const KALK = {
   },
   gepjarmuado: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('gepjarmuado', adat, e);
-    const b = { ev: Number(e.ev), kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: gjHajtas(e.hajtas), phevRegi: !!e.phevRegi, evkozbenHonap: e.evkozben ? Number(e.evkozbenHonap) : 0, mozgaskorlatozott: !!e.mozgaskorlatozott };
+    const b = { ev: Number(e.ev), kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: gjHajtas(e.hajtas), phevRegi: !!e.phevRegi, valtozas: e.valtozas || '', evkozbenHonap: e.valtozas === 'uj' ? Number(e.evkozbenHonap) : 0, kivonasHonap: Number(e.kivonasHonap) || 12, mozgaskorlatozott: !!e.mozgaskorlatozott };
     const r = S.gepjarmuado(adat, b);
     $$('[data-sav]').forEach((tr) => tr.classList.toggle('kiemelt', !r.hiba && !r.mentes && Number(tr.dataset.sav) === r.sav));
     return r.hiba ? M.hianyPanel(r.hiba) : M.gjadoPanel(adat, r, b);
@@ -441,6 +441,7 @@ function indit() {
   const panel = $('.elsz-tartalom') || $('.szerzodes-elonezet');
   const u = tipus === 'gyors' || tipus === 'autom' ? null : urlbol();
   if (u) {
+    if (u.evkozben === true && !u.valtozas) u.valtozas = 'uj'; // régi megosztott linkek
     beallit(form, u);
     if (u.megosztva) megosztottJelzes(form);
     if (u.kwEgyseg === 'le') { const me = form.elements.kw?.closest('.beir')?.querySelector('.me'); if (me) me.textContent = 'LE'; }
