@@ -62,9 +62,11 @@ for (const [ut, html] of oldalak) {
 writeFileSync(join(KI, '404.html'), O.nemTalalhatoOldal(k));
 
 if (!elonezet) {
-  writeFileSync(join(KI, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${cfg.domain}/sitemap.xml\n`);
+  // Munkaverzióban (eles: false) a robots.txt engedi a bejárást, hogy a keresők lássák a noindex jelzést,
+  // de nem ad meg oldaltérképet. A noindex a HTML-ben és fejlécben is ott van, minden fájlra.
+  writeFileSync(join(KI, 'robots.txt'), cfg.eles ? `User-agent: *\nAllow: /\n\nSitemap: ${cfg.domain}/sitemap.xml\n` : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
   const urlek = oldalak.map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${ma}</lastmod></url>`).join('\n');
-  writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
+  if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
 /*
   X-Content-Type-Options: nosniff
@@ -72,7 +74,7 @@ if (!elonezet) {
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   X-Frame-Options: SAMEORIGIN
   Cross-Origin-Opener-Policy: same-origin
-
+${cfg.eles ? '' : '  X-Robots-Tag: noindex, nofollow, noarchive\n'}
 # A betűk és a verziózott fájlok sokáig gyorsítótárazhatók
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
