@@ -4,7 +4,9 @@ import { mkdirSync, writeFileSync, readFileSync, cpSync, rmSync, readdirSync, ex
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { betoltAdat, olvas, maBudapest, GYOKER } from './forras/adat.mjs';
+import * as S from './forras/js/szamitas.mjs';
 import * as O from './forras/oldalak.mjs';
+import * as M from './forras/js/megjelenites.mjs';
 
 const elonezet = process.argv.includes('--elonezet');
 const KI = join(GYOKER, elonezet ? 'elonezet' : 'web');
@@ -66,7 +68,11 @@ writeFileSync(join(KI, '404.html'), O.nemTalalhatoOldal(k));
 if (!elonezet) {
   // Munkaverzióban (eles: false) a robots.txt engedi a bejárást, hogy a keresők lássák a noindex jelzést,
   // de nem ad meg oldaltérképet. A noindex a HTML-ben és fejlécben is ott van, minden fájlra.
-  writeFileSync(join(KI, 'robots.txt'), cfg.eles ? `User-agent: *\nAllow: /\n\nSitemap: ${cfg.domain}/sitemap.xml\n` : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
+  // Élesben minden kereső- és AI-robot számára nyitott (a ceevio mintájára, név szerint is felsorolva).
+  const ROBOTOK = ['OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Googlebot', 'Bingbot', 'Applebot'];
+  writeFileSync(join(KI, 'robots.txt'), cfg.eles
+    ? `# ${cfg.marka}: minden kereső- és AI-robot számára nyitott.\nUser-agent: *\nAllow: /\n\n${ROBOTOK.map((r) => `User-agent: ${r}\nAllow: /\n`).join('\n')}\nSitemap: ${cfg.domain}/sitemap.xml\n`
+    : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
   const urlek = oldalak.map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${ma}</lastmod></url>`).join('\n');
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
@@ -86,7 +92,27 @@ https://:version.:project.pages.dev/*
   X-Robots-Tag: noindex
 `);
   const lf = Object.entries(adat.uzemanyag.evek).flatMap(([e, h]) => Object.keys(h).map((x) => `${e}-${x}`)).pop();
-  writeFileSync(join(KI, 'llms.txt'), `# ${cfg.marka}\n\n> Ingyenes magyar autós kalkulátorok a NAV közzétett tételeivel. A számítás képlete minden eredménynél látszik.\n\n## Kalkulátorok\n- [Gépjárműadó-kalkulátor](${cfg.domain}/gepjarmuado-kalkulator/): ${Object.keys(adat.tetelek.gepjarmuado).join(', ')}. évi tételek\n- [Átírási illeték kalkulátor](${cfg.domain}/atirasi-illetek-kalkulator/): illeték, okmányok, regisztrációs adó\n- [Kilométertérítés-kalkulátor](${cfg.domain}/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: ${lf}), fogyasztási normák\n\n## Források\n- [Források és frissítés](${cfg.domain}/forrasok/)\n`);
+  const lfh = S.legfrissebbHonap(adat);
+  const evekLista = Object.keys(adat.tetelek.gepjarmuado).join(' és ');
+  writeFileSync(join(KI, 'llms.txt'), `# ${cfg.marka}
+
+> Az autód. A költségeid. A döntéseid. ${M.nevelo(cfg.marka).replace(/^a/, "A")} ${cfg.marka} független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat minden reggel automatikusan összeveti a NAV-val.
+
+## Kalkulátorok
+
+- [Gépjárműadó](${cfg.domain}/gepjarmuado-kalkulator/): ${evekLista}. évi tételek kW és gyártási év alapján, elektromos és plug-in hibrid mentesség
+- [Átírás](${cfg.domain}/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
+- [Benzines vagy elektromos autó](${cfg.domain}/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
+- [Fenntartás](${cfg.domain}/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
+- [Kilométertérítés](${cfg.domain}/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap), fogyasztási norma, munkába járás
+- [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
+- [Adásvételi szerződés](${cfg.domain}/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
+
+## Források és frissítés
+
+- [Honnan vannak a számok?](${cfg.domain}/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
+- [Mi változott?](${cfg.domain}/valtozasok/): az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel
+`);
 }
 
 console.log(`Kész: ${oldalak.length + 1} oldal → ${KI.replace(GYOKER + '/', '')} (dátum: ${ma}, verzió: ${verzio})`);

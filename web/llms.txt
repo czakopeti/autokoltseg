@@ -1,11 +1,18 @@
 # autózom
 
-> Ingyenes magyar autós kalkulátorok a NAV közzétett tételeivel. A számítás képlete minden eredménynél látszik.
+> Az autód. A költségeid. A döntéseid. Az autózom független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat minden reggel automatikusan összeveti a NAV-val.
 
 ## Kalkulátorok
-- [Gépjárműadó-kalkulátor](https://autozom.hu/gepjarmuado-kalkulator/): 2026, 2027. évi tételek
-- [Átírási illeték kalkulátor](https://autozom.hu/atirasi-illetek-kalkulator/): illeték, okmányok, regisztrációs adó
-- [Kilométertérítés-kalkulátor](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026-11), fogyasztási normák
 
-## Források
-- [Források és frissítés](https://autozom.hu/forrasok/)
+- [Gépjárműadó](https://autozom.hu/gepjarmuado-kalkulator/): 2026 és 2027. évi tételek kW és gyártási év alapján, elektromos és plug-in hibrid mentesség
+- [Átírás](https://autozom.hu/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
+- [Benzines vagy elektromos autó](https://autozom.hu/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
+- [Fenntartás](https://autozom.hu/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
+- [Kilométertérítés](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026. 11. hónap), fogyasztási norma, munkába járás
+- [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon
+- [Adásvételi szerződés](https://autozom.hu/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
+
+## Források és frissítés
+
+- [Honnan vannak a számok?](https://autozom.hu/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
+- [Mi változott?](https://autozom.hu/valtozasok/): az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel

@@ -72,7 +72,11 @@ export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = nu
   const L = linkelo(ut, elonezet);
   const kanonikus = `${cfg.domain}/${ut}`;
   const teljesCim = ut ? `${cim} | ${cfg.marka}` : cim;
-  const ld = jsonld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n');
+  // Minden oldalhoz: WebPage a frissítés dátumával és a kiadóval (szervezet, logóval). A frissességi jelzés a
+  // ceevio-laborban irányjelző hatású volt az AI-említésre.
+  const kiado = { '@type': 'Organization', name: cfg.marka, url: `${cfg.domain}/`, logo: `${cfg.domain}/apple-touch-icon.png`, slogan: 'Az autód. A költségeid. A döntéseid.' };
+  const lap = { '@context': 'https://schema.org', '@type': 'WebPage', name: cim, description: leiras, url: kanonikus, inLanguage: 'hu', dateModified: (k.adat.allapot.utolso_ellenorzes || k.ma).slice(0, 10), isPartOf: { '@type': 'WebSite', name: cfg.marka, url: `${cfg.domain}/` }, publisher: kiado };
+  const ld = [lap, ...jsonld].map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n');
   return `<!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -134,9 +138,14 @@ function lablec(k, L) {
 </div></footer>`;
 }
 
-export function oldalfej(L, { morzsa, cim, bevezeto, fo = false }) {
+/**
+ * Az oldal teteje. A ceevio-labor (L3b, L4) szerint az AI-említést a „válasz elöl” növeli bizonyítottan:
+ * a cím maga a kérdés, és az első bekezdés (valasz) rögtön megválaszolja, konkrét számmal. A bevezető csak utána jön.
+ * A frissességi dátum (friss) irányjelző hatású volt, ezért minden számoló oldalon kiírjuk.
+ */
+export function oldalfej(L, { morzsa, cim, valasz = '', bevezeto, fo = false, friss = '' }) {
   const m = morzsa ? `<ol class="morzsa" aria-label="Hol vagy">${[`<li><a href="${L.l('')}">Főoldal</a></li>`, ...morzsa.map((x) => `<li aria-current="page">${x}</li>`)].join('')}</ol>` : '';
-  return `<div class="keret oldalfej${fo ? ' fo' : ''}">${m}<h1>${cim}</h1>${bevezeto ? `<p class="bevezeto">${bevezeto}</p>` : ''}</div>`;
+  return `<div class="keret oldalfej${fo ? ' fo' : ''}">${m}<h1>${cim}</h1>${valasz ? `<p class="valasz">${valasz}</p>` : ''}${bevezeto ? `<p class="bevezeto">${bevezeto}</p>` : ''}${friss ? `<p class="friss">Az adatokat ${friss} ellenőriztük. <a href="${L.l('forrasok/')}">Honnan vannak a számok?</a></p>` : ''}</div>`;
 }
 
 /* ---------- Űrlap-építőkockák ---------- */

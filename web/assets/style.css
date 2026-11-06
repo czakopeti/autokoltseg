@@ -514,3 +514,14 @@ a.jel:hover { text-decoration: underline; }
   .menu-gomb { display: inline-flex; margin-left: auto; font: inherit; font-weight: 600; font-size: 15px; background: none; border: 1.5px solid var(--tinta); color: var(--tinta); border-radius: 4px; padding: 6px 12px; }
   .menu a.menu-autom { border-radius: 6px; padding: 12px 14px; margin: 10px 0 0; justify-content: flex-start; }
 }
+
+/* „Válasz elöl”: a cím kérdésére felelő első bekezdés, utána a bevezető és a frissesség */
+.oldalfej .valasz { font-size: clamp(19px, 2vw, 22px); line-height: 1.5; color: var(--tinta); max-width: 40em; margin-top: 18px; }
+.oldalfej .valasz + .bevezeto { margin-top: 10px; }
+.oldalfej .friss { margin-top: 12px; font-size: 14px; color: var(--tinta2); }
+.oldalfej .friss a { color: var(--tinta2); }
+@media (max-width: 640px) {
+  .oldalfej .valasz { font-size: 17px; line-height: 1.5; margin-top: 14px; }
+  .oldalfej .valasz + .bevezeto { font-size: 15.5px; }
+  .oldalfej .friss { font-size: 13px; }
+}
