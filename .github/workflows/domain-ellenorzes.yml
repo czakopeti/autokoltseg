@@ -1,5 +1,5 @@
 name: Domain-ellenőrzés
-# Kézzel indítható: névszerverek, DNS és az oldal válasza az autozom.hu-n.
+# Kézzel indítható: névszerverek, DNS, az oldal válasza és a JavaScript-fájlok frissessége az autozom.hu-n.
 on:
   workflow_dispatch:
 permissions:
@@ -11,13 +11,19 @@ jobs:
     steps:
       - name: Névszerverek és DNS
         run: |
-          for t in NS A AAAA; do echo "== autozom.hu $t"; dig +short $t autozom.hu @1.1.1.1; done
-          echo "== www CNAME/A"; dig +short www.autozom.hu @1.1.1.1
-          TLD=$(dig +short NS hu. @1.1.1.1 | head -1); echo "== .hu nyilvántartás szerinti delegáció ($TLD)"; dig +norec NS autozom.hu @$TLD | grep -A4 "AUTHORITY SECTION" || true
+          for t in NS A; do echo "== autozom.hu $t"; dig +short $t autozom.hu @1.1.1.1; done
       - name: HTTP-válaszok
         run: |
-          for u in https://autozom.hu/ https://www.autozom.hu/ http://autozom.hu/ https://autozom.hu/robots.txt https://autozom.hu/sitemap.xml https://autokoltseg-7t6.pages.dev/; do
+          for u in https://autozom.hu/ https://www.autozom.hu/ https://autozom.hu/kotelezo-biztositas-valtas/ https://autozom.hu/megjavitsam-vagy-csereljem/; do
             echo "== $u"; curl -sS -m 20 -o /dev/null -w "%{http_code} -> %{redirect_url}\n" "$u" || true
           done
-          echo "== cím a főoldalon"; curl -sS -m 20 https://autozom.hu/ | grep -o '<title>[^<]*' || true
-          echo "== fejlécek"; curl -sSI -m 20 https://autozom.hu/ | grep -iE "server|x-robots|cf-ray|location" || true
+      - name: JavaScript-fájlok és gyorsítótár-fejlécek
+        run: |
+          for f in app szamitas megjelenites; do
+            echo "== /assets/js/$f.js"; curl -sSI -m 20 "https://autozom.hu/assets/js/$f.js" | grep -iE "^(cache-control|etag|age|cf-cache-status|last-modified)" || true
+          done
+          echo "== új függvények az éles fájlokban"
+          curl -sS -m 20 https://autozom.hu/assets/js/szamitas.js | grep -c "export function kgfb\|export function javitasVagyCsere" || true
+          curl -sS -m 20 https://autozom.hu/assets/js/megjelenites.js | grep -c "export function kgfbPanel\|export function javitasPanel" || true
+          curl -sS -m 20 https://autozom.hu/assets/js/app.js | grep -c "kgfb: (adat, e)\|javitas: (adat, e)" || true
+          echo "== a lap melyik app.js-t tölti"; curl -sS -m 20 https://autozom.hu/kotelezo-biztositas-valtas/ | grep -o 'js/app.js?v=[a-z0-9]*'
