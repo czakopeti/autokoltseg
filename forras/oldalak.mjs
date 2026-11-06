@@ -384,7 +384,7 @@ ${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${/Plugee/.test(x.nev) ? '
 <p>${k.cfg.kapcsolat_email ? `Írj a ${k.cfg.kapcsolat_email} címre. Minden jelzést megnézünk, és ha javítunk, itt is jelezzük.` : 'A kapcsolati e-mail-cím hamarosan itt lesz.'}</p>
 ${tovabb(L, ut)}
 </article></div>`;
-  return oldal(k, { cim: 'Honnan vannak a számok?', leiras: 'Az Autóköltség kalkulátorainak forrásai, a tételek megjelenési dátuma, és hogyan frissülnek automatikusan.', ut, tartalom, jsonld: [morzsaLd(k.cfg, [{ nev: 'Források', ut }])] });
+  return oldal(k, { cim: 'Honnan vannak a számok?', leiras: 'Az autózom kalkulátorainak forrásai, a tételek megjelenési dátuma, és hogyan frissülnek automatikusan.', ut, tartalom, jsonld: [morzsaLd(k.cfg, [{ nev: 'Források', ut }])] });
 }
 
 /* ======================= AZ AUTÓM ======================= */
@@ -484,7 +484,7 @@ ${bejegyzesek.map((b) => `<li><time>${b.datum}</time><div><h2>${b.cim}</h2>${b.m
 </ol>
 ${tovabb(L, ut)}
 </article></div>`;
-  return oldal(k, { cim: 'Mi változott? NAV-tételek és üzemanyagárak', leiras: 'Az Autóköltség által átvett NAV-adatok időrendben: évi adótételek és havi üzemanyagárak, a változással együtt.', ut, tartalom, jsonld: [morzsaLd(k.cfg, [{ nev: 'Változások', ut }])] });
+  return oldal(k, { cim: 'Mi változott? NAV-tételek és üzemanyagárak', leiras: 'Az autózom által átvett NAV-adatok időrendben: évi adótételek és havi üzemanyagárak, a változással együtt.', ut, tartalom, jsonld: [morzsaLd(k.cfg, [{ nev: 'Változások', ut }])] });
 }
 
 /* ======================= JOGI OLDALAK ======================= */

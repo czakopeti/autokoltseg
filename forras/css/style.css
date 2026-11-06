@@ -1,4 +1,4 @@
-/* Autóköltség – okmány-arculat.
+/* autózom – okmány-arculat.
    Alap: halvány zsályazöld okmánypapír, mélyzöld tinta. Pecsétvörös csak a pecséten és a hibaüzenetben.
    Betű: Overpass – az amerikai autópálya-táblák betűjéből (Highway Gothic) született, egy család mindenre. Saját tárhelyről. */
 
@@ -482,3 +482,7 @@ a.jel:hover { text-decoration: underline; }
 .becsles-tabla td:nth-child(2), .becsles-tabla th:nth-child(2) { white-space: nowrap; }
 .becsles-tabla td:nth-child(3), .becsles-tabla td:nth-child(4) { white-space: normal; text-align: left; }
 .becsles-tabla th:nth-child(3), .becsles-tabla th:nth-child(4) { text-align: left; }
+
+/* A szókép a fejlécben */
+.jegy .logo { width: 150px; height: auto; color: var(--tinta); display: block; }
+@media (max-width: 600px) { .jegy .logo { width: 128px; } }

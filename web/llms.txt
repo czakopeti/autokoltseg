@@ -1,11 +1,11 @@
-# Autóköltség
+# autózom
 
 > Ingyenes magyar autós kalkulátorok a NAV közzétett tételeivel. A számítás képlete minden eredménynél látszik.
 
 ## Kalkulátorok
-- [Gépjárműadó-kalkulátor](https://autokoltseg.pages.dev/gepjarmuado-kalkulator/): 2026, 2027. évi tételek
-- [Átírási illeték kalkulátor](https://autokoltseg.pages.dev/atirasi-illetek-kalkulator/): illeték, okmányok, regisztrációs adó
-- [Kilométertérítés-kalkulátor](https://autokoltseg.pages.dev/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026-11), fogyasztási normák
+- [Gépjárműadó-kalkulátor](https://autozom.hu/gepjarmuado-kalkulator/): 2026, 2027. évi tételek
+- [Átírási illeték kalkulátor](https://autozom.hu/atirasi-illetek-kalkulator/): illeték, okmányok, regisztrációs adó
+- [Kilométertérítés-kalkulátor](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026-11), fogyasztási normák
 
 ## Források
-- [Források és frissítés](https://autokoltseg.pages.dev/forrasok/)
+- [Források és frissítés](https://autozom.hu/forrasok/)

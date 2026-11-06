@@ -46,7 +46,7 @@ export function gilos() {
 }
 
 /** Körpecsét a dátummal: a NAV-tételekkel számolt eredmény jele. */
-export function pecset(ma, ut = true, marka = 'Autóköltség', link = false) {
+export function pecset(ma, ut = true, marka = 'autózom', link = false) {
   const [ev] = ma.split('-');
   // A gyűrűben a saját nevünk áll: a pecsét a miénk, nem a NAV-é. Kattintásra a forrásokhoz visz.
   return `<svg class="pecset${ut ? ' ut' : ''}" viewBox="0 0 130 130" ${link ? `role="link" tabindex="0" aria-label="Honnan jönnek a számok? A források oldala"><title>Honnan jönnek a számok? Kattints a forrásokért.</title` : 'aria-hidden="true"'}>
@@ -60,7 +60,8 @@ export function pecset(ma, ut = true, marka = 'Autóköltség', link = false) {
 </svg>`;
 }
 
-const JEGY = '<svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="15" cy="15" r="9.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M10 15.5l3.4 3.2L20.5 11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+/** A szókép: az „ó” a számlap, benne a mutató (marka/rajz.py). */
+const LOGO = '<svg class="logo" viewBox="-8 56 820 144" role="img" aria-label="autózom"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="152" r="40"/><path d="M88 112V192"/><path d="M126 112V152A40 40 0 0 0 206 152M206 112V192"/><path d="M264 76V160A32 32 0 0 0 296 192M240 112H296"/><circle cx="368" cy="152" r="40"/><path d="M444 112H516L444 192H516"/><circle cx="590" cy="152" r="40"/><path d="M668 192V112M668 144A32 32 0 0 1 732 144V192M732 144A32 32 0 0 1 796 144V192"/><path d="M394.3 98.1L406.6 72.9" style="stroke:var(--pecset)"/><path d="M368 152L376.8 134.0" style="stroke:var(--pecset)" stroke-width="9"/><circle cx="368" cy="152" r="8" style="fill:var(--pecset)" stroke="none"/></g></svg>';
 
 /* ---------- Oldalkeret ---------- */
 
@@ -97,7 +98,7 @@ ${ld}
 <body>
 <a class="ugras" href="#tartalom">Ugrás a tartalomra</a>
 <header class="fejlec"><div class="keret">
-<a class="jegy" href="${L.l('')}">${JEGY}<span>${esc(cfg.marka)}</span></a>
+<a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a>
 <button class="menu-gomb" type="button" aria-expanded="false" aria-controls="fomenu">Menü</button>
 <nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}>${m.nev}</a>`).join('')}</nav>
 </div></header>
