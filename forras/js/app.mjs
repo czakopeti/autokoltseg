@@ -1,5 +1,5 @@
 // Böngészős réteg: menü, űrlapok, élő elszámolás, mentett autó (csak kérésre), megosztható link, grafikon.
-// Semmi nem megy szerverre.
+// Szerverre csak az megy, amit a látogató a visszajelzés-dobozban maga elküld.
 import * as S from './szamitas.mjs';
 import * as M from './megjelenites.mjs';
 
@@ -278,14 +278,69 @@ pecsetLink();
 M.forrasokHelye($('.lablec a[href*="forrasok"]')?.getAttribute('href'));
 
 /* ---------- Hibajelzés: a levélbe a beírt adatok és az eredmény is bekerül ---------- */
+/** Az eredménypanel fő sora szövegként (a hibajelzéshez), vagy üres, ha nincs eredmény. */
+function eredmenySzoveg() {
+  const panel = $('.elsz-tartalom');
+  if (!panel) return '';
+  const mi = $('.vegosszeg .mi', panel)?.textContent, ertek = $('[data-osszeg] .ertek', panel)?.textContent;
+  return mi && ertek ? `${mi}: ${ertek} Ft` : '';
+}
+const vanMinta = () => Boolean($('.elsz-tartalom .minta-jelzes'));
 $('[data-hibajelzes]')?.addEventListener('click', (ev) => {
   const a = ev.currentTarget, cim = a.dataset.cim;
-  const panel = $('.elsz-tartalom');
-  const osszeg = $('.vegosszeg .mi', panel)?.textContent + ': ' + ($('[data-osszeg] .ertek', panel)?.textContent || '') + ' Ft';
-  const minta = $('.minta-jelzes', panel) ? '\n(Ez a minta-autó eredménye volt.)' : '';
-  const torzs = `Szerintem ez az eredmény hibás:\n${osszeg}${minta}\n\nAz oldal a beírt adatokkal:\n${location.href}\n\nMit vártál volna, és miért?\n`;
-  a.href = `mailto:${cim}?subject=${encodeURIComponent(`Hibás összeg: ${document.title}`)}&body=${encodeURIComponent(torzs)}`;
+  const e = eredmenySzoveg();
+  const torzs = e
+    ? `Szerintem ez az eredmény hibás:\n${e}${vanMinta() ? '\n(Ez a minta-autó eredménye volt.)' : ''}\n\nAz oldal a beírt adatokkal:\n${location.href}\n\nMit vártál volna, és miért?\n`
+    : `Visszajelzés erről az oldalról:\n${location.href}\n\n`;
+  a.href = `mailto:${cim}?subject=${encodeURIComponent(`${e ? 'Hibás összeg' : 'Visszajelzés'}: ${document.title}`)}&body=${encodeURIComponent(torzs)}`;
 });
+
+/* ---------- Visszajelzés: Igen / Nem, és Nem után pár szó ---------- */
+// A szavazatot ebben a böngészőben megjegyezzük, hogy kétszer ne számoljuk. Név, IP-cím nem megy.
+const NEM_KULDHETO = ['szerzodes', 'autom', 'gyors'];
+function visszajelzes() {
+  const d = $('[data-visszajelzes]');
+  if (!d) return;
+  const ut = d.dataset.ut, kulcs = `vj:${ut}`;
+  const urlap = $('.vj-urlap', d), allapot = $('.vj-allapot', d), gombok = $$('[data-vj]', d);
+  const kuld = async (b) => {
+    const r = await fetch('/api/visszajelzes', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ut, ...b }) });
+    if (!r.ok) throw new Error(String(r.status));
+  };
+  const jelol = (ertek) => gombok.forEach((g) => g.setAttribute('aria-pressed', String(g.dataset.vj === ertek)));
+  const levelLink = d.dataset.email ? ` vagy írj nekünk: <a href="mailto:${d.dataset.email}">${d.dataset.email}</a>` : '';
+  const volt = tarolo.get(kulcs);
+  if (volt) jelol(volt);
+  gombok.forEach((g) => g.addEventListener('click', () => {
+    const ertek = g.dataset.vj;
+    if (tarolo.get(kulcs) !== ertek) { kuld({ ertek }).catch(() => {}); tarolo.set(kulcs, ertek); }
+    jelol(ertek);
+    if (ertek === 'fel') { urlap.hidden = true; allapot.textContent = 'Köszönjük, hogy jelezted!'; }
+    else { urlap.hidden = false; allapot.textContent = ''; urlap.elements.szoveg.focus(); }
+  }));
+  urlap.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const szoveg = urlap.elements.szoveg.value.trim();
+    if (szoveg.length < 3) { allapot.textContent = 'Írj pár szót arról, mi nem stimmel.'; urlap.elements.szoveg.focus(); return; }
+    const b = { ertek: 'szoveg', szoveg, cim: document.title, web: urlap.elements.web.value };
+    const f = $('form[data-kalk]');
+    if (urlap.elements.adatok?.checked && f && !NEM_KULDHETO.includes(f.dataset.kalk)) {
+      b.adatok = Object.fromEntries(Object.entries(ertekek(f)).filter(([, v]) => v !== '' && v !== false));
+      b.eredmeny = eredmenySzoveg();
+      b.minta = vanMinta();
+    }
+    const gomb = $('button[type="submit"]', urlap);
+    gomb.disabled = true; gomb.textContent = 'Küldöm…';
+    try {
+      await kuld(b);
+      urlap.reset(); urlap.hidden = true;
+      allapot.textContent = 'Megkaptuk, köszönjük! Átnézzük, és ha hibát találunk, kijavítjuk.';
+    } catch {
+      allapot.innerHTML = `Most nem sikerült elküldeni. Próbáld újra kicsit később,${levelLink || ' köszönjük a türelmet'}.`;
+    } finally { gomb.disabled = false; gomb.textContent = 'Elküldöm'; }
+  });
+}
+visszajelzes();
 
 /* ---------- Mentett autó: csak ha kéred, és csak gombnyomásra töltjük be ---------- */
 const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
@@ -357,6 +412,25 @@ function lekw(form) {
   form.addEventListener('submit', (ev) => ev.preventDefault());
 }
 
+/* ---------- Megosztott link ---------- */
+// Aki megosztott linket nyit, a küldő adataival látja a számítást. Ezt kiírjuk, és egy gombbal üresre állítható.
+function megosztottJelzes(form) {
+  const j = document.createElement('div');
+  j.className = 'megosztva';
+  j.setAttribute('role', 'note');
+  j.innerHTML = '<p><strong>Ezt a számítást megosztották veled.</strong> A küldő adataival látod. Írd át a saját adataidra, vagy <button class="szoveg-gomb" type="button">kezdd üres űrlappal</button>.</p>';
+  form.querySelector('.forgalmi-fej')?.after(j);
+  const el = () => j.remove();
+  $('button', j).addEventListener('click', () => {
+    el();
+    form.reset();
+    try { history.replaceState(null, '', location.pathname); } catch { /* */ }
+    form.dispatchEvent(new Event('input'));
+    form.querySelector('input:not([type=hidden]), select')?.focus();
+  });
+  form.addEventListener('input', (ev) => { if (ev.isTrusted) el(); }, { once: false });
+}
+
 /* ---------- Indítás ---------- */
 function indit() {
   const form = $('form[data-kalk]');
@@ -368,6 +442,7 @@ function indit() {
   const u = tipus === 'gyors' || tipus === 'autom' ? null : urlbol();
   if (u) {
     beallit(form, u);
+    if (u.megosztva) megosztottJelzes(form);
     if (u.kwEgyseg === 'le') { const me = form.elements.kw?.closest('.beir')?.querySelector('.me'); if (me) me.textContent = 'LE'; }
   }
   if (form.dataset.maiDatum && !u?.[form.dataset.maiDatum]) {
@@ -419,12 +494,23 @@ function indit() {
     new IntersectionObserver(([b]) => mini.classList.toggle('lathato', mini.dataset.van === '1' && !b.isIntersecting && b.boundingClientRect.top > 0), { threshold: 0.1 }).observe(elsz);
   }
 
+  // Megosztás: a link a beírt adatokat viszi, és jelzi, hogy megosztott számítás. Telefonon a rendszer megosztó menüje.
   const masol = $('[data-masol]');
+  const masolFelirat = masol?.textContent;
   masol?.addEventListener('click', async () => {
-    urlbe(form);
-    try { await navigator.clipboard.writeText(location.href); masol.textContent = 'Link a vágólapon'; }
+    let link = `${location.origin}${location.pathname}`;
+    if (!NEM_KULDHETO.includes(tipus)) {
+      urlbe(form);
+      const u = new URL(location.href);
+      if (u.search) u.searchParams.set('megosztva', '1');
+      link = u.toString();
+    }
+    if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+      try { await navigator.share({ title: document.title, url: link }); return; } catch (e) { if (e?.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(link); masol.textContent = 'Link a vágólapon, beillesztheted'; }
     catch { masol.textContent = 'Másold ki a címsorból'; }
-    setTimeout(() => (masol.textContent = 'Link másolása'), 2200);
+    setTimeout(() => (masol.textContent = masolFelirat), 2600);
   });
   $$('[data-nyomtat]').forEach((g) => g.addEventListener('click', () => { try { print(); } catch { /* */ } }));
 }

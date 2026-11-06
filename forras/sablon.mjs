@@ -167,7 +167,12 @@ ${ld}
 <nav aria-label="Minden oldal">${FIOK.map((cs) => `<h2>${cs.cim}</h2><ul>${cs.elemek.map(([u, n, d]) => `<li><a href="${L.l(u)}"${u === ut ? ' aria-current="page"' : ''}${u === 'autom/' ? ' class="fiok-autom"' : ''}>${u === 'autom/' ? JEL_KICSI : ''}<span><b>${n}</b>${d ? `<small>${d}</small>` : ''}</span></a></li>`).join('')}</ul>`).join('')}</nav>
 </dialog>
 <main id="tartalom">
-${tartalom(L)}
+${(() => {
+  const t = tartalom(L);
+  if (VJ_NELKUL.includes(ut)) return t.replace(VJ_HELY, '');
+  if (t.includes(VJ_HELY)) return t.replace(VJ_HELY, visszajelzesDoboz(cfg, ut, true));
+  return `${t}\n<div class="keret">${visszajelzesDoboz(cfg, ut, false)}</div>`;
+})()}
 </main>
 ${lablec(k, L)}
 ${adatJson ? `<script type="application/json" id="adat">${JSON.stringify(adatJson)}</script>` : ''}
@@ -262,10 +267,34 @@ export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labj
   return `<section class="elszamolas${szeles ? ' szeles' : ''}" id="eredmeny" aria-labelledby="elsz-cim">
 <div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2>${(() => { const d = adatDatum(k.adat); return `<time datetime="${d.iso}" title="${d.cimke === 'Ellenőrizve' ? 'Ekkor vetettük össze az adatokat a NAV oldalával' : 'Ekkor tette közzé a NAV a legfrissebb adatot, amivel számolunk'}">${d.cimke}: ${datumHu(d.iso)}</time>`; })()}</div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
-${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button>${k.cfg.kapcsolat_email ? `<a class="szoveg-gomb" data-hibajelzes data-cim="${esc(k.cfg.kapcsolat_email)}" href="mailto:${esc(k.cfg.kapcsolat_email)}" title="Megnyitjuk a levelezőprogramodat egy előkészített hibajelentéssel. Te küldöd el.">Szerinted hibás?</a><span class="kicsi halk">A gomb a leveleződet nyitja meg, a levelet te küldöd el.</span>` : ''}</div>` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
+${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Számítás megosztása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button></div>${VJ_HELY}` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
 ${pecset(k.ma, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
 </section>
 <a class="mini" href="#eredmeny" hidden><span class="mi"></span><span class="mennyi"></span></a>`;
+}
+
+
+/* ---------- Visszajelzés ---------- */
+const VJ_HELY = '<!--visszajelzes-->';
+// Ezeken az oldalakon nincs visszajelzés-doboz (jogi szöveg, főoldal)
+const VJ_NELKUL = ['', 'impresszum/', 'adatvedelem/'];
+const HUVELYK = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M7 10.5v9.5H4v-9.5h3Zm0 0 3.6-6.8c1.6 0 2.7 1.1 2.3 2.8L12.4 10h5.4a2 2 0 0 1 2 2.4l-1.2 5.9a2.1 2.1 0 0 1-2.1 1.7H7"/></svg>';
+
+/** A „Hasznos volt?” doboz. Kalkulátornál a beírt számokat is elküldheti a látogató, ha akarja. */
+export function visszajelzesDoboz(cfg, ut, kalk) {
+  const email = cfg.kapcsolat_email;
+  return `<div class="vj${kalk ? '' : ' vj-oldal'}" data-visszajelzes data-ut="/${esc(ut)}"${email ? ` data-email="${esc(email)}"` : ''}>
+<p class="vj-kerdes" id="vj-kerdes">${kalk ? 'Hasznos volt ez a számítás?' : 'Hasznos volt ez az oldal?'}</p>
+<div class="vj-gombok" role="group" aria-labelledby="vj-kerdes"><button class="vj-gomb" type="button" data-vj="fel" aria-pressed="false">${HUVELYK}<span>Igen</span></button><button class="vj-gomb vj-le" type="button" data-vj="le" aria-pressed="false">${HUVELYK}<span>Nem</span></button></div>
+<form class="vj-urlap" hidden novalidate>
+<label for="vj-szoveg">${kalk ? 'Mi nem stimmel, vagy mit vártál volna?' : 'Mi hiányzott, vagy mi nem stimmel?'}</label>
+<textarea id="vj-szoveg" name="szoveg" rows="3" maxlength="1000"></textarea>
+${kalk ? '<label class="vj-jelolo"><input type="checkbox" name="adatok" checked><span>A beírt számokat és az eredményt is elküldöm, hogy lássátok, hol csúszott el</span></label>' : ''}
+<input class="vj-csapda" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div class="vj-sor"><button class="gomb" type="submit">Elküldöm</button><p class="kicsi halk">Nevet, e-mail-címet és rendszámot ne írj bele.${email ? ` Ha választ is szeretnél, <a data-hibajelzes data-cim="${esc(email)}" href="mailto:${esc(email)}">írj levelet</a>.` : ''}</p></div>
+</form>
+<p class="vj-allapot" role="status"></p>
+</div>`;
 }
 
 /* ---------- Tartalmi elemek ---------- */

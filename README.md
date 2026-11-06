@@ -49,6 +49,35 @@ Biztonsági elvek: csak akkor ír át adatot, ha a NAV-oldal felépítése a vá
 
 A kézi teendők a `data/karbantartas.json` fájlban vannak, dátummal. A napi futás egy `karbantartas` címkéjű GitHub-issue-t nyit vagy frissít, ha valami esedékes (a GitHub erről e-mailt küld), és bezárja, ha minden kész. Hétfőnként a forráslinkeket is ellenőrzi. Havonta (minden hónap 2-án) egy ütemezett Claude-futás elvégzi az esedékes teendőket.
 
+## Visszajelzések
+
+Minden oldal alján (a főoldal, az impresszum és az adatvédelem kivételével) ott a „Hasznos volt?” doboz. A kalkulátoroknál az eredmény alatt van. A Nem gomb után a látogató pár szót írhat, és ha akarja, a beírt számokat is elküldheti.
+
+- **Az Igen/Nem számláló** a Cloudflare KV-ban van. Oldalanként megnézheted: https://autozom.hu/api/visszajelzes
+- **A szöveges visszajelzés** egy `visszajelzes` címkéjű GitHub-jegy lesz, és a GitHub erről e-mailt küld. Ha megoldottad, zárd le. A havi Claude-futás ezeket is átnézi.
+- A fogadó kód a `functions/api/visszajelzes.js`, a Cloudflare ezt magától futtatja. Az e-mail-címeket, telefonszámokat és bankszámlaszámokat kitakarja. Naponta legfeljebb 30 jegyet nyit, így egy támadás sem tudja elárasztani a postafiókot.
+
+Egyszeri beállítás (kb. 5 perc):
+
+1. **GitHub-kulcs.** GitHub → jobb felső kép → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.
+   - Név: `autozom-visszajelzes`.
+   - Lejárat: 1 év.
+   - Repository access: Only select repositories → `autokoltseg`.
+   - Permissions → Repository permissions → Issues: Read and write.
+   - Generate token, majd másold ki.
+2. **A kulcs a Cloudflare-be.** Workers & Pages → `autokoltseg` → Settings → Variables and Secrets → Add.
+   - Type: Secret.
+   - Name: `GITHUB_TOKEN`.
+   - Value: a kimásolt kulcs.
+   - Save.
+3. **Számláló-tároló.** Storage & Databases → KV → Create namespace, név: `autozom-szavazat`. Utána: Workers & Pages → `autokoltseg` → Settings → Bindings → Add → KV namespace.
+   - Variable name: `SZAVAZAT`.
+   - Namespace: `autozom-szavazat`.
+   - Save.
+4. **Újratelepítés.** Workers & Pages → `autokoltseg` → Deployments → a legfelső sor → ⋯ → Retry deployment. A beállítások csak új telepítéssel élnek.
+
+Amíg ez nincs kész, a gombok működnek, de a szöveg elküldésekor a látogató azt látja, hogy most nem sikerült, és megkapja az e-mail-címet. A kulcs egy év múlva lejár. A `karbantartas.json` szól, mikor kell újat csinálni (ugyanez az 1. és 2. lépés).
+
 ## Claude nélkül is
 
 Az oldal futásához nem kell Claude: a GitHub (napi frissítés) és a Cloudflare (tárhely) ingyenes csomagja viszi. Ha egy adatot kézzel kell átírni:

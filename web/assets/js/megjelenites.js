@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=79de5438';
+import * as S from './szamitas.js?v=5523c79b';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));

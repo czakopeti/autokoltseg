@@ -108,6 +108,13 @@
       "forras": null,
       "hogyan": "Mint januárban.",
       "utoljara": "2026-11-06"
+    },
+    {
+      "id": "visszajelzes-kulcs",
+      "mikor": "2027-10-25",
+      "mit": "A visszajelzés-doboz GitHub-kulcsának megújítása",
+      "hol": "GitHub → Settings → Developer settings → Fine-grained tokens, és Cloudflare → autokoltseg → Variables and Secrets → GITHUB_TOKEN",
+      "hogyan": "A kulcs 2027 novemberében lejár. Csinálj újat ugyanazzal a beállítással (README, Visszajelzések, 1–2. lépés), írd át a Cloudflare-ben, és indítsd újra a telepítést. Ha kész, a mikor mezőt tedd egy évvel későbbre."
     }
   ]
 }

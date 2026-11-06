@@ -535,14 +535,18 @@ ${u.telefon ? `<tr><td>Telefon</td><td><a href="tel:${esc(u.telefon.replace(/\s/
 export function adatvedelemOldal(k) {
   const { cfg } = k;
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gyűjtünk rólad adatot. A kalkulátorok a böngésződben számolnak, amit beírsz, az nem jut el hozzánk.' })}
+${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gyűjtünk rólad adatot. A kalkulátorok a böngésződben számolnak, amit beírsz, az csak akkor jut el hozzánk, ha a visszajelzés-dobozban magad elküldöd.' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <h2>Sütik és követés</h2>
 <p>Nem használunk sütit és követőkódot, és hirdetés sincs az oldalon. A látogatottságot a Cloudflare Web Analytics méri: ez nem tesz semmit a gépedre, nem azonosít, és mi csak összesített számokat látunk (hány oldalt néztek meg, melyik oldalról érkeztek, milyen eszközről). A betűtípusokat magunk szolgáljuk ki. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
 <h2>A mentett autód</h2>
 <p>Ha az „Elmentem az autómat” gombra kattintasz, az autó adatai a böngésződ saját tárolójába kerülnek ezen az eszközön. Hozzánk nem jutnak el, fiók nincs. Bármikor átírhatod és újra mentheted, vagy a „Törlöm” gombbal törölheted. A böngésző adatainak törlésekor is eltűnik. Másik böngészőben vagy másik eszközön nem látszik, mert nem szinkronizáljuk sehová.</p>
-<h2>Hibajelentés</h2>
-<p>A „Szerinted hibás?” gomb csak megnyitja a levelezőprogramodat egy előkészített levéllel, amit te küldesz el, ha akarod. A levélben az oldal címe van a kalkulátorba beírt számokkal (például teljesítmény, gyártási év, árak) és a kapott eredmény. Név, lakcím vagy rendszám nem kerül bele, a szerződés-űrlap adatai sem. Ha elküldöd, a leveledet és az e-mail-címedet csak a válaszhoz és a hiba kijavításához használjuk, és legfeljebb egy évig őrizzük meg.</p>
+<h2>Visszajelzés</h2>
+<p>Az oldalak alján megkérdezzük, hasznos volt-e az oldal. Az Igen vagy Nem gombnyomásból csak egy számláló nő az adott oldalnál. Nem tároljuk, ki nyomta meg, és az IP-címét sem. A böngésződ megjegyzi a választásodat, hogy ugyanazt a szavazatot ne számoljuk kétszer.</p>
+<p>Ha a Nem után pár szót is írsz és elküldöd, a szöveget és az oldal címét kapjuk meg. Kalkulátornál, ha a négyzetet bejelölve hagyod, a beírt számokat (például teljesítmény, gyártási év, árak) és a kapott eredményt is. Név és e-mail-cím nem kell hozzá. Ha mégis beleírsz e-mail-címet, telefonszámot vagy bankszámlaszámot, azt eltárolás előtt kitakarjuk. A visszajelzéseket a fejlesztéshez használt GitHub (GitHub, Inc., USA, a Microsoft-csoport tagja, csatlakozott az EU–USA adatvédelmi keretrendszerhez) feladatkezelőjében tároljuk. Arra használjuk, hogy kijavítsuk a hibát, és a lezárása után legfeljebb egy évig őrizzük meg. A jogalap a szolgáltatás javításához fűződő jogos érdekünk.</p>
+<p>Ha választ is szeretnél, az „írj levelet” link megnyitja a levelezőprogramodat egy előkészített levéllel, amit te küldesz el. A leveledet és az e-mail-címedet csak a válaszhoz és a hiba kijavításához használjuk, és legfeljebb egy évig őrizzük meg.</p>
+<h2>Megosztott számítás</h2>
+<p>A „Számítás megosztása” gomb egy linket készít, amelyben a kalkulátorba beírt számok benne vannak, így aki megkapja, ugyanazt a számítást látja. A linket te küldöd el annak, akinek akarod, hozzánk nem jut el. A szerződés-űrlap és a mentett autód adatai nem kerülnek a linkbe.</p>
 <h2>Szervernapló</h2>
 <p>Az oldalt a ${cfg.tarhely.nev} (${cfg.tarhely.cim}) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző), a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk, és nem kötjük személyhez. A Cloudflare amerikai cég, és tagja az EU–USA adatvédelmi keretrendszernek (Data Privacy Framework), ezért az Európai Unióból továbbított adatokra az uniós szintű védelem vonatkozik.</p>
 <h2>Adatkezelő és jogaid</h2>
@@ -1024,7 +1028,7 @@ ${oldalfej(L, { morzsa: ['Rólunk'], cim: 'Kik vagyunk, és hogyan dolgozunk?', 
 <li><strong>Minden reggel ellenőrzünk.</strong> Egy program minden nap összeveti az adatainkat a NAV oldalával. Ha a NAV új tételt tesz közzé, átvesszük, és a <a href="${L.l('valtozasok/')}">Változások</a> oldalon jelezzük, mikor és mi változott.</li>
 <li><strong>A hibát kijavítjuk, és leírjuk.</strong> ${cfg.kapcsolat_email ? `Ha hibát találsz, írj a <a href="mailto:${esc(cfg.kapcsolat_email)}">${esc(cfg.kapcsolat_email)}</a> címre, vagy használd az eredmény alatti „Szerinted hibás?” gombot.` : 'A hibabejelentés címe hamarosan itt lesz.'} A javítást a Változások oldalon is feltüntetjük.</li>
 <li><strong>Nincs fizetett sorrend.</strong> Nem ajánlunk bankot, biztosítót vagy autót pénzért. Ha egyszer hirdetés vagy támogatás jelenik meg az oldalon, azt egyértelműen jelöljük, és nem befolyásolja a számokat.</li>
-<li><strong>Nem gyűjtünk rólad adatot.</strong> Nincs regisztráció és nincs követő süti. Amit beírsz, a böngésződben marad, a mentett autód is. Részletek az <a href="${L.l('adatvedelem/')}">Adatvédelem</a> oldalon.</li>
+<li><strong>Nem gyűjtünk rólad adatot.</strong> Nincs regisztráció és nincs követő süti. Amit beírsz, a böngésződben marad, a mentett autód is. Hozzánk csak az jut el, amit a visszajelzés-dobozban magad elküldesz. Részletek az <a href="${L.l('adatvedelem/')}">Adatvédelem</a> oldalon.</li>
 </ul>
 <h2>Amit nem vállalunk</h2>
 <p>A kalkulátorok tájékoztató jellegűek, és nem helyettesítik az adótanácsadást vagy a bank ajánlatát. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
