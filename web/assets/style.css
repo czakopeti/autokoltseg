@@ -584,3 +584,11 @@ a.jel:hover { text-decoration: underline; }
 table.kompakt tr.osszeg th { font-weight: 700; color: var(--tinta); border-top: 1px solid var(--tinta); }
 table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 @media (max-width: 700px) { table.kompakt tbody th { padding-right: 8px; } }
+.vegosszeg .datum-nagy { font-family: var(--cim); font-weight: 800; font-size: clamp(30px, 4vw, 44px); letter-spacing: -.02em; line-height: 1.1; display: block; margin: 4px 0 2px; }
+.elsz-tartalom .panel-cim { font-size: 15px; font-weight: 700; margin: 22px 0 0; color: var(--tinta); }
+.lepesek { counter-reset: lepes; list-style: none; padding: 0; margin: 18px 0; }
+.lepesek > li { counter-increment: lepes; position: relative; padding: 0 0 18px 48px; }
+.lepesek > li::before { content: counter(lepes); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--tinta); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+.lepesek > li > strong:first-child { display: block; margin-bottom: 2px; }
+.tabla.szoveges th, .tabla.szoveges td { text-align: left; white-space: normal; vertical-align: top; }
+.tabla.szoveges td:first-child { color: var(--tinta); font-weight: 600; min-width: 9em; }

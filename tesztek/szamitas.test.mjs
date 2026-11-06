@@ -139,3 +139,36 @@ test('regisztrációs adó: a kor szerinti csökkentés hónapsávjai', () => {
   assert.equal(r102.csokk, 74); // 97–108 hónap
   assert.equal(r102.osszeg, 27495);
 });
+
+test('kötelező biztosítás: határidők az MNB példája szerint', () => {
+  const r = S.kgfb(adat, { evfordulo: '2027-01-01', ma: '2026-11-06' });
+  assert.equal(r.kezdet, '2027-01-01');
+  assert.equal(r.ertesites, '2026-11-11');
+  assert.equal(r.felmondas, '2026-12-01');
+  assert.equal(r.elkesett, false);
+  const k = S.kgfb(adat, { evfordulo: '2020-11-20', ma: '2026-11-06' });
+  assert.equal(k.kezdet, '2026-11-20');
+  assert.equal(k.elkesett, true);
+  assert.equal(k.kovetkezo, '2027-11-20');
+});
+
+test('bonus-malus: kármentes +1, káronként −2, négy kár M4', () => {
+  assert.equal(S.bonusMalus(adat, 'B10', 0).uj, 'B10');
+  assert.equal(S.bonusMalus(adat, 'B9', 0).uj, 'B10');
+  assert.equal(S.bonusMalus(adat, 'B10', 1).uj, 'B8');
+  assert.equal(S.bonusMalus(adat, 'B10', 3).uj, 'B4');
+  assert.equal(S.bonusMalus(adat, 'B10', 4).uj, 'M4');
+  assert.equal(S.bonusMalus(adat, 'A00', 0).uj, 'B1');
+  assert.equal(S.bonusMalus(adat, 'B1', 2).uj, 'M3'); // B1 → A00 → M1 → M2 → M3
+  assert.equal(S.bonusMalus(adat, 'M1', 3).uj, 'M4');
+  assert.equal(S.bonusMalus(adat, 'B5', 0, false).uj, 'B5');
+});
+
+test('javítás vagy csere: a két út összevetése', () => {
+  const r = S.javitasVagyCsere(adat, { ev: 2026, datum: '2026-11-06', evek: 3, a: { gyartasiEv: 2003, hajtas: 'benzin', ertekMost: 1500000, javitas: 1000000, ertekJavitva: 2300000, fenntartas: 450000 }, c: { ar: 3300000, gyartasiEv: 2016, hajtas: 'benzin', kw: 110, fenntartas: 300000 } });
+  assert.equal(r.tart.javitas + r.tart.fenntartas, 1000000 + 3 * 450000);
+  assert.equal(r.csere.kulonbozet, 1800000);
+  assert.ok(r.csere.atiras > 0);
+  assert.ok(Math.abs(r.kulonbseg - Math.abs(r.tart.osszes - r.csere.osszes)) < 1);
+  assert.ok(S.javitasVagyCsere(adat, { ev: 2026, a: {}, c: {} }).hiba);
+});

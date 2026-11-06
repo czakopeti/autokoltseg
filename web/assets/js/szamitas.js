@@ -545,3 +545,85 @@ export function autohitel(adat, b) {
   const valodi = onero + visszafizet + atirasFt - (ertekVeg ?? 0);
   return { ar, onero, hitel, evek, honapok, thm, havi, visszafizet, kamat, hfm, hfmTul: hfm > h.hfm_hitel, hfmLizingTul: hfm > h.hfm_lizing, atirasFt, at, ertekVeg, ertekvesztes: ertekVeg == null ? null : ar - ertekVeg, valodi, valodiHavi: valodi / honapok };
 }
+
+/* ---------------- Kötelező biztosítás: évfordulós váltás ---------------- */
+const napEltol = (iso, n) => { const d = new Date(`${iso}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const napKulonbseg = (a, b) => Math.round((new Date(`${b}T12:00:00Z`) - new Date(`${a}T12:00:00Z`)) / 864e5);
+const hetNapja = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay(); // 0 vasárnap, 6 szombat
+
+/** A következő bekövetkező évforduló a megadott napból (ha a dátum már elmúlt, a következő évi). */
+export function kovetkezoEvforduló(evforduloIso, ma) {
+  const [, h, n] = evforduloIso.split('-').map(Number);
+  let ev = Number(ma.slice(0, 4));
+  const d = (e) => `${e}-${String(h).padStart(2, '0')}-${String(n).padStart(2, '0')}`;
+  if (d(ev) <= ma) ev += 1;
+  return d(ev);
+}
+
+/**
+ * b: { evfordulo: 'YYYY-MM-DD' (az új biztosítási időszak kezdőnapja, csak a hónap és a nap számít), ma, osztaly: 'B10', karok: 0..4, nap270: bool }
+ * Az MNB példája: január 1-jei évfordulónál a felmondásnak december 1-jéig kell beérkeznie, vagyis a kezdőnap előtt 31 nappal.
+ */
+export function kgfb(adat, b) {
+  const k = adat.szabalyok.kgfb;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(b.evfordulo || '')) return { hiba: 'Add meg a biztosítási évfordulót (a kötvényen szerepel).' };
+  const kezdet = kovetkezoEvforduló(b.evfordulo, b.ma);
+  const felmondas = napEltol(kezdet, -k.felmondas_nap);
+  const ertesites = napEltol(kezdet, -k.ertesites_nap);
+  const ajanlat = napEltol(kezdet, -k.ajanlat_legkorabban_nap);
+  const hatra = napKulonbseg(b.ma, felmondas);
+  const elkesett = hatra < 0;
+  const r = { kezdet, felmondas, ertesites, ajanlat, hatra, elkesett, hetvege: [0, 6].includes(hetNapja(felmondas)) };
+  if (elkesett) {
+    r.kovetkezo = `${Number(kezdet.slice(0, 4)) + 1}${kezdet.slice(4)}`;
+    r.kovetkezoFelmondas = napEltol(r.kovetkezo, -k.felmondas_nap);
+  }
+  if (b.osztaly) r.bm = bonusMalus(adat, b.osztaly, Number(b.karok) || 0, b.nap270 !== false);
+  return r;
+}
+
+/** A következő időszak bonus-malus osztálya: kármentes év +1, minden kár −2, négy vagy több kár: M4. */
+export function bonusMalus(adat, osztaly, karok, nap270 = true) {
+  const k = adat.szabalyok.kgfb, o = k.bm_osztalyok;
+  const i = o.indexOf(osztaly);
+  if (i < 0) return { hiba: 'Ismeretlen osztály.' };
+  let j;
+  if (karok >= 4) j = o.indexOf(k.bm_negy_kar);
+  else if (karok > 0) j = Math.max(0, i - k.bm_kar_visszaeses * karok);
+  else j = nap270 ? Math.min(o.length - 1, i + 1) : i;
+  return { most: osztaly, uj: o[j], valtozas: j - i, karok, nap270 };
+}
+
+/* ---------------- Megjavítsam vagy cseréljem? ---------------- */
+/**
+ * Két út N év alatt, mindkettő teljes költséggel és a végén megmaradó autóértékkel.
+ * b: { ev, datum, evek, a: { gyartasiEv, hajtas, ertekMost, javitas, ertekJavitva, fenntartas }, c: { ar, gyartasiEv, hajtas, kw, fenntartas } }
+ */
+export function javitasVagyCsere(adat, b) {
+  const N = Number(b.evek) || 3;
+  const a = b.a, c = b.c;
+  const szam = (x) => Number(x) || 0;
+  if (!(szam(a.ertekMost) >= 0) || !(szam(a.javitas) > 0)) return { hiba: 'Add meg, mennyibe kerül a javítás.' };
+  if (!(szam(c.ar) > 0)) return { hiba: 'Add meg, mennyiért vennéd a másik autót.' };
+  const f = { maradvany: adat.szabalyok.maradvany };
+  const arany = (gy, h) => {
+    const kor = Math.max(0, b.ev - (Number(gy) || b.ev));
+    const v = (t) => ertekNEvMulva(1, h || 'benzin', t, f);
+    return v(kor + N) / v(kor);
+  };
+  const ertekJavitva = szam(a.ertekJavitva) > 0 ? szam(a.ertekJavitva) : szam(a.ertekMost) + szam(a.javitas);
+  const ertekJavitvaBecsles = !(szam(a.ertekJavitva) > 0);
+  const regiVeg = ertekJavitva * arany(a.gyartasiEv, a.hajtas);
+  const ujVeg = szam(c.ar) * arany(c.gyartasiEv, c.hajtas);
+  let atirasFt = 0;
+  if (szam(c.kw) > 0 && szam(c.gyartasiEv) > 1900) {
+    const at = atiras(adat, { ev: b.ev, datum: b.datum, kw: szam(c.kw), gyartasiEv: szam(c.gyartasiEv), hajtas: c.hajtas === 'benzin' || c.hajtas === 'dizel' || !c.hajtas ? 'hagyomanyos' : c.hajtas, szerzes: 'vetel' });
+    if (!at.hiba) atirasFt = at.osszesen;
+  }
+  const tart = { javitas: szam(a.javitas), fenntartas: N * szam(a.fenntartas), vegErtek: regiVeg };
+  tart.osszes = tart.javitas + tart.fenntartas - tart.vegErtek;
+  const csere = { kulonbozet: szam(c.ar) - szam(a.ertekMost), atiras: atirasFt, fenntartas: N * szam(c.fenntartas), vegErtek: ujVeg };
+  csere.osszes = csere.kulonbozet + csere.atiras + csere.fenntartas - csere.vegErtek;
+  const olcsobb = tart.osszes <= csere.osszes ? 'tart' : 'csere';
+  return { evek: N, tart, csere, olcsobb, kulonbseg: Math.abs(tart.osszes - csere.osszes), ertekJavitva, ertekJavitvaBecsles, ertekMost: szam(a.ertekMost), ar: szam(c.ar) };
+}

@@ -436,3 +436,57 @@ export function hitelPanel(adat, r) {
   if (r.ertekVeg == null) h += megjegyzes('Add meg a gyártási évet is, és megmutatjuk, mennyit ér az autó a futamidő végén, és mennyibe kerül valójában.');
   return h;
 }
+
+/* ---------- Kötelező biztosítás ---------- */
+const HET = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+const datumI = (iso) => datumHu(iso).replace(/\.$/, '-i');
+const napNev = (iso) => HET[new Date(`${iso}T12:00:00Z`).getUTCDay()];
+export function kgfbPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const k = adat.szabalyok.kgfb, mnb = k.forrasok[0]?.url;
+  let h = '';
+  if (r.elkesett) {
+    h += `<div class="vegosszeg"><span class="mi">Erre az évfordulóra már nem válthatsz</span><span class="mennyi datum-nagy">${datumHu(r.kovetkezoFelmondas)}</span><p class="megj">A ${datumI(r.kezdet)} évfordulóhoz ${datumHu(r.felmondas)} volt a felmondás határideje. Legközelebb eddig mondhatod fel, ha a ${datumI(r.kovetkezo)} évfordulótól váltanál.</p></div>`;
+  } else {
+    h += `<div class="vegosszeg"><span class="mi">A felmondásnak eddig kell beérkeznie</span><span class="mennyi datum-nagy">${datumHu(r.felmondas)}</span><p class="megj">${r.hatra === 0 ? `Ez ma van (${napNev(r.felmondas)}).` : `Még ${r.hatra} napod van, a határidő ${napNev(r.felmondas)}i nap.`} Az új biztosítási időszak ${datumNapon(r.kezdet)} kezdődik.</p></div>`;
+  }
+  h += '<ul class="tetelek">';
+  h += tetel('A biztosító díjértesítője', `legkésőbb ${datumHu(r.ertesites)}`, { forras: 'hivatalos', forrasUrl: mnb, al: 'ebben látod a jövő évi díjat' });
+  h += tetel('Új ajánlatot leghamarabb', datumHu(r.ajanlat), { forras: 'hivatalos', forrasUrl: k.forrasok[1]?.url, al: 'az új időszak kezdete előtt 60 nappal' });
+  h += tetel('A régi szerződés felmondása', `beérkezik ${datumHu(r.felmondas)}`, { forras: 'hivatalos', forrasUrl: mnb, al: 'írásban, a biztosítóhoz' });
+  h += tetel('Az új szerződés kezdete', datumHu(r.kezdet), { cls: 'vegso' });
+  h += '</ul>';
+  if (r.bm && !r.bm.hiba) {
+    const b = r.bm;
+    h += '<ul class="tetelek masodik">';
+    h += tetel('Bonus-malus osztály most', b.most, { forras: 'sajat' });
+    h += tetel(`Jövőre${b.karok ? `, ${b.karok} károkozással` : ', kármentesen'}`, b.uj, { forras: 'hivatalos', forrasUrl: k.forrasok[2]?.url, al: b.valtozas > 0 ? 'eggyel jobb osztály' : b.valtozas < 0 ? `${-b.valtozas} osztállyal rosszabb` : b.karok ? 'a legrosszabb osztály marad' : (b.nap270 ? 'a legjobb osztály marad' : 'nem javul, mert a szerződés 270 napnál rövidebb ideig élt'), cls: 'vegso' });
+    h += '</ul>';
+  }
+  h = jelekkel(h);
+  if (!r.elkesett && r.hetvege) h += megjegyzes(`A határidő hétvégére esik. A felmondásnak addig be kell érkeznie, ezért küldd el néhány nappal korábban: postán ajánlottan, tértivevénnyel, vagy a biztosító online felületén.`, 'figyelem');
+  h += megjegyzes('A régi szerződést ne hagyd díjnemfizetéssel megszűnni: ha az évforduló előtt így szűnik meg, az új biztosítónál kötött szerződés sem lesz érvényes.');
+  return h;
+}
+
+/* ---------- Megjavítsam vagy cseréljem? ---------- */
+export function javitasPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const tart = r.olcsobb === 'tart';
+  let h = vegosszeg(tart ? 'A javítás olcsóbb ennyivel' : 'A csere olcsóbb ennyivel', r.kulonbseg, `${r.evek} év alatt, ha mindkét autó végén számolunk az eladási árral. Havonta nagyjából ${ftx(r.kulonbseg / (r.evek * 12))}.`);
+  h += `<h3 class="panel-cim">Megjavítom és megtartom</h3><ul class="tetelek">`;
+  h += tetel('Javítás', ftx(r.tart.javitas), { forras: 'sajat' });
+  h += tetel(`Fenntartás ${r.evek} évig`, ftx(r.tart.fenntartas), { forras: 'sajat' });
+  h += tetel(`Amennyit ${r.evek} év múlva ér`, `−${ftx(r.tart.vegErtek)}`, { cls: 'levonas', forras: 'becsles', al: r.ertekJavitvaBecsles ? 'megjavítva a mostani érték plusz a javítás, utána átlagos értékvesztés' : 'a megjavított értékből, átlagos értékvesztéssel' });
+  h += tetel('Összesen', ftx(r.tart.osszes), { cls: 'vegso' });
+  h += `</ul><h3 class="panel-cim">Eladom, és másikat veszek</h3><ul class="tetelek">`;
+  h += tetel('Vételár mínusz a mostani autó ára', ftx(r.csere.kulonbozet), { forras: 'sajat', al: `${ftx(r.ar)} − ${ftx(r.ertekMost)}` });
+  if (r.csere.atiras) h += tetel('Átírás', ftx(r.csere.atiras), { forras: 'hivatalos', al: 'illeték, vizsgálat, okmányok' });
+  h += tetel(`Fenntartás ${r.evek} évig`, ftx(r.csere.fenntartas), { forras: 'sajat' });
+  h += tetel(`Amennyit ${r.evek} év múlva ér`, `−${ftx(r.csere.vegErtek)}`, { cls: 'levonas', forras: 'becsles', al: 'átlagos értékvesztéssel' });
+  h += tetel('Összesen', ftx(r.csere.osszes), { cls: 'vegso' });
+  h += '</ul>';
+  h = jelekkel(h);
+  h += megjegyzes('Nem számol a kockázattal: egy régi autónál a következő nagy javítás bármikor jöhet, egy másik használt autónál pedig rejtett hiba lehet. Ha bizonytalan vagy, a régi autó éves fenntartását számold bőkezűbben.');
+  return h;
+}

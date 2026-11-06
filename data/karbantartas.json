@@ -90,6 +90,24 @@
       "forras": "https://njt.hu/",
       "hogyan": "A rendszámtábla 11 500 Ft-os díja most hírforrásból van: keresd meg a jogszabályt, és cseréld a forrást. A forgalomba helyezés előtti vizsgálat díja (2025 óta kb. 57 000 Ft a sajtó szerint) még nincs a kalkulátorban: ha hivatalos forrással megvan, vedd fel a behozott autó tételei közé.",
       "utoljara": null
+    },
+    {
+      "id": "villany-tamogatas",
+      "mikor": "--01-15",
+      "mit": "Villanyautó-támogatás magánszemélyeknek: indult-e új program?",
+      "hol": "data/szabalyok.json → ev_tamogatas (allapot, ellenorizve, forrasok)",
+      "forras": "https://www.wallbox.hu/eauto/elektromos-auto-palyazat-2026/",
+      "hogyan": "Ha indult, írd át az állapotot a feltételekkel és a hivatalos forrással.",
+      "utoljara": "2026-11-06"
+    },
+    {
+      "id": "villany-tamogatas-nyar",
+      "mikor": "--07-15",
+      "mit": "Villanyautó-támogatás magánszemélyeknek: félévi ellenőrzés",
+      "hol": "data/szabalyok.json → ev_tamogatas",
+      "forras": null,
+      "hogyan": "Mint januárban.",
+      "utoljara": "2026-11-06"
     }
   ]
 }

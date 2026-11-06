@@ -259,5 +259,99 @@
         "idoszak": "2019"
       }
     ]
+  },
+  "kgfb": {
+    "leiras": "Kötelező gépjármű-felelősségbiztosítás: évfordulós váltás és bonus-malus. A napok a biztosítási időszak kezdőnapjától visszafelé számítva. Az MNB példájában a január 1-jei évfordulónál a díjértesítő november 11-ig érkezik, a felmondás határideje december 1.",
+    "ertesites_nap": 51,
+    "felmondas_nap": 31,
+    "ajanlat_legkorabban_nap": 60,
+    "bm_osztalyok": [
+      "M4",
+      "M3",
+      "M2",
+      "M1",
+      "A00",
+      "B1",
+      "B2",
+      "B3",
+      "B4",
+      "B5",
+      "B6",
+      "B7",
+      "B8",
+      "B9",
+      "B10"
+    ],
+    "bm_kar_visszaeses": 2,
+    "bm_negy_kar": "M4",
+    "bm_megfigyeles_nap": 270,
+    "forrasok": [
+      {
+        "nev": "MNB: Gépjármű-biztosítás, fogyasztói tájékoztató (díjértesítő 50 nappal, felmondás 30 nappal az évforduló előtt; január 1-jei évfordulónál december 1.)",
+        "url": "https://www.mnb.hu/letoltes/gepjarmu-biztositas.pdf"
+      },
+      {
+        "nev": "2009. évi LXII. törvény a kötelező gépjármű-felelősségbiztosításról (Gfbt.)",
+        "url": "https://njt.hu/jogszabaly/2009-62-00-00"
+      },
+      {
+        "nev": "21/2011. (VI. 10.) NGM rendelet a bonus-malus rendszerről",
+        "url": "https://njt.jog.gov.hu/jogszabaly/2011-21-20-2X"
+      },
+      {
+        "nev": "MNB-állásfoglalás: a besorolás javulásához legalább 270 napos előzményidőszak kell",
+        "url": "https://alk.mnb.hu/data/cms2624675/137243_5_2024_kozzeteteli.pdf"
+      },
+      {
+        "nev": "Privátbankár: ha a szerződés díjnemfizetés miatt szűnik meg az évforduló előtt, az új szerződés sem érvényes",
+        "url": "https://privatbankar.hu/cikkek/migracio/kotelezo-tippek_erre_figyeljen_a_hajraban-232051.html"
+      }
+    ]
+  },
+  "vetlen": {
+    "leiras": "Vétlen baleset: a károkozó kötelező biztosításának kárrendezése.",
+    "karosult_bejelentes_nap": 30,
+    "ajanlat_nap": 15,
+    "ajanlat_max_honap": 3,
+    "forrasok": [
+      {
+        "nev": "2009. évi LXII. törvény a kötelező gépjármű-felelősségbiztosításról (Gfbt.), 31. §: a kárrendezés határideje",
+        "url": "https://njt.hu/jogszabaly/2009-62-00-00"
+      },
+      {
+        "nev": "Adózóna (MNB-vizsgálat): kártérítési javaslat 15 napon belül, legkésőbb 3 hónapon belül",
+        "url": "https://adozona.hu/altalanos/Kesve_reagalt_a_biztosito_a_karigenyekre_to_FJLFJ4"
+      },
+      {
+        "nev": "MNB, dr. Nagy Olga: a kgfb-károsultak bizonyítási nehézségei (bérautó számlával, nem kell megvárni a hatósági eljárást)",
+        "url": "https://www.mnb.hu/letoltes/dr-nagy-olga-kgfb-s-karosultak-bizonyitasi-nehezsegei.pdf"
+      },
+      {
+        "nev": "Allianz kárrendezési tájékoztató: károsultként 30 napon belül kell bejelenteni",
+        "url": "https://www.allianz.hu/content/dam/onemarketing/cee/azhu/pdf/kar/AHE-52401-5_Karrendezesi_tajekoztato.pdf"
+      },
+      {
+        "nev": "Pénzügyi Békéltető Testület (MNB)",
+        "url": "https://www.penzugyibekeltetotestulet.hu/"
+      },
+      {
+        "nev": "Bank360: gyors kárrendezés, és hogy az elfogadásával lemondasz a további igényről",
+        "url": "https://bank360.hu/blog/gyorskar-rendezes"
+      }
+    ]
+  },
+  "ev_tamogatas": {
+    "allapot": "Magánszemélyeknek nincs élő állami villanyautó-támogatás, és hivatalosan nem jelentettek be újat. A vállalkozásoknak szóló (RRF-REP-10.10.1-24) program lezárult.",
+    "ellenorizve": "2026-11-06",
+    "forrasok": [
+      {
+        "nev": "Wallbox.hu: elektromos autó pályázat 2026, aktuális állás (2026. október)",
+        "url": "https://www.wallbox.hu/eauto/elektromos-auto-palyazat-2026/"
+      },
+      {
+        "nev": "Infostart: magánszemélyek jelenleg nem kaphatnak támogatást (2025. november)",
+        "url": "https://infostart.hu/gazdasag/2025/11/14/meg-kitart-az-e-autos-palyazat"
+      }
+    ]
   }
 }

@@ -136,6 +136,8 @@ const MINTAK = {
   fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
   phev: { adat: { kw: '135', gyartasiEv: '2022', regi: true, zold: true, parkolasHavi: '15000' }, leiras: 'egy 2022-es, 135 kW-os, zöld rendszámos plug-in hibrid, amellyel havonta 15 000 forint parkolást spórolsz Budapesten' },
   matrica: { adat: { napi: '3', tiznapos: '1', varmegyek: '1' }, leiras: 'évente három egynapos és egy tíznapos út, és rendszeres autópályázás egy vármegyében', kerd: 'Írd be a saját útjaidat, és a minta helyett azzal számolunk.' },
+  kgfb: { adat: { evfordulo: `${new Date().getFullYear() + 1}-01-01`, osztaly: 'B10', karok: '0' }, leiras: 'január 1-jei évforduló, B10-es besorolás, kármentes év', kerd: 'Írd be a saját évfordulódat, és a minta helyett azzal számolunk.' },
+  javitas: { adat: { a_gyartasiEv: '2003', a_hajtas: 'benzin', a_ertekMost: '1500000', a_javitas: '1000000', a_ertekJavitva: '2300000', a_fenntartas: '450000', c_ar: '3300000', c_gyartasiEv: '2016', c_hajtas: 'benzin', c_kw: '110', c_fenntartas: '300000', evek: '3' }, leiras: 'egy 2003-as autó egymilliós motorjavítás előtt, és egy 3,3 millió forintos, 2016-os másik autó, 3 évre', kerd: 'Írd be a saját számaidat, és a minta helyett azzal számolunk.' },
   hitel: { adat: { ar: '6000000', onero: '1500000', evek: '5', thm: '11,9', kw: '110', gyartasiEv: '2021', hajtas: 'benzin' }, leiras: 'egy 6 millió forintos, 2021-es benzines autó 1,5 millió önerővel, 5 évre, 11,9% THM-mel', kerd: 'Írd be a saját autódat és a bank ajánlatát, és a minta helyett azzal számolunk.' },
 };
 let mintaMutat = false;
@@ -228,6 +230,18 @@ const KALK = {
     return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r, e);
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),
+  kgfb: (adat, e) => {
+    if (ures(e, ['evfordulo'])) return mintaval('kgfb', adat, e);
+    const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
+    const r = S.kgfb(adat, { evfordulo: e.evfordulo, ma, osztaly: e.osztaly, karok: Math.min(4, Number(e.karok) || 0), nap270: e.rovid !== true });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.kgfbPanel(adat, r);
+  },
+  javitas: (adat, e) => {
+    if (ures(e, ['a_javitas', 'c_ar'])) return mintaval('javitas', adat, e);
+    const n = (k) => szam(e[k]);
+    const r = S.javitasVagyCsere(adat, { ev: adat.ev, datum: adat.ma, evek: n('evek') || 3, a: { gyartasiEv: n('a_gyartasiEv'), hajtas: e.a_hajtas || 'benzin', ertekMost: n('a_ertekMost') || 0, javitas: n('a_javitas'), ertekJavitva: n('a_ertekJavitva'), fenntartas: n('a_fenntartas') || 0 }, c: { ar: n('c_ar'), gyartasiEv: n('c_gyartasiEv'), hajtas: e.c_hajtas || 'benzin', kw: n('c_kw'), fenntartas: n('c_fenntartas') || 0 } });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.javitasPanel(adat, r);
+  },
   phev: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('phev', adat, e);
     const r = S.phev(adat, { kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), regi: !!e.regi, zold: !!e.zold, ceges: !!e.ceges, parkolasHavi: szam(e.parkolasHavi) });

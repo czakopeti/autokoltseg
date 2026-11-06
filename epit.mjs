@@ -58,6 +58,9 @@ const oldalak = [
   ['plug-in-hibrid-2027/', O.phevOldal(k)],
   ['autohitel-kalkulator/', O.hitelOldal(k)],
   ['autopalya-matrica-kalkulator/', O.matricaOldal(k)],
+  ['megjavitsam-vagy-csereljem/', O.javitasOldal(k)],
+  ['kotelezo-biztositas-valtas/', O.kgfbOldal(k)],
+  ['vetlen-baleset/', O.vetlenOldal(k)],
   ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
   ['autom/', O.automOldal(k)],
@@ -120,6 +123,9 @@ https://:version.:project.pages.dev/*
 - [Plug-in hibrid 2027](${cfg.domain}/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
 - [Autóhitel](${cfg.domain}/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt
 - [Autópálya-matrica](${cfg.domain}/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (${adat.szabalyok.matrica.ev}. évi díjak)
+- [Javítás vagy csere](${cfg.domain}/megjavitsam-vagy-csereljem/): megjavítsam a régi autót, vagy eladjam és vegyek másikat; két út teljes költsége évekre, értékvesztéssel és átírással
+- [Kötelező biztosítás váltás](${cfg.domain}/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
+- [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
 - [Adásvételi szerződés](${cfg.domain}/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta

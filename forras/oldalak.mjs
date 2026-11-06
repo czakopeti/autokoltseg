@@ -92,6 +92,9 @@ ${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div
 <li><a href="${L.l('plug-in-hibrid-2027/')}"><h3>Plug-in hibrid 2027</h3><p>Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('autohitel-kalkulator/')}"><h3>Autóhitel</h3><p>Havi törlesztő a THM-mel, és mennyibe kerül valójában az autó, ha a kamatot és az értékvesztést is beleszámolod.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('autopalya-matrica-kalkulator/')}"><h3>Autópálya-matrica</h3><p>Éves, vármegyei vagy alkalmi: melyik a legolcsóbb annak, ahogy te autózol.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('megjavitsam-vagy-csereljem/')}"><h3>Javítás vagy csere</h3><p>Megjavítsam a régi autót, vagy eladjam és vegyek másikat? A két út teljes költsége évekre előre.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('kotelezo-biztositas-valtas/')}"><h3>Kötelező biztosítás</h3><p>Meddig mondhatod fel a kötelezőt, mikor jön a díjértesítő, és melyik bonus-malus osztályba kerülsz jövőre.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('vetlen-baleset/')}"><h3>Vétlen baleset</h3><p>Mi jár a károkozó biztosítójától: javítás, csereautó, határidők, és mit tehetsz, ha nem fizet.</p><span class="ugrik">Elolvasom</span></a></li>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}"><h3>Adásvételi szerződés</h3><p>Kitölthető, nyomtatható minta használt autó eladásához.</p><span class="ugrik">Kitöltöm</span></a></li>
 <li><a href="${L.l('le-kw-atvaltas/')}"><h3>LE–kW átváltás</h3><p>Hány kW egy lóerő, és melyik szerepel a forgalmiban.</p><span class="ugrik">Átváltom</span></a></li>
 </ul>
@@ -599,6 +602,7 @@ export function osszehasonlitoOldal(k) {
 
   const kerdesek = [
     { k: `Megéri villanyautót venni ${M.rag(aktualis, 'ban', 'ben')}?`, v: [`Attól függ, mennyit autózol, és hol tudsz tölteni. A példánkban egy 12 milliós benzines és egy 14,5 milliós villanyautó évi 15 000 km mellett ${PELDA.evek} év alatt ${M.ftx(pr.kulonbseg)}-tal tér el, és ${pr.autok[pr.olcsobb].hajtas === 'elektromos' ? 'a villanyautó' : 'a benzines'} az olcsóbb${pr.megterul ? `: a drágább vételára ${M.tized(pr.megterul.honap / 12, 1)} év alatt jön vissza` : ''}. Ha többet jársz, vagy otthon tölthetsz, a villanyautó javára billen a mérleg; ha gyakran villámtöltőn töltesz, a benzines felé.`] },
+    { k: 'Kapok állami támogatást, ha villanyautót veszek?', v: [`${adat.szabalyok.ev_tamogatas.allapot} Ellenőrizve: ${datumHu(adat.szabalyok.ev_tamogatas.ellenorizve)}. Ha új program indul, itt jelezzük, és a kalkulátorban a vételárból levonhatod.`] },
     { k: 'Mennyibe kerül 100 km villanyautóval?', v: [`Egy 16,5 kWh/100 km-es autó a 10%-os töltési veszteséggel nagyjából 18,2 kWh-t vesz fel 100 km-en. Otthoni áramon, a kedvezményes sáv felett ez ${M.ftx(18.15 * f.aram_piaci)}, a kedvezményes sávon belül ${M.ftx(18.15 * f.aram_kedv)}, nyilvános töltőn ${f.tolto} Ft/kWh mellett ${M.ftx(18.15 * f.tolto)}. Ugyanennyi út egy 6,2 literes benzinessel ${M.ftx(6.2 * f.benzin)}.`] },
     { k: 'Mi az a 2523 kWh-s szabály, és miért számít a töltésnél?', v: [`A háztartások évi ${fmt(f.sav_kwh)} kWh-ig kapják a rezsicsökkentett árat (A1 tarifán ${M.tized(f.aram_kedv)} Ft/kWh), afölött a lakossági piaci árat (${M.tized(f.aram_piaci, 3)} Ft/kWh). Egy átlagos háztartás ezt a keretet a töltés nélkül is nagyrészt elhasználja, így az otthoni töltés jellemzően már a drágább áron megy. A kalkulátor ezért megkérdezi a háztartás fogyasztását, és ha nem adod meg, a drágább árral számol.`] },
     { k: 'Kell gépjárműadót és illetéket fizetni villanyautó után?', v: ['Nem. A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó mentes a gépjárműadó, az átírási illeték és a cégautóadó alól is. A plug-in hibrid és a hagyományos hibrid nem mentes.'] },
@@ -1027,4 +1031,167 @@ ${oldalfej(L, { morzsa: ['Rólunk'], cim: 'Kik vagyunk, és hogyan dolgozunk?', 
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, { cim: `Rólunk és szerkesztői elveink`, leiras: `Ki készíti ${M.nevelo(marka)} ${marka} oldalt, honnan vannak a számok, hogyan ellenőrizzük és javítjuk őket.`, ut, tartalom });
+}
+
+/* ======================= KÖTELEZŐ BIZTOSÍTÁS: VÁLTÁS ======================= */
+export function kgfbOldal(k) {
+  const { adat } = k;
+  const ut = 'kotelezo-biztositas-valtas/';
+  const kg = adat.szabalyok.kgfb;
+  const jan = S.kgfb(adat, { evfordulo: `${k.ev}-01-01`, ma: k.ma });
+  const kerdesek = [
+    { k: 'Meddig mondhatom fel a kötelező biztosításomat?', v: [`A felmondásnak írásban kell beérkeznie a biztosítóhoz, legkésőbb 30 nappal az évforduló előtt. Ha az évfordulód január 1., a határidő december 1.${jan.elkesett ? '' : ` (most: ${datumHu(jan.felmondas)})`} Ha év közben kötötted, az évforduló a szerződés kezdőnapja, és a határidő ehhez igazodik.`] },
+    { k: 'Köthetek új szerződést ugyanannál a biztosítónál?', v: ['Igen. Ha a régit határidőben felmondod, ugyanannál a biztosítónál is köthetsz újat, akár olcsóbbat. A biztosító az új ajánlatot jellemzően csak akkor utasíthatja el, ha a régi szerződést ő mondta fel, vagy díjnemfizetés miatt szűnt meg. Az ajánlatot legfeljebb 60 nappal az új időszak kezdete előtt teheted meg.'] },
+    { k: 'Mikor jön a díjértesítő?', v: ['A biztosítónak legalább 50 nappal az évforduló előtt írásban értesítenie kell a jövő évi díjról. Január 1-jei évfordulónál ez november 11. Ebből látod, mennyit fizetnél, ha maradsz: ezt érdemes összevetni a többi biztosító ajánlatával.'] },
+    { k: 'Mi történik, ha nem fizetem be a díjat, hogy megszűnjön?', v: ['Ne így válts. Ha a régi szerződés az évforduló előtt díjnemfizetés miatt szűnik meg, az új biztosítónál kötött szerződés sem lesz érvényes, és fedezetlenségi díjat is fizethetsz.'] },
+    { k: 'Hogyan működik a bonus-malus?', v: [`Tizenöt osztály van: M4–M1 (pótdíjas), A00 (alap) és B1–B10 (kedvezményes). Ha egy évig nem okozol kárt, eggyel jobb osztályba kerülsz, ha a szerződés legalább ${kg.bm_megfigyeles_nap} napig élt. Minden okozott kár két osztállyal visszavet, négy vagy több kár után M4 jár. Az osztály minden biztosítónál ugyanaz, de hogy mekkora kedvezményt vagy pótdíjat ad érte, azt a biztosító dönti el.`] },
+    { k: 'Elviszem a bonusomat, ha új autót veszek?', v: ['A besorolás a szerződőhöz kötődik. Ha a régi autót eladod, és újra kötsz, a biztosító a kártörténeti igazolás alapján figyelembe veszi a korábbi besorolásodat. Az igazolást a régi biztosítótól kérheted.'] },
+  ];
+  const leiras = 'Meddig mondhatod fel a kötelező biztosításodat? Kiszámoljuk a felmondási határidőt az évfordulódból, és hogy melyik bonus-malus osztályba kerülsz jövőre.';
+  const osztalyok = [...kg.bm_osztalyok].reverse().map((o) => [o, o === 'A00' ? 'A00 (alap)' : o]);
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Kötelező biztosítás'], cim: 'Meddig mondhatom fel a kötelező biztosításomat?', valasz: 'A felmondásnak 30 nappal az évforduló előtt be kell érkeznie a biztosítóhoz: január 1-jei évfordulónál december 1-jéig. Az új szerződést az évfordulóig kell megkötni, akár ugyanannál a biztosítónál.' })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'kgfb', cim: 'A szerződésed', tartalom: `
+${sor('', `<label for="evfordulo">Biztosítási évforduló</label><input id="evfordulo" name="evfordulo" type="date"><span class="sugo">A kötvényen szerepel. Ha 2010 előtt kötötted, és azóta nem váltottál, január 1. Egyébként a szerződés kezdőnapja. Az év mindegy.</span>`)}
+<fieldset><legend>Bonus-malus</legend>
+${sor('', valaszto('osztaly', 'Mostani osztályod', osztalyok, 'B10', 'A díjértesítőn és a kötvényen látod.'))}
+${sor('', negyzetek('karok', 'Hány kárt okoztál ebben a biztosítási évben?', [['0', 'Egyet sem'], ['1', 'Egyet'], ['2', 'Kettőt'], ['3', 'Hármat'], ['4', 'Négyet vagy többet']], '0'))}
+${sor('', jelolo('rovid', 'A szerződés 270 napnál rövidebb ideje él', 'Ilyenkor kármentes évnél sem javul az osztály.'))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg a biztosítási évfordulót.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>Így válts biztosítót</h2>
+<ol class="lepesek">
+<li><strong>Várd meg a díjértesítőt.</strong> Legalább 50 nappal az évforduló előtt megérkezik, ebből látod, mennyit fizetnél, ha maradsz.</li>
+<li><strong>Kérj ajánlatokat.</strong> Összehasonlító oldalon vagy közvetlenül a biztosítóknál. Ugyanannál a biztosítónál is kérhetsz újat.</li>
+<li><strong>Mondd fel a régit írásban.</strong> A felmondásnak 30 nappal az évforduló előtt be kell érkeznie. Postán ajánlottan, tértivevénnyel, vagy a biztosító online felületén, hogy igazolni tudd.</li>
+<li><strong>Kösd meg az újat az évfordulóig.</strong> Így a fedezet megszakítás nélkül folytatódik. Az első díjat a szerződés szerinti határidőre fizesd be.</li>
+</ol>
+<h2>A bonus-malus osztályok</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Mostani osztály</th><th>Kármentes év</th><th>1 kár</th><th>2 kár</th><th>3 kár</th><th>4 vagy több</th></tr></thead><tbody>
+${[...kg.bm_osztalyok].reverse().map((o) => `<tr><td>${o}</td>${[0, 1, 2, 3, 4].map((n) => `<td>${S.bonusMalus(adat, o, n).uj}</td>`).join('')}</tr>`).join('')}
+</tbody><caption>A 21/2011. (VI. 10.) NGM rendelet szerint. A kedvezmény vagy a pótdíj mértékét a biztosító állapítja meg.</caption></table></div>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(kg.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Kötelező biztosítás váltás: határidő és bonus-malus',
+    leiras, ut, tartalom,
+    adatJson: { szabalyok: { kgfb: kg } },
+    jsonld: [alkalmazasLd(k.cfg, 'Kötelező biztosítás felmondási határidő kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Kötelező biztosítás', ut }])],
+  });
+}
+
+/* ======================= MEGJAVÍTSAM VAGY CSERÉLJEM? ======================= */
+export function javitasOldal(k) {
+  const { adat } = k;
+  const ut = 'megjavitsam-vagy-csereljem/';
+  const kerdesek = [
+    { k: 'Mikor éri meg megjavítani a régi autót?', v: ['Ha a javítás után az autó még évekig megbízható, és az éves fenntartása nem sokkal drágább, mint egy másik autóé. A javítás pénzét nem kapod vissza eladáskor, de a másik autónál a vételár különbözete és az átírás is pénz, és egy drágább autó gyorsabban veszít az értékéből.'] },
+    { k: 'Mennyit ér a megjavított autó?', v: ['Ritkán annyit, amennyit beleraksz. Nézd meg a hirdetésekben, mennyiért kínálnak hasonló, rendben lévő autót, és annak a 85–90%-ával számolj, mert a hirdetési árból általában alkudnak. Ha üresen hagyod, a mostani értéket és a javítás árát adjuk össze, ami inkább felső becslés.'] },
+    { k: 'Miért számol az értékvesztéssel a végén?', v: ['Mert az is a te pénzed: amennyit az autó a végén még ér, azt eladáskor visszakapod. Két autó összevetésénél ezért nem a vételár számít, hanem amennyibe a kettő a teljes idő alatt kerül.'] },
+  ];
+  const leiras = 'Megjavítsam a régi autót, vagy eladjam és vegyek másikat? Két út teljes költsége évekre előre: javítás, vételár, átírás, fenntartás és értékvesztés.';
+  const autoMezok = (p, cim, szoveg) => `<fieldset><legend>${cim}</legend>${szoveg ? `<p class="fieldset-megj">${szoveg}</p>` : ''}`;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Javítás vagy csere'], cim: 'Megjavítsam az autót, vagy cseréljem le?', valasz: 'Az a jobb, amelyik a következő években kevesebbe kerül, ha a végén mindkét autót eladnád. Ebbe a javítás, a vételár különbözete, az átírás, a fenntartás és az értékvesztés is beletartozik.' })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'javitas', cim: 'A két lehetőség', tartalom: `
+${autoMezok('a', 'A mostani autó')}
+${sor('', szamMezo({ id: 'a_javitas', cim: 'Mennyibe kerül a javítás?', me: 'Ft', placeholder: 'pl. 1 000 000', min: 0 }))}
+${sor('', szamMezo({ id: 'a_ertekMost', cim: 'Mennyiért adnád el most, javítás nélkül?', me: 'Ft', placeholder: 'pl. 1 500 000', min: 0 }))}
+${sor('', szamMezo({ id: 'a_ertekJavitva', cim: 'Mennyit érne megjavítva?', me: 'Ft', placeholder: 'pl. 2 300 000', min: 0, sugo: 'A hirdetési árak 85–90%-a. Ha üresen hagyod, a mostani érték és a javítás összegével számolunk.' }))}
+${sor('', szamMezo({ id: 'a_fenntartas', cim: 'Évente mennyit költesz rá?', me: 'Ft', placeholder: 'pl. 450 000', min: 0, sugo: 'Üzemanyag, szerviz, javítások, biztosítás, adó.' }))}
+<div class="ket">${sor('', szamMezo({ id: 'a_gyartasiEv', nev: 'a_gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2003', min: 1950, max: k.ev + 1 }))}${sor('', valaszto('a_hajtas', 'Hajtás', HAJTASOK, 'benzin'))}</div>
+</fieldset>
+${autoMezok('c', 'A másik autó')}
+${sor('', szamMezo({ id: 'c_ar', cim: 'Mennyiért vennéd?', me: 'Ft', placeholder: 'pl. 3 300 000', min: 0 }))}
+${sor('', szamMezo({ id: 'c_fenntartas', cim: 'Évente mennyibe kerülne?', me: 'Ft', placeholder: 'pl. 300 000', min: 0 }))}
+<div class="ket">${sor('', szamMezo({ id: 'c_gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2016', min: 1950, max: k.ev + 1 }))}${sor('P.2', szamMezo({ id: 'c_kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, sugo: 'Az átírás miatt.' }))}</div>
+${sor('', valaszto('c_hajtas', 'Hajtás', HAJTASOK, 'benzin'))}
+</fieldset>
+<fieldset><legend>Időtáv</legend>
+${sor('', negyzetek('evek', 'Hány évre nézzük?', [['2', '2 év'], ['3', '3 év'], ['5', '5 év'], ['8', '8 év']], '3'))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg a javítás árát és a másik autó vételárát.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>Mire figyelj a döntésnél?</h2>
+<ul>
+<li><strong>Kérj írásos árajánlatot a javításra.</strong> Motor- és váltóhibánál a szétszedés után gyakran derül ki, hogy több alkatrész is kell.</li>
+<li><strong>Nézd meg, mi jön még.</strong> Ha a futómű, a kuplung vagy a vezérlés is esedékes, add hozzá az éves fenntartáshoz.</li>
+<li><strong>A másik autót is vizsgáltasd át.</strong> Egy használt autó vételára mellett számolj egy kisebb javítási kerettel is.</li>
+<li><strong>A biztosítás és az adó is változik.</strong> Egy erősebb vagy fiatalabb autónál drágább lehet a kötelező biztosítás, a gépjárműadót pedig a <a href="${L.l('gepjarmuado-kalkulator/')}">gépjárműadó-kalkulátorban</a> számolhatod ki.</li>
+</ul>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([...adat.szabalyok.maradvany.forrasok.map((x) => ({ nev: x.nev, url: x.url, d: x.idoszak || '' })), { nev: 'NAV: a gépjárműadó és az illeték tételei', url: 'https://nav.gov.hu/gepjarmuado/az-ado-szamitasa' }])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Megjavítsam vagy cseréljem az autót? Kalkulátor',
+    leiras, ut, tartalom,
+    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany }, ev: k.ev, ma: k.ma },
+    jsonld: [alkalmazasLd(k.cfg, 'Javítás vagy csere kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Javítás vagy csere', ut }])],
+  });
+}
+
+/* ======================= VÉTLEN BALESET ======================= */
+export function vetlenOldal(k) {
+  const { adat } = k;
+  const ut = 'vetlen-baleset/';
+  const v = adat.szabalyok.vetlen;
+  const kerdesek = [
+    { k: 'Jár csereautó, ha vétlenként összetörték az autómat?', v: ['A károkozó kötelező biztosítása a teljes károdat megtéríti, ebbe a közlekedés többletköltsége is beletartozik, amíg az autód javításon van. A bérautó költségét viszont számlával és bérleti szerződéssel kell igazolnod, és csak az indokolt időre és az autódhoz hasonló kategóriára. Igazolás nélkül a biztosító jellemzően csak átalányt fizet.', 'Hogy a bérautót előre kifizeti-e, az nem kötelező: kérdezd meg a biztosítót, van-e szerződött partnere, akivel közvetlenül elszámol. Ha a mindennapi életedhez (munka, gyermek iskolába vitele, ápolás) nélkülözhetetlen az autó, ezt írásban, igazolással együtt jelezd a kárbejelentésben.'] },
+    { k: 'Meg kell várnom a rendőrségi határozatot?', v: ['Nem. A kárigényt nem kell a szabálysértési vagy büntetőeljárás jogerős lezárásáig halogatni, és a biztosító sem kötheti ehhez a kárrendezést, ha a felelősség egyébként egyértelmű.'] },
+    { k: 'Mennyi idő alatt kell fizetnie a biztosítónak?', v: [`Ha a felelősség nem vitás, és minden szükséges irat megvan, a biztosító ${v.ajanlat_nap} napon belül, de legkésőbb a kárigény benyújtásától számított ${v.ajanlat_max_honap} hónapon belül köteles kártérítési javaslatot tenni, vagy indokolt választ adni.`] },
+    { k: 'Elfogadjam a gyors, számla nélküli kifizetést?', v: ['Csak ha biztos vagy benne, hogy elég. Ha elfogadod, lemondasz minden további igényről, akkor is, ha a javítás végül többe kerül. A számla nélküli összegből a biztosítók jellemzően az áfát sem fizetik ki.'] },
+    { k: 'Mit tehetek, ha a biztosító elutasít vagy keveset fizet?', v: ['Először írásban panaszt kell tenned a biztosítónál. Ha a válasz nem megfelelő, a Magyar Nemzeti Bank mellett működő Pénzügyi Békéltető Testülethez fordulhatsz, ez ingyenes. Végül bírósághoz is fordulhatsz.'] },
+    { k: 'Mi van, ha a károkozónak nincs biztosítása, vagy elhajtott?', v: ['Ilyenkor a MABISZ Kártalanítási Számlája térít. Ismeretlen károkozónál a járműben keletkezett kárt csak akkor, ha a baleset halállal vagy súlyos személyi sérüléssel járt.'] },
+  ];
+  const leiras = 'Vétlen baleset után mi jár a károkozó kötelező biztosításától? Javítás, csereautó, értékcsökkenés, határidők, és mit tehetsz, ha a biztosító nem fizet.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Vétlen baleset'], cim: 'Mi jár, ha vétlenként összetörték az autódat?', valasz: `A károkozó kötelező biztosítása a teljes, igazolt károdat megtéríti: a javítást, a szállítást, a közlekedés többletköltségét és az értékcsökkenést is. A kárt ${v.karosult_bejelentes_nap} napon belül jelentsd be a károkozó biztosítójánál.` })}
+<div class="keret"><article class="cikk">
+<h2>Az első napokban</h2>
+<ol class="lepesek">
+<li><strong>Rögzíts mindent a helyszínen.</strong> Tölts ki közös kárbejelentőt a másik sofőrrel, vagy hívj rendőrt. Fotózd le az autókat, a helyszínt és a másik autó rendszámát, kérd el a károkozó biztosítójának nevét.</li>
+<li><strong>Jelentsd be a kárt a károkozó biztosítójánál ${v.karosult_bejelentes_nap} napon belül.</strong> Ha nem tudod, ki az, a rendszám alapján a biztosítók és a MABISZ is megmondja. A bejelentés után kárszámot kapsz.</li>
+<li><strong>Írd meg, mire van szükséged.</strong> Ha az autó nélkülözhetetlen (munka, gyermek iskolába vitele, ápolás), írd bele a kárbejelentésbe, és kérdezd meg, van-e szerződött bérautó-partnerük közvetlen elszámolással.</li>
+<li><strong>Várd meg a szemlét a javítás előtt.</strong> A biztosító szakértője megnézi az autót. Ha a javítást a szemle előtt kezdik el, nehezebb lesz igazolni a kárt.</li>
+<li><strong>Gyűjts minden számlát.</strong> Trélert, bérautót, taxit, parkolást: amit nem tudsz igazolni, azt nehezen fizetik ki.</li>
+</ol>
+<h2>Mit kérhetsz?</h2>
+<div class="tabla-tarto"><table class="tabla szoveges"><thead><tr><th>Tétel</th><th>Mivel igazolod?</th></tr></thead><tbody>
+<tr><td>Az autó javítása</td><td>Javítási számla, vagy a biztosító kalkulációja (számla nélkül jellemzően áfa nélkül fizetnek)</td></tr>
+<tr><td>Szállítás, tréler, tárolás</td><td>Számla</td></tr>
+<tr><td>Bérautó a javítás idejére</td><td>Bérleti szerződés és számla; az indokolt időre, hasonló kategóriában</td></tr>
+<tr><td>Közlekedés, ha nem bérelsz autót</td><td>Menetjegyek, taxiszámlák; igazolás nélkül átalány</td></tr>
+<tr><td>Értékcsökkenés javítás után</td><td>Szakértői vélemény, főleg fiatal autónál</td></tr>
+<tr><td>Totálkárnál az autó értéke</td><td>A kárkori érték a roncs értékével csökkentve</td></tr>
+<tr><td>Személyi sérülés, elmaradt jövedelem</td><td>Orvosi iratok, munkáltatói igazolás</td></tr>
+</tbody><caption>A Ptk. szerint a károsultat teljes kártérítés illeti meg, de minden tételt neki kell igazolnia, és kötelessége a kárt enyhíteni.</caption></table></div>
+<h2>Határidők</h2>
+<div class="tabla-tarto"><table class="tabla szoveges"><thead><tr><th>Ki</th><th>Mit</th><th>Mennyi idő alatt?</th></tr></thead><tbody>
+<tr><td>Te, károsultként</td><td>Kárbejelentés a károkozó biztosítójánál</td><td>${v.karosult_bejelentes_nap} nap</td></tr>
+<tr><td>A biztosító</td><td>Kártérítési javaslat vagy indokolt válasz</td><td>${v.ajanlat_nap} nap az iratok beérkezésétől, legfeljebb ${v.ajanlat_max_honap} hónap</td></tr>
+</tbody></table></div>
+<p class="kicsi">Ez általános tájékoztatás, nem jogi tanácsadás. Vitás esetben a Pénzügyi Békéltető Testülethez vagy ügyvédhez fordulhatsz.</p>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(v.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Vétlen baleset: mi jár a biztosítótól?',
+    leiras, ut, tartalom,
+    jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vétlen baleset', ut }])],
+  });
 }
