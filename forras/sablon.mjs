@@ -9,10 +9,12 @@ export const MENU = [
   { ut: 'benzin-vagy-villany/', nev: 'Benzin vagy villany' },
   { ut: 'autofenntartas-kalkulator/', nev: 'Fenntartás' },
   { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
+  { ut: 'autom/', nev: 'Az autóm' },
 ];
 export const TOVABBI = [
   { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
   { ut: 'forrasok/', nev: 'Források' },
+  { ut: 'valtozasok/', nev: 'Változások' },
 ];
 
 /** Linkkészítő: élesben /ut/, előnézetben relatív útvonal index.html-lel. */
@@ -44,14 +46,15 @@ export function gilos() {
 }
 
 /** Körpecsét a dátummal: a NAV-tételekkel számolt eredmény jele. */
-export function pecset(ma, ut = true) {
+export function pecset(ma, ut = true, marka = 'Autóköltség', link = false) {
   const [ev] = ma.split('-');
-  return `<svg class="pecset${ut ? ' ut' : ''}" viewBox="0 0 130 130" aria-hidden="true">
+  // A gyűrűben a saját nevünk áll: a pecsét a miénk, nem a NAV-é. Kattintásra a forrásokhoz visz.
+  return `<svg class="pecset${ut ? ' ut' : ''}" viewBox="0 0 130 130" ${link ? `role="link" tabindex="0" aria-label="Honnan jönnek a számok? A források oldala"><title>Honnan jönnek a számok? Kattints a forrásokért.</title` : 'aria-hidden="true"'}>
 <defs><path id="pecset-ivek" d="M65 65 m-47 0 a47 47 0 1 1 94 0 a47 47 0 1 1 -94 0"/></defs>
 <circle cx="65" cy="65" r="61" fill="none" stroke="currentColor" stroke-width="3"/>
 <circle cx="65" cy="65" r="55" fill="none" stroke="currentColor" stroke-width="1.2"/>
 <circle cx="65" cy="65" r="35" fill="none" stroke="currentColor" stroke-width="1.2"/>
-<text fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">A NAV TÉTELEIVEL SZÁMOLVA ✶ ELLENŐRIZVE ✶</textPath></text>
+<text fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">${esc(marka.toLocaleUpperCase('hu'))} ✶ NAV-TÉTELEKKEL SZÁMOLVA ✶</textPath></text>
 <text x="65" y="64" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="800" font-size="21">${ev}</text>
 <text x="65" y="80" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="11">${datumRomai(ma)}</text>
 </svg>`;
@@ -114,13 +117,14 @@ function lablec(k, L) {
   const ell = adat.allapot.utolso_ellenorzes || ma;
   return `<footer class="lablec"><div class="keret">
 <div>
-<p>A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
+<p><strong>Független oldal, nem a NAV hivatalos oldala.</strong> A NAV közzétett adatai alapján számolunk. A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
 <p>Az adatokat minden reggel összevetjük a NAV oldalával. Legutóbbi ellenőrzés: ${datumHu(ell)}</p>
 </div>
 <div><h2>Kalkulátorok</h2><ul>${MENU.map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}">Adásvételi szerződés minta</a></li>
 <li><a href="${L.l('forrasok/')}">Források és frissítés</a></li>
+<li><a href="${L.l('valtozasok/')}">Mi változott?</a></li>
 <li><a href="${L.l('adatvedelem/')}">Adatvédelem</a></li>
 <li><a href="${L.l('impresszum/')}">Impresszum</a></li>
 </ul></div>
@@ -158,11 +162,28 @@ export const egysegValto = `<div class="egyseg-valto" role="radiogroup" aria-lab
 
 export const HAJTASOK = [['benzin', 'Benzin'], ['dizel', 'Dízel'], ['hibrid', 'Hibrid'], ['plugin', 'Plug-in hibrid'], ['elektromos', 'Elektromos']];
 
+/** Stilizált forgalmi-hátoldal: hol vannak a mezők. Saját rajz, nem a valódi okmány képe. */
+export const HOL_TALALOM = `<details class="hol-talalom"><summary>Hol találom ezeket az adatokat?</summary>
+<div class="hol-belso"><svg viewBox="0 0 320 178" role="img" aria-label="A forgalmi engedély hátoldala, kiemelve a P.2 teljesítmény és a P.3 hajtóanyag mező">
+<rect x="1" y="1" width="318" height="176" rx="12" class="hk-lap"/>
+<text x="16" y="24" class="hk-cim">Forgalmi engedély, hátoldal</text>
+<g class="hk-sor"><text x="16" y="52">D.1</text><text x="58" y="52">Gyártmány</text><rect x="150" y="42" width="150" height="12" rx="2"/></g>
+<g class="hk-sor"><text x="16" y="76">B</text><text x="58" y="76">Első forgalomba helyezés</text><rect x="230" y="66" width="70" height="12" rx="2"/></g>
+<g class="hk-sor"><text x="16" y="100">P.1</text><text x="58" y="100">Hengerűrtartalom (cm³)</text><rect x="230" y="90" width="70" height="12" rx="2"/></g>
+<g class="hk-sor hk-kiemel"><rect x="8" y="110" width="304" height="22" rx="4" class="hk-hatter"/><text x="16" y="125">P.2</text><text x="58" y="125">Teljesítmény (kW)</text><text x="300" y="125" text-anchor="end" class="hk-ertek">85</text></g>
+<g class="hk-sor hk-kiemel"><rect x="8" y="136" width="304" height="22" rx="4" class="hk-hatter"/><text x="16" y="151">P.3</text><text x="58" y="151">Hajtóanyag</text><text x="300" y="151" text-anchor="end" class="hk-ertek">BENZIN</text></g>
+</svg>
+<ul>
+<li><b>P.2:</b> a teljesítmény kilowattban. Ha csak a lóerőt tudod, válts lóerőre a mező alatt, és átszámoljuk.</li>
+<li><b>P.3:</b> a hajtóanyag. A hibrid és a plug-in hibrid megkülönböztetése az adó miatt fontos.</li>
+<li><b>Gyártási év:</b> az adó és az illeték ebből számol, nem az első forgalomba helyezésből (B). Ha a forgalmin nem találod, a törzskönyvben szerepel.</li>
+</ul></div></details>`;
+
 /** A forgalmi-kártya kerete. */
 export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = false, osztaly = '' }) {
   const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Elfelejtem</button></div>' : '';
-  const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Megjegyzem ezt az autót</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
-  return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${fent}${tartalom}${lent}</form>`;
+  const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Elmentem az autómat</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
+  return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${['gyors', 'gepjarmuado', 'atiras', 'fenntartas'].includes(kalk) ? HOL_TALALOM : ''}${fent}${tartalom}${lent}</form>`;
 }
 
 /** Az elszámolás kerete a pecséttel. */
@@ -171,7 +192,7 @@ export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labj
 <div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2><time datetime="${k.ma}">${datumHu(k.ma)}</time></div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
 ${gombok ? '<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button></div>' : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
-${pecset(k.ma).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
+${pecset(k.ma, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
 </section>
 <a class="mini" href="#eredmeny" hidden><span class="mi"></span><span class="mennyi"></span></a>`;
 }

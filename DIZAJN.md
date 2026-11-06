@@ -10,8 +10,9 @@ Az oldal tárgyi világa a **forgalmi engedély** és a **NAV-határozat**. Mind
 | Beírósor (`.beir`) | Számmező | Aláhúzott mező, mint egy nyomtatványon. Nincs dobozos input. |
 | Négyzet (`.negyzet`) | Rádió és jelölő | Nyomtatványos négyzet pipával. |
 | Elszámolás (`.elszamolas`) | Az eredmény | Perforált felső élű papírlap, tételsorok, a végösszeg alatt könyvelői dupla aláhúzás. |
-| Pecsét (`.pecset`) | Az egyetlen látványos mozzanat | Az első eredménynél egyszer rácsapódik. Üres űrlapnál nem látszik. |
+| Pecsét (`.pecset`) | Az egyetlen látványos mozzanat | Az első eredménynél (a mintánál is) egyszer rácsapódik. A gyűrűben a saját nevünk áll, nem a NAV-é, és a források oldalára visz. |
 | Költséggörbe (`.grafikon`) | Benzin vagy villany | Két vonal, a megtérülés pontja jelölve. A vonal egyszer kirajzolódik, ha új eredmény jön. Keskeny kijelzőn a végcímkék helyett a jelmagyarázat azonosít. |
+| Adatjelölés (`.jel`) | Bizalom | Minden tétel mellett: **hivatalos** (NAV vagy jogszabály, telt keret), **saját** (a látogató adta meg, vékony keret), **becslés** (a mi feltevésünk, szaggatott keret). A panel alján jelmagyarázat, csak a használt jelölésekkel. |
 | Mentett autó (`.autom`) | Visszatérő látogató | Csak gombnyomásra ment és tölt be. Az űrlap mindig üresen nyílik. |
 
 ## Színek

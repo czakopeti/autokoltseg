@@ -1,6 +1,6 @@
 # Autóköltség (munkanév)
 
-Magyar autós kalkulátorok hivatalos NAV-tételekkel: gépjárműadó, átírási illeték és regisztrációs adó, kilométertérítés, benzin vagy villany összehasonlítás, fenntartási költség, adásvételi szerződés.
+Magyar autós kalkulátorok hivatalos NAV-tételekkel: gépjárműadó, átírási illeték és regisztrációs adó, kilométertérítés, benzin vagy villany összehasonlítás, fenntartási költség, adásvételi szerződés, „Az autóm” lap és egy magától bővülő változásnapló (`/valtozasok/`).
 Az űrlapok mindig üresen nyílnak. Aki akarja, elmentheti a saját autóját a böngészőjében (`localStorage`, `autokoltseg-autom-v2`), és gombnyomásra betöltheti.
 Statikus oldal, amely magától frissül. Nincs adatbázis, nincs szerver, nincs süti.
 

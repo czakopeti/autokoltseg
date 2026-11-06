@@ -374,7 +374,7 @@ export function osszehasonlitas(adat, b) {
     const vA = A.energia / (km * N), vB = B.energia / (km * N);
     const fA = A.osszesen - A.energia, fB = B.osszesen - B.energia;
     const hatarKm = vA !== vB ? (fB - fA) / ((vA - vB) * N) : null;
-    return { km, evek: N, autok: eredm, megterul, hatarKm: hatarKm > 0 ? hatarKm : null, olcsobb: A.osszesen <= B.osszesen ? 0 : 1, kulonbseg: Math.abs(A.osszesen - B.osszesen) };
+    return { km, evek: N, autok: eredm, megterul, hatarKm: hatarKm > 0 ? hatarKm : null, olcsobb: A.osszesen <= B.osszesen ? 0 : 1, kulonbseg: Math.abs(A.osszesen - B.osszesen), f: b.f, sajatEladas: eredm.map((x, i) => Number(b.autok[i].eladasiAr) > 0) };
   }
   return { km, evek: N, autok: eredm };
 }
@@ -391,7 +391,15 @@ export function fenntartas(adat, b) {
   const gj = gepjarmuado(adat, { ev: b.ev, kw, gyartasiEv: gy, hajtas: gjH, phevRegi: false });
   const en = energiaEv({ hajtas: b.hajtas, fogyasztas: b.fogyasztas, kwh: b.fogyasztas, villanyArany: 0 }, km, b.f);
   const ertek = Number(b.ertek) || 0, ertekVeg = Number(b.ertekVeg) || 0, evekTartja = Number(b.tartja) || 0;
-  const ertekvesztes = ertek > 0 && evekTartja > 0 ? Math.max(0, (ertek - ertekVeg) / evekTartja) : 0;
+  // Ha megadod, mennyiért adnád el és mikor, abból számolunk. Ha csak a mostani értéket, akkor a hajtás
+  // szerinti átlagos éves értékvesztéssel (DAT/KSH, szabalyok.json → maradvany) becsülünk.
+  let ertekvesztes = 0, ertekBecsles = false;
+  if (ertek > 0 && evekTartja > 0 && ertekVeg > 0) ertekvesztes = Math.max(0, (ertek - ertekVeg) / evekTartja);
+  else if (ertek > 0 && b.f?.maradvany) {
+    const m = b.f.maradvany[b.hajtas] || b.f.maradvany.benzin;
+    ertekvesztes = ertek * (m.evi / 100);
+    ertekBecsles = true;
+  }
   const tetelek = [
     { kulcs: 'energia', nev: b.hajtas === 'elektromos' ? 'Töltés' : 'Üzemanyag', ev: en.ft },
     { kulcs: 'ertekvesztes', nev: 'Értékvesztés', ev: ertekvesztes },
@@ -402,7 +410,9 @@ export function fenntartas(adat, b) {
     { kulcs: 'egyeb', nev: 'Matrica, parkolás, egyéb', ev: Number(b.egyeb) || 0 },
   ];
   const ev = tetelek.reduce((s, t) => s + t.ev, 0);
-  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
+  const csoport = (k) => tetelek.filter((t) => k.includes(t.kulcs)).reduce((x, t) => x + t.ev, 0);
+  const hasznalat = csoport(['energia', 'szerviz', 'gumi']), allo = csoport(['biztositas', 'gjado', 'egyeb']);
+  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, ertekvesztes, ertekBecsles, hasznalat, allo, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
 }
 
 /* ---------------- Összeg betűvel (szerződéshez) ---------------- */

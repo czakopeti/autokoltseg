@@ -124,7 +124,8 @@ const MINTAK = {
   atiras: { adat: ALAP, leiras: 'egy 2019-es, 85 kW-os benzines autó adásvétele' },
   km: { adat: { km: '120', odaVissza: true, uzemanyag: 'benzin', cm3: '1498' }, leiras: 'egy 120 km-es hivatali út oda-vissza, 1,5 literes benzines autóval' },
   munka: { adat: { tav: '18', napok: '20' }, leiras: 'napi 18 km-es út, havi 20 munkanap' },
-  fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, évi 15 000 km' },
+  autom: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
+  fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
 };
 let mintaMutat = false;
 function mintaval(tipus, adat, e, form) {
@@ -212,16 +213,31 @@ const KALK = {
   fenntartas: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv', 'fogyasztas', 'kwh', 'km'])) return mintaval('fenntartas', adat, e);
     const h = e.hajtas || 'benzin';
-    const r = S.fenntartas(adat, { ev: adat.ev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek), ertekVeg: szam(e.ertekVeg), tartja: szam(e.tartja), f: { ...adat.f, haztartas: '' } });
-    return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r);
+    const r = S.fenntartas(adat, { ev: adat.ev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek), ertekVeg: szam(e.ertekVeg), tartja: szam(e.tartja), f: { ...adat.f, haztartas: '', maradvany: adat.szabalyok?.maradvany } });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r, e);
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),
+  autom: (adat, e) => {
+    if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('autom', adat, e);
+    const h = e.hajtas || 'benzin';
+    return M.automPanel(adat, { nev: e.nev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, cm3: szam(e.cm3), fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek) }, { ev: adat.ev, ma: adat.ma, f: { ...adat.f, haztartas: '', maradvany: adat.szabalyok?.maradvany } });
+  },
 };
 
+/* ---------- A pecsét a források oldalára visz ---------- */
+function pecsetLink() {
+  const p = $('.pecset'), cel = $('.lablec a[href*="forrasok"]')?.href;
+  if (!p || !cel) return;
+  const menj = () => { location.href = cel; };
+  p.addEventListener('click', menj);
+  p.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); menj(); } });
+}
+pecsetLink();
+
 /* ---------- Mentett autó: csak ha kéred, és csak gombnyomásra töltjük be ---------- */
-const AUTOM_MEZOK = ['kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh'];
+const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
 const HAJTAS_SZO = { benzin: 'benzines', dizel: 'dízeles', hibrid: 'hibrid', plugin: 'plug-in hibrid', elektromos: 'elektromos' };
-function automLeiras(a) { return [a.kw && `${a.kw} kW`, a.gyartasiEv, HAJTAS_SZO[a.hajtas], a.cm3 && `${a.cm3} cm³`].filter(Boolean).join(', '); }
+function automLeiras(a) { return [a.nev, a.kw && `${a.kw} kW`, a.gyartasiEv, HAJTAS_SZO[a.hajtas]].filter(Boolean).join(', '); }
 function automBekotes(form, szamol) {
   const sav = $('[data-autom]', form), ment = $('[data-autom-ment]', form);
   if (!sav && !ment) return;
@@ -235,15 +251,17 @@ function automBekotes(form, szamol) {
     const me = form.elements.kw?.closest('.beir')?.querySelector('.me'); if (me) me.textContent = 'kW';
     szamol(true);
   });
-  $('[data-autom-torol]', form)?.addEventListener('click', () => { tarolo.del(AUTOM); mutat(); });
+  $('[data-autom-torol]', form)?.addEventListener('click', () => { tarolo.del(AUTOM); mutat(); if (form.dataset.kalk === 'autom') { form.reset(); szamol(true); } });
+  // Az „Az autóm” lapon a mentett autó magától betöltődik: ezért mentetted el. Máshol csak gombnyomásra.
+  if (form.dataset.kalk === 'autom' && tarolo.get(AUTOM) && !urlbol()) $('[data-autom-betolt]', form)?.click();
   ment?.addEventListener('click', () => {
     const e = ertekek(form);
     const a = {};
     for (const k of AUTOM_MEZOK) if (e[k]) a[k] = e[k];
     if (form.dataset.kalk === 'km' && e.uzemanyag) a.hajtas = e.uzemanyag;
     if (e.kwEgyseg === 'le' && e.kw) a.kw = String(S.leKw(e.kw));
-    if (!a.kw && !a.gyartasiEv) { ment.textContent = 'Előbb add meg az autó adatait'; setTimeout(() => (ment.textContent = 'Megjegyzem ezt az autót'), 2200); return; }
-    if (tarolo.set(AUTOM, { ...(tarolo.get(AUTOM) || {}), ...a })) { ment.textContent = 'Megjegyeztem'; mutat(); setTimeout(() => (ment.textContent = 'Megjegyzem ezt az autót'), 2200); }
+    if (!a.kw && !a.gyartasiEv) { ment.textContent = 'Előbb add meg az autó adatait'; setTimeout(() => (ment.textContent = 'Elmentem az autómat'), 2200); return; }
+    if (tarolo.set(AUTOM, { ...(tarolo.get(AUTOM) || {}), ...a })) { ment.textContent = 'Elmentve'; mutat(); setTimeout(() => (ment.textContent = 'Elmentem az autómat'), 2200); }
   });
 }
 

@@ -51,7 +51,9 @@ const oldalak = [
   ['benzin-vagy-villany/', O.osszehasonlitoOldal(k)],
   ['autofenntartas-kalkulator/', O.fenntartasOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
+  ['autom/', O.automOldal(k)],
   ['forrasok/', O.forrasokOldal(k)],
+  ['valtozasok/', O.valtozasokOldal(k)],
   ['impresszum/', O.impresszumOldal(k)],
   ['adatvedelem/', O.adatvedelemOldal(k)],
 ];
