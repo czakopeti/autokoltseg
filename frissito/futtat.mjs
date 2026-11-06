@@ -103,7 +103,7 @@ function elavulas() {
 
 /* ---------- Futtatás ---------- */
 const allapot = olvas('data/allapot.json');
-allapot.utolso_ellenorzes = most;
+allapot.utolso_futas = most;
 try {
   const uj = await uzemanyag();
   const u = olvas('data/uzemanyag.json');
@@ -122,6 +122,10 @@ try {
   allapot.tetelek = { ok: false, uzenet: 'az ellenőrzés hibát jelzett, a korábbi adat érvényes' };
 }
 elavulas();
+// Az oldalon „Ellenőrizve” dátumként jelenik meg, ezért csak akkor frissül, ha a NAV-ellenőrzés hiba nélkül lefutott.
+// A sikertelen futás csak az utolso_futas mezőt írja.
+const navOk = allapot.uzemanyag?.ok && allapot.tetelek?.ok;
+if (navOk) allapot.utolso_ellenorzes = most;
 allapot.figyelmeztetesek = [...hibak, ...jelzesek];
 ir('data/allapot.json', allapot);
 

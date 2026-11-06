@@ -207,10 +207,11 @@ export function automPanel(adat, b, k) {
     ? vegosszeg(`Gépjárműadó, ${g0.ev}`, g0.fizetendo, 'Add meg a fogyasztást és az évi kilométert, és a havi költséget is kiszámoljuk.')
     : vegosszeg(b.nev ? `${esc(b.nev)}, havonta` : 'Az autód havonta', fr.havi, `Évente ${ftx(fr.ev)}, kilométerenként ${tized(fr.ftKm, 1)} Ft.`);
   h += '<ul class="tetelek">';
-  for (const g of gjk) {
-    const kz = adat.tetelek.gepjarmuado[g.ev]?.kozzeteve;
-    h += tetel(`Gépjárműadó, ${g.ev}`, g.mentes ? 'mentes' : ftx(g.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g.ev]?.forras, al: g === g0 ? `határidő: ${g.ev}. április 15.` : (kz ? `a tételt a NAV ${datumNapon(kz)} tette közzé` : '') });
-  }
+  // Egy sor: az idei adó, alatta a jövő évi (ha a NAV már közzétette), hogy ne tűnjön kétszer számoltnak
+  const g1 = gjk[1] && !gjk[1].hiba ? gjk[1] : null;
+  const kulonb = g1 && !g0.mentes && !g1.mentes ? g1.fizetendo - g0.fizetendo : null;
+  const jovoSzoveg = g1 ? `${rag(g1.ev, 'ban', 'ben')} ${g1.mentes ? 'mentes' : ftx(g1.fizetendo)}${kulonb ? `, ${ftx(Math.abs(kulonb))}-tal ${kulonb < 0 ? 'kevesebb' : 'több'}` : kulonb === 0 ? ', ugyanannyi' : ''}` : '';
+  h += tetel(`Gépjárműadó, ${g0.ev}`, g0.mentes ? 'mentes' : ftx(g0.fizetendo), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[g0.ev]?.forras, al: g1 ? jovoSzoveg : 'határidő: április 15.' });
   if (!fr.hiba) {
     h += tetel('Tényleges kiadás havonta', ftx((fr.ev - fr.ertekvesztes) / 12), { forras: 'sajat', al: 'üzemanyag, biztosítás, szerviz, gumi, adó' });
     if (fr.ertekvesztes > 0) h += tetel('Értékvesztés havonta', ftx(fr.ertekvesztes / 12), { forras: fr.ertekBecsles ? 'becsles' : 'sajat', al: fr.ertekBecsles ? `évi ${tized(fr.ertekEvi, 1)}%, ${nevelo(HAJTAS_NEV[hajtas])} ${HAJTAS_NEV[hajtas]} autók átlaga (DAT, KSH), nem garantált` : 'ennyit veszít az autó az értékéből' });

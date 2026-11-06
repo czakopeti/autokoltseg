@@ -65,6 +65,16 @@ const JEL_KICSI = '<svg viewBox="30 46 140 140" aria-hidden="true"><g fill="none
 /** A szókép: az „ó” a számlap, benne a mutató (marka/rajz.py). */
 const LOGO = '<svg class="logo" viewBox="-8 56 820 144" role="img" aria-label="autózom"><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="48" cy="152" r="40"/><path d="M88 112V192"/><path d="M126 112V152A40 40 0 0 0 206 152M206 112V192"/><path d="M264 76V160A32 32 0 0 0 296 192M240 112H296"/><circle cx="368" cy="152" r="40"/><path d="M444 112H516L444 192H516"/><circle cx="590" cy="152" r="40"/><path d="M668 192V112M668 144A32 32 0 0 1 732 144V192M732 144A32 32 0 0 1 796 144V192"/><path d="M394.3 98.1L406.6 72.9" style="stroke:var(--pecset)"/><path d="M368 152L376.8 134.0" style="stroke:var(--pecset)" stroke-width="9"/><circle cx="368" cy="152" r="8" style="fill:var(--pecset)" stroke="none"/></g></svg>';
 
+/**
+ * Az adatok dátuma. Ha a reggeli NAV-ellenőrzés már lefutott, annak a napja („Ellenőrizve”).
+ * Ha még nem, a legutóbb közzétett NAV-adat napja („NAV-adatok”), hogy ne az építés napját mutassuk.
+ */
+export function adatDatum(adat) {
+  if (adat.allapot.utolso_ellenorzes) return { cimke: 'Ellenőrizve', iso: adat.allapot.utolso_ellenorzes.slice(0, 10) };
+  const d = [...Object.values(adat.uzemanyag.kozzeteve || {}), ...['gepjarmuado', 'illetek', 'regado_alap', 'cegautoado'].flatMap((t) => Object.values(adat.tetelek[t] || {}).map((x) => x?.kozzeteve))].filter(Boolean).sort();
+  return { cimke: 'NAV-adatok', iso: d[d.length - 1] };
+}
+
 /* ---------- Oldalkeret ---------- */
 
 export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = null }) {
@@ -75,7 +85,7 @@ export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = nu
   // Minden oldalhoz: WebPage a frissítés dátumával és a kiadóval (szervezet, logóval). A frissességi jelzés a
   // ceevio-laborban irányjelző hatású volt az AI-említésre.
   const kiado = { '@type': 'Organization', name: cfg.marka, url: `${cfg.domain}/`, logo: `${cfg.domain}/apple-touch-icon.png`, slogan: 'Az autód. A költségeid. A döntéseid.' };
-  const lap = { '@context': 'https://schema.org', '@type': 'WebPage', name: cim, description: leiras, url: kanonikus, inLanguage: 'hu', dateModified: (k.adat.allapot.utolso_ellenorzes || k.ma).slice(0, 10), isPartOf: { '@type': 'WebSite', name: cfg.marka, url: `${cfg.domain}/` }, publisher: kiado };
+  const lap = { '@context': 'https://schema.org', '@type': 'WebPage', name: cim, description: leiras, url: kanonikus, inLanguage: 'hu', dateModified: adatDatum(k.adat).iso, isPartOf: { '@type': 'WebSite', name: cfg.marka, url: `${cfg.domain}/` }, publisher: kiado };
   const ld = [lap, ...jsonld].map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n');
   return `<!DOCTYPE html>
 <html lang="hu">
@@ -125,7 +135,7 @@ function lablec(k, L) {
   return `<footer class="lablec"><div class="keret">
 <div>
 <p><strong>Független oldal, nem a NAV hivatalos oldala.</strong> A NAV közzétett adatai alapján számolunk. A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
-<p>Az adatokat minden reggel összevetjük a NAV oldalával. Legutóbbi ellenőrzés: ${datumHu(ell)}</p>
+<p>Az adatokat minden reggel összevetjük a NAV oldalával. ${adat.allapot.utolso_ellenorzes ? `Legutóbbi ellenőrzés: ${datumHu(ell)}` : `A legfrissebb NAV-adat: ${datumHu(adatDatum(adat).iso)}`}</p>
 </div>
 <div><h2>Kalkulátorok</h2><ul>${MENU.map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>
@@ -201,7 +211,7 @@ export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = fal
 /** Az elszámolás kerete a pecséttel. */
 export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labjegy = '', szeles = false, kesz = false } = {}) {
   return `<section class="elszamolas${szeles ? ' szeles' : ''}" id="eredmeny" aria-labelledby="elsz-cim">
-<div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2><time datetime="${(k.adat.allapot.utolso_ellenorzes || k.ma).slice(0, 10)}" title="Ekkor ellenőriztük az adatokat a NAV-nál">NAV-adatok: ${datumHu((k.adat.allapot.utolso_ellenorzes || k.ma).slice(0, 10))}</time></div>
+<div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2>${(() => { const d = adatDatum(k.adat); return `<time datetime="${d.iso}" title="${d.cimke === 'Ellenőrizve' ? 'Ekkor vetettük össze az adatokat a NAV oldalával' : 'Ekkor tette közzé a NAV a legfrissebb adatot, amivel számolunk'}">${d.cimke}: ${datumHu(d.iso)}</time>`; })()}</div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
 ${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Link másolása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button>${k.cfg.kapcsolat_email ? `<a class="szoveg-gomb" data-hibajelzes data-cim="${esc(k.cfg.kapcsolat_email)}" href="mailto:${esc(k.cfg.kapcsolat_email)}" title="Megnyitjuk a levelezőprogramodat egy előkészített hibajelentéssel. Te küldöd el.">Szerinted hibás?</a><span class="kicsi halk">A gomb a leveleződet nyitja meg, a levelet te küldöd el.</span>` : ''}</div>` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
 ${pecset(k.ma, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
