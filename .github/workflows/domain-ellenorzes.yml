@@ -27,3 +27,8 @@ jobs:
           curl -sS -m 20 https://autozom.hu/assets/js/megjelenites.js | grep -c "export function kgfbPanel\|export function javitasPanel" || true
           curl -sS -m 20 https://autozom.hu/assets/js/app.js | grep -c "kgfb: (adat, e)\|javitas: (adat, e)" || true
           echo "== a lap melyik app.js-t tölti"; curl -sS -m 20 https://autozom.hu/kotelezo-biztositas-valtas/ | grep -o 'js/app.js?v=[a-z0-9]*'
+      - name: Visszajelzés-fogadó
+        run: |
+          echo "== GET /api/visszajelzes"; curl -sS -m 20 -w "\n%{http_code}\n" https://autozom.hu/api/visszajelzes || true
+          echo "== doboz a vétlen baleset oldalon"; curl -sS -m 20 https://autozom.hu/vetlen-baleset/ | grep -c data-visszajelzes || true
+          echo "== idegen oldalról tiltva (403 várható)"; curl -sS -m 20 -o /dev/null -w "%{http_code}\n" -X POST -H 'origin: https://pelda.example' -H 'content-type: application/json' -d '{"ut":"/x/","ertek":"fel"}' https://autozom.hu/api/visszajelzes || true
