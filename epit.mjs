@@ -29,7 +29,9 @@ mkdirSync(join(KI, 'assets/js'), { recursive: true });
 
 // Statikus fájlok: CSS, betűk, JS (a .mjs modulok .js-ként, hogy minden tárhely jó MIME-típussal adja)
 cpSync(join(GYOKER, 'forras/fonts'), join(KI, 'assets/fonts'), { recursive: true });
-const css = readFileSync(join(GYOKER, 'forras/css/style.css'), 'utf8');
+let css = readFileSync(join(GYOKER, 'forras/css/style.css'), 'utf8');
+// Előnézetben a betűk a CSS-be ágyazva, hogy szigorú tartalombiztonsági szabályú tárhelyen is megjelenjenek
+if (elonezet) css = css.replace(/url\(fonts\/([\w.-]+\.woff2)\)/g, (m, f) => `url(data:font/woff2;base64,${readFileSync(join(GYOKER, 'forras/fonts', f)).toString('base64')})`);
 writeFileSync(join(KI, 'assets/style.css'), css);
 let jsOssz = '';
 for (const f of ['szamitas', 'megjelenites', 'app']) {

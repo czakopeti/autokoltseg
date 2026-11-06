@@ -128,7 +128,7 @@ function urlbe(form) {
     if (v === '' || v === false) continue;
     p.set(k, v === true ? '1' : v);
   }
-  history.replaceState(null, '', `${location.pathname}?${p}`);
+  try { history.replaceState(null, '', `${location.pathname}?${p}`); } catch { /* beágyazott nézetben nem mindig engedett */ }
 }
 function urlbol() {
   const p = new URLSearchParams(location.search);
@@ -193,7 +193,7 @@ function kalkulator({ form, panel, szamol, megjelenit }) {
     catch { masol.textContent = 'A címsorból másolhatod'; }
     setTimeout(() => (masol.textContent = 'Link másolása'), 2200);
   });
-  $('[data-nyomtat]')?.addEventListener('click', () => print());
+  $('[data-nyomtat]')?.addEventListener('click', () => { try { print(); } catch { /* */ } });
   const ment = $('[data-ment]');
   ment?.addEventListener('click', () => {
     const e = urlapErtekek(form);
