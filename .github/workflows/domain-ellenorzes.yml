@@ -1,0 +1,23 @@
+name: Domain-ellenőrzés
+# Kézzel indítható: névszerverek, DNS és az oldal válasza az autozom.hu-n.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ellenoriz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Névszerverek és DNS
+        run: |
+          for t in NS A AAAA; do echo "== autozom.hu $t"; dig +short $t autozom.hu @1.1.1.1; done
+          echo "== www CNAME/A"; dig +short www.autozom.hu @1.1.1.1
+          echo "== .hu nyilvántartás szerinti delegáció"; dig +short NS autozom.hu @a.hu-servers.hu || true
+      - name: HTTP-válaszok
+        run: |
+          for u in https://autozom.hu/ https://www.autozom.hu/ http://autozom.hu/ https://autozom.hu/robots.txt https://autozom.hu/sitemap.xml https://autokoltseg-7t6.pages.dev/; do
+            echo "== $u"; curl -sS -m 20 -o /dev/null -w "%{http_code} -> %{redirect_url}\n" "$u" || true
+          done
+          echo "== cím a főoldalon"; curl -sS -m 20 https://autozom.hu/ | grep -o '<title>[^<]*' || true
+          echo "== fejlécek"; curl -sSI -m 20 https://autozom.hu/ | grep -iE "server|x-robots|cf-ray|location" || true
