@@ -126,6 +126,7 @@ export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = nu
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+${cfg.eles && !elonezet ? `<script>/* A régi Cloudflare-címről (pages.dev) a saját domainre visz, ugyanarra az aloldalra */if(/\.pages\.dev$/.test(location.hostname))location.replace(${JSON.stringify(cfg.domain)}+location.pathname+location.search+location.hash)</script>` : ''}
 <title>${esc(teljesCim)}</title>
 <meta name="description" content="${esc(leiras)}">
 <meta name="robots" content="${cfg.eles ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'}">
