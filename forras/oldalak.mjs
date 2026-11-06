@@ -94,7 +94,7 @@ ${jovoreBlokk}`;
     cim: `Autós kalkulátorok ${aktualis}: gépjárműadó, átírás, kilométertérítés`,
     leiras: `Írd be a forgalmi engedély adatait, és megmutatjuk a gépjárműadót ${jovo ? `${M.rag(aktualis, 'ra', 're')} és ${M.rag(jovo, 'ra', 're')}` : M.rag(aktualis, 'ra', 're')}, az átírás díját és a kilométertérítést a NAV tételeivel.`,
     ut: '', tartalom,
-    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok }, uzemanyag: { evek: adat.uzemanyag.evek }, ev: aktualis, ma: k.ma },
+    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, ev: aktualis, ma: k.ma },
     jsonld: [{ '@context': 'https://schema.org', '@type': 'WebSite', name: k.cfg.marka, url: `${k.cfg.domain}/`, inLanguage: 'hu' }],
   });
 }
@@ -339,7 +339,7 @@ ${tovabb(L, ut)}
   return oldal(k, {
     cim: `Kilométertérítés ${lf.ev}: kalkulátor a NAV havi árával`,
     leiras, ut, tartalom,
-    adatJson: { uzemanyag: { evek: adat.uzemanyag.evek }, szabalyok: { km } },
+    adatJson: { uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, szabalyok: { km } },
     jsonld: [alkalmazasLd(k.cfg, 'Kilométertérítés-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Kilométertérítés', ut }])],
   });
 }
@@ -364,6 +364,16 @@ ${Object.entries(t.regado_alap).map(([e, v]) => sor2(`Regisztrációs adó alapj
 ${sor2('Forgalmi engedély, törzskönyv', `${M.ftx(adat.szabalyok.okmanyok.forgalmi_engedely)}, ${M.ftx(adat.szabalyok.okmanyok.torzskonyv)}`, '2025. február 1-jétől')}
 ${sor2('Normaköltség, munkába járás', `${adat.szabalyok.km.normakoltseg_ft_km} Ft/km, ${adat.szabalyok.km.munkaba_jaras_ft_km} Ft/km`, '')}
 </tbody></table></div>
+<h2 id="becslesek">Amit becsülünk, és mi alapján</h2>
+<p>A „becslés” jelölésű tételek nem hivatalos adatok, hanem a mi feltevéseink. A saját számaid ezeknél mindig pontosabbak, ezért mindegyiket átírhatod a kalkulátorban.</p>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Hajtás</th><th>Érték 3 év után</th><th>Utána évente</th></tr></thead><tbody>
+${['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'].map((h) => { const m = adat.szabalyok.maradvany[h]; return `<tr><td>${{ benzin: 'Benzines', dizel: 'Dízeles', hibrid: 'Hibrid', plugin: 'Plug-in hibrid', elektromos: 'Elektromos' }[h]}${m.becsult ? ' <span class="halk">(becsült)</span>' : ''}</td><td>a listaár ${M.tized(m.harom, 1)}%-a</td><td>−${M.tized(m.evi, 1)}%</td></tr>`; }).join('')}
+</tbody><caption>Értékvesztés. ${adat.szabalyok.maradvany.leiras}</caption></table></div>
+<ul class="forras-pontok">
+<li><b>Értékvesztés:</b> ${adat.szabalyok.maradvany.forrasok.map((x) => `<a href="${x.url}" rel="noopener">${x.nev.replace(/\.$/, '')}</a>`).join('; ')}.</li>
+<li><b>Otthoni áram:</b> ${M.tized(adat.szabalyok.energia.aram_kedv, 1)} Ft/kWh évi ${fmt(adat.szabalyok.energia.sav_kwh)} kWh-ig, felette ${M.tized(adat.szabalyok.energia.aram_piaci, 1)} Ft/kWh. A háztartás többi fogyasztását is beszámoljuk a sávba. Villámtöltő: ${adat.szabalyok.energia.tolto} Ft/kWh, töltési veszteség: ${adat.szabalyok.energia.veszteseg}%. Források: ${adat.szabalyok.energia.forrasok.map((x) => x.url ? `<a href="${x.url}" rel="noopener">${x.nev}</a>` : x.nev).join('; ')}.</li>
+<li><b>Eredetiségvizsgálat:</b> átlagosan ${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_alap)}. A vizsgálóhelytől és a hengerűrtartalomtól függ, ${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_min)} és ${M.ftx(adat.szabalyok.okmanyok.eredetisegvizsgalat_max)} között.</li>
+</ul>
 <h2>Hogyan frissül?</h2>
 <p>Minden reggel lefut egy ellenőrzés. Megnézi a NAV üzemanyagár-oldalát, és ha megjelent a következő hónap, átveszi az árakat. Októbertől azt is figyeli, közzétette-e a NAV a jövő évi adótételeket.</p>
 <p>Új számot csak akkor veszünk át, ha a NAV oldala a megszokott felépítésű, és minden érték ésszerű határok között van. Utána lefutnak a számítási tesztek, és csak ha mind rendben van, frissül az oldal. Ha valami nem stimmel, a korábbi, ellenőrzött adat marad kint, és mi értesítést kapunk.</p>
@@ -418,7 +428,7 @@ ${elszamolas(k, M.uresPanel('Add meg az autód adatait.'), { cim: 'Az autóm' })
     cim: 'Az autóm: adó, havi költség és értékvesztés egy helyen',
     leiras: 'Egy lapon az autód gépjárműadója idén és jövőre, a havi és a kilométerenkénti költség, az értékvesztés és az átírás díja.',
     ut, tartalom,
-    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany }, uzemanyag: { evek: adat.uzemanyag.evek }, f: { ...f, lf: undefined }, ev: aktualis, ma: k.ma },
+    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, f: { ...f, lf: undefined }, ev: aktualis, ma: k.ma },
     jsonld: [morzsaLd(k.cfg, [{ nev: 'Az autóm', ut }])],
   });
 }
@@ -441,7 +451,11 @@ export function valtozasokOldal(k) {
     const ra = t.regado_alap?.[ev], rae = t.regado_alap?.[ev - 1];
     if (ra) pontok.push(`A regisztrációs adó alapja ${M.ftx(ra.ft)}${rae && rae.ft !== ra.ft ? ` (előtte ${M.ftx(rae.ft)})` : ''}.`);
     if (t.cegautoado?.[ev]) pontok.push('A cégautóadó tételei is megjelentek.');
-    bejegyzesek.push({ kulcs: g.kozzeteve, datum: datumHu(g.kozzeteve), cim: `A NAV közzétette a ${M.os(ev)} adótételeket`, pontok, link: [['Gépjárműadó-kalkulátor', 'gepjarmuado-kalkulator/'], ['Átírás', 'atirasi-illetek-kalkulator/']], forras: g.forras });
+    // Mit jelent ez neked: ugyanaz a mintaautó az előző és az új évben
+    const pr = S.gepjarmuado(adat, { ev, kw: 85, gyartasiEv: 2019, hajtas: 'hagyomanyos' });
+    const pe = ge ? S.gepjarmuado(adat, { ev: ev - 1, kw: 85, gyartasiEv: 2019, hajtas: 'hagyomanyos' }) : null;
+    const neked = !pr.hiba ? `Egy 2019-es, 85 kW-os autó adója ${M.rag(ev, 'ban', 'ben')} ${M.ftx(pr.fizetendo)}${pe && !pe.hiba ? `, ${M.rag(ev - 1, 'ban', 'ben')} ${M.ftx(pe.fizetendo)} volt` : ''}.${pe && !pe.hiba && pr.sav !== pe.sav ? ` ${pr.fizetendo < pe.fizetendo ? 'Azért kevesebb' : 'Azért más'}, mert az autó közben idősebb korsávba lép.` : ''}` : '';
+    bejegyzesek.push({ kulcs: g.kozzeteve, datum: datumHu(g.kozzeteve), meta: [`Közzétéve: ${datumHu(g.kozzeteve)}`, `Alkalmazandó: ${ev}. január 1-jétől`], neked, cim: `A NAV közzétette a ${M.os(ev)} adótételeket`, pontok, link: [['Gépjárműadó-kalkulátor', 'gepjarmuado-kalkulator/'], ['Átírás', 'atirasi-illetek-kalkulator/'], ['Az autóm', 'autom/']], forras: g.forras });
   }
   // Havi üzemanyagárak
   const honapok = Object.entries(u.evek).flatMap(([e, h]) => Object.keys(h).map((x) => [Number(e), Number(x)])).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -453,14 +467,19 @@ export function valtozasokOldal(k) {
     const sorok = ['benzin', 'dizel'].filter((x) => ar[x]).map((x) => `${NEV[x]} ${ar[x]} Ft/l${valt(x)}`);
     sorok[0] = sorok[0].charAt(0).toUpperCase() + sorok[0].slice(1);
     if (ar.benzin_vedett) sorok.push(`védett ár a jogosultaknak: benzin ${ar.benzin_vedett}, dízel ${ar.dizel_vedett} Ft/l`);
-    bejegyzesek.push({ kulcs: kz || `${e}-${String(h).padStart(2, '0')}-00`, datum: kz ? datumHu(kz) : M.honapHu(e, h), cim: `NAV-üzemanyagárak, ${M.honapHu(e, h)}`, pontok: [`${sorok.join('; ')}. Ezekkel az árakkal számolható el a ${S.HONAPOK[h - 1]}i hivatali utak kilométertérítése.`], link: [['Kilométertérítés', 'kilometerterites-kalkulator/']] });
+    const utolso = new Date(e, h, 0).getDate();
+    const k100 = S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', motor: 'benzin', cm3: 1498, ev: e, honap: h });
+    const k100e = i > 0 ? S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', motor: 'benzin', cm3: 1498, ev: honapok[i - 1][0], honap: honapok[i - 1][1] }) : null;
+    const dk = k100e && !k100e.hiba && !k100.hiba ? Math.round(k100.osszesen - k100e.osszesen) : null;
+    const neked = k100.hiba ? '' : `Egy 100 km-es hivatali út egy 1,5 literes benzines autóval ${M.ftx(k100.osszesen)} térítést ér${dk ? `, ${M.ftx(Math.abs(dk))}-tal ${dk > 0 ? 'többet' : 'kevesebbet'}, mint az előző hónapban` : dk === 0 ? ', ugyanannyit, mint az előző hónapban' : ''}.`;
+    bejegyzesek.push({ kulcs: kz || `${e}-${String(h).padStart(2, '0')}-00`, datum: kz ? datumHu(kz) : M.honapHu(e, h), meta: [kz ? `Közzétéve: ${datumHu(kz)}` : '', `Érvényes: ${e}. ${S.HONAPOK[h - 1]} 1–${utolso}.`].filter(Boolean), neked, cim: `NAV-üzemanyagárak, ${M.honapHu(e, h)}`, pontok: [`${sorok.join('; ')}.`], link: [['Ez a kilométertérítést érinti', 'kilometerterites-kalkulator/']], forras: u.forras });
   });
   bejegyzesek.sort((a, b) => (a.kulcs < b.kulcs ? 1 : -1));
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Változások'], cim: 'Mi változott?', bevezeto: 'Minden új NAV-tétel és havi üzemanyagár, amit átvettünk, dátummal. Ez a lista magától bővül, amikor a reggeli ellenőrzés új adatot talál.' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <ol class="naplo">
-${bejegyzesek.map((b) => `<li><time>${b.datum}</time><div><h2>${b.cim}</h2>${b.pontok.map((x) => `<p>${x}</p>`).join('')}<p class="naplo-link">${b.link.map(([n, u2]) => `<a href="${L.l(u2)}">${n}</a>`).join('')}${b.forras ? `<a href="${b.forras}" rel="noopener">A NAV közleménye</a>` : ''}</p></div></li>`).join('\n')}
+${bejegyzesek.map((b) => `<li><time>${b.datum}</time><div><h2>${b.cim}</h2>${b.meta?.length ? `<p class="naplo-meta">${b.meta.map((x) => `<span>${x}</span>`).join('')}</p>` : ''}${b.pontok.map((x) => `<p>${x}</p>`).join('')}${b.neked ? `<p class="naplo-neked"><strong>Mit jelent ez neked?</strong> ${b.neked}</p>` : ''}<p class="naplo-link">${b.link.map(([n, u2]) => `<a href="${L.l(u2)}">${n}</a>`).join('')}${b.forras ? `<a href="${b.forras}" rel="noopener">A NAV közleménye</a>` : ''}</p></div></li>`).join('\n')}
 </ol>
 ${tovabb(L, ut)}
 </article></div>`;
@@ -497,7 +516,9 @@ export function adatvedelemOldal(k) {
 ${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gyűjtünk rólad adatot. A kalkulátorok a böngésződben számolnak, amit beírsz, az nem jut el hozzánk.' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <h2>Sütik és követés</h2>
-<p>Nem használunk sütit, statisztikai vagy követőkódot, és jelenleg hirdetés sincs az oldalon. A betűtípusokat is magunk szolgáljuk ki, így más cég sem értesül a látogatásodról. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
+<p>Nem használunk sütit és követőkódot, és hirdetés sincs az oldalon. A látogatottságot a Cloudflare Web Analytics méri: ez nem tesz semmit a gépedre, nem azonosít, és mi csak összesített számokat látunk (hány oldalt néztek meg, melyik oldalról érkeztek, milyen eszközről). A betűtípusokat magunk szolgáljuk ki. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
+<h2>A mentett autód</h2>
+<p>Ha az „Elmentem az autómat” gombot megnyomod, az autó adatai a böngésződ saját tárolójába kerülnek ezen az eszközön. Hozzánk nem jutnak el, fiók nincs. Bármikor átírhatod és újra mentheted, vagy az „Elfelejtem” gombbal törölheted. A böngésző adatainak törlésekor is eltűnik.</p>
 <h2>Szervernapló</h2>
 <p>Az oldalt a ${cfg.tarhely.nev} (${cfg.tarhely.cim}) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző), a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk, és nem kötjük személyhez.</p>
 <h2>Adatkezelő és jogaid</h2>

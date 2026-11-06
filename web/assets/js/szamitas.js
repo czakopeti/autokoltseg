@@ -393,12 +393,13 @@ export function fenntartas(adat, b) {
   const ertek = Number(b.ertek) || 0, ertekVeg = Number(b.ertekVeg) || 0, evekTartja = Number(b.tartja) || 0;
   // Ha megadod, mennyiért adnád el és mikor, abból számolunk. Ha csak a mostani értéket, akkor a hajtás
   // szerinti átlagos éves értékvesztéssel (DAT/KSH, szabalyok.json → maradvany) becsülünk.
-  let ertekvesztes = 0, ertekBecsles = false;
+  let ertekvesztes = 0, ertekBecsles = false, ertekEvi = 0;
   if (ertek > 0 && evekTartja > 0 && ertekVeg > 0) ertekvesztes = Math.max(0, (ertek - ertekVeg) / evekTartja);
   else if (ertek > 0 && b.f?.maradvany) {
     const m = b.f.maradvany[b.hajtas] || b.f.maradvany.benzin;
     ertekvesztes = ertek * (m.evi / 100);
     ertekBecsles = true;
+    ertekEvi = m.evi;
   }
   const tetelek = [
     { kulcs: 'energia', nev: b.hajtas === 'elektromos' ? 'Töltés' : 'Üzemanyag', ev: en.ft },
@@ -412,7 +413,7 @@ export function fenntartas(adat, b) {
   const ev = tetelek.reduce((s, t) => s + t.ev, 0);
   const csoport = (k) => tetelek.filter((t) => k.includes(t.kulcs)).reduce((x, t) => x + t.ev, 0);
   const hasznalat = csoport(['energia', 'szerviz', 'gumi']), allo = csoport(['biztositas', 'gjado', 'egyeb']);
-  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, ertekvesztes, ertekBecsles, hasznalat, allo, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
+  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, ertekvesztes, ertekBecsles, ertekEvi, hasznalat, allo, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
 }
 
 /* ---------------- Összeg betűvel (szerződéshez) ---------------- */

@@ -233,6 +233,18 @@ function pecsetLink() {
   p.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); menj(); } });
 }
 pecsetLink();
+// A jelölések linkjei a források oldalára mutatnak, a lábléc linkjéből vesszük a pontos címet.
+M.forrasokHelye($('.lablec a[href*="forrasok"]')?.getAttribute('href'));
+
+/* ---------- Hibajelzés: a levélbe a beírt adatok és az eredmény is bekerül ---------- */
+$('[data-hibajelzes]')?.addEventListener('click', (ev) => {
+  const a = ev.currentTarget, cim = a.dataset.cim;
+  const panel = $('.elsz-tartalom');
+  const osszeg = $('.vegosszeg .mi', panel)?.textContent + ': ' + ($('[data-osszeg] .ertek', panel)?.textContent || '') + ' Ft';
+  const minta = $('.minta-jelzes', panel) ? '\n(Ez a minta-autó eredménye volt.)' : '';
+  const torzs = `Szerintem ez az eredmény hibás:\n${osszeg}${minta}\n\nAz oldal a beírt adatokkal:\n${location.href}\n\nMit vártál volna, és miért?\n`;
+  a.href = `mailto:${cim}?subject=${encodeURIComponent(`Hibás összeg: ${document.title}`)}&body=${encodeURIComponent(torzs)}`;
+});
 
 /* ---------- Mentett autó: csak ha kéred, és csak gombnyomásra töltjük be ---------- */
 const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
