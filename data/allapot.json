@@ -1,6 +1,13 @@
 {
-  "utolso_ellenorzes": null,
-  "uzemanyag": { "ok": null, "uzenet": "Még nem futott automatikus ellenőrzés." },
-  "tetelek": { "ok": null, "uzenet": "Még nem futott automatikus ellenőrzés." },
-  "figyelmeztetesek": []
+  "utolso_ellenorzes": "2026-11-06T17:30",
+  "uzemanyag": {
+    "ok": true,
+    "uzenet": "legfrissebb: 2026. november"
+  },
+  "tetelek": {
+    "ok": true,
+    "uzenet": "ismert évek: 2026, 2027"
+  },
+  "figyelmeztetesek": [],
+  "utolso_futas": "2026-11-06T17:30"
 }
