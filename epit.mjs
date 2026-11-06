@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync, readFileSync, cpSync, rmSync, readdirSync, ex
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { betoltAdat, olvas, maBudapest, GYOKER } from './forras/adat.mjs';
+import { gilos, adatDatum as S_adatDatum } from './forras/sablon.mjs';
 import * as S from './forras/js/szamitas.mjs';
 import * as O from './forras/oldalak.mjs';
 import * as M from './forras/js/megjelenites.mjs';
@@ -41,6 +42,8 @@ for (const f of ['szamitas', 'megjelenites', 'app']) {
   writeFileSync(join(KI, `assets/js/${f}.js`), forras);
   jsOssz += forras;
 }
+// A forgalmi-kártya rozettája külön fájlban: egyszer töltődik le, és minden oldal a gyorsítótárból veszi.
+writeFileSync(join(KI, 'assets/gilos.svg'), gilos().replace('<svg class="gilos"', '<svg xmlns="http://www.w3.org/2000/svg"').replace('aria-hidden="true" ', '').replace('stroke="currentColor"', 'stroke="#000"'));
 const verzio = createHash('sha1').update(css + jsOssz).digest('hex').slice(0, 8);
 for (const f of readdirSync(join(GYOKER, 'forras/kepek'))) cpSync(join(GYOKER, 'forras/kepek', f), join(KI, f === 'og.png' ? 'assets/og.png' : f));
 
@@ -78,7 +81,9 @@ if (!elonezet) {
   writeFileSync(join(KI, 'robots.txt'), cfg.eles
     ? `# ${cfg.marka}: minden kereső- és AI-robot számára nyitott.\nUser-agent: *\nAllow: /\n\n${ROBOTOK.map((r) => `User-agent: ${r}\nAllow: /\n`).join('\n')}\nSitemap: ${cfg.domain}/sitemap.xml\n`
     : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
-  const urlek = oldalak.map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${ma}</lastmod></url>`).join('\n');
+  // A lastmod az adatok utolsó ellenőrzött dátuma, nem az építésé: így csak akkor változik, ha tényleg frissült valami
+  const lastmod = S_adatDatum(adat).iso;
+  const urlek = oldalak.filter(([ut]) => ut !== 'impresszum/').map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
 /*
@@ -92,7 +97,9 @@ ${cfg.eles ? '' : '  X-Robots-Tag: noindex, nofollow, noarchive\n'}
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
-# A Cloudflare próbacímei ne kerüljenek a keresőkbe, ha már saját domain van
+# A Cloudflare-címek (autokoltseg-7t6.pages.dev és az előnézetek) ne kerüljenek a keresőkbe: csak a saját domain
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
 https://:version.:project.pages.dev/*
   X-Robots-Tag: noindex
 `);

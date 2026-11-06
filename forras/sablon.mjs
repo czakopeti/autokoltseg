@@ -83,14 +83,14 @@ export function gilos() {
 export function pecset(ma, ut = true, marka = 'autózom', link = false) {
   const [ev] = ma.split('-');
   // A gyűrűben a saját nevünk áll: a pecsét a miénk, nem a NAV-é. Kattintásra a forrásokhoz visz.
-  return `<svg class="pecset${ut ? ' ut' : ''}" viewBox="0 0 130 130" ${link ? `role="link" tabindex="0" aria-label="Honnan jönnek a számok? A források oldala"><title>Honnan jönnek a számok? Kattints a forrásokért.</title` : 'aria-hidden="true"'}>
+  return `<svg class="pecset${ut ? ' ut' : ''}" viewBox="0 0 130 130" aria-hidden="true">${link ? '<title>Honnan jönnek a számok? Kattints a forrásokért.</title>' : ''}
 <defs><path id="pecset-ivek" d="M65 65 m-47 0 a47 47 0 1 1 94 0 a47 47 0 1 1 -94 0"/></defs>
 <circle cx="65" cy="65" r="61" fill="none" stroke="currentColor" stroke-width="3"/>
 <circle cx="65" cy="65" r="55" fill="none" stroke="currentColor" stroke-width="1.2"/>
 <circle cx="65" cy="65" r="35" fill="none" stroke="currentColor" stroke-width="1.2"/>
-<text fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">${esc(marka.toLocaleUpperCase('hu'))} ✶ NAV-TÉTELEKKEL SZÁMOLVA ✶</textPath></text>
-<text x="65" y="64" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="800" font-size="21">${ev}</text>
-<text x="65" y="80" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="11">${datumRomai(ma)}</text>
+<text aria-hidden="true" fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="10.5"><textPath href="#pecset-ivek" textLength="288" lengthAdjust="spacing">${esc(marka.toLocaleUpperCase('hu'))} ✶ NAV-TÉTELEKKEL SZÁMOLVA ✶</textPath></text>
+<text aria-hidden="true" x="65" y="64" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="800" font-size="21">${ev}</text>
+<text aria-hidden="true" x="65" y="80" text-anchor="middle" fill="currentColor" font-family="Overpass, sans-serif" font-weight="700" font-size="11">${datumRomai(ma)}</text>
 </svg>`;
 }
 
@@ -142,13 +142,14 @@ export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = nu
 <meta name="theme-color" content="#0F1C18" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="${L.gyoker('favicon.svg')}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${L.gyoker('apple-touch-icon.png')}">
+${elonezet ? '' : `<link rel="preload" href="${L.a('fonts/overpass-latin-wght-normal.woff2')}" as="font" type="font/woff2" crossorigin>`}
 <link rel="stylesheet" href="${L.a(`style.css?v=${verzio}`)}">
 ${ld}
 </head>
 <body>
 <a class="ugras" href="#tartalom">Ugrás a tartalomra</a>
 <header class="fejlec"><div class="keret">
-<button class="fiok-gomb" type="button" aria-haspopup="dialog" aria-controls="fiok" aria-expanded="false">${HAMBURGER}<span>Menü</span></button>
+<button class="fiok-gomb" type="button" aria-label="Menü" aria-haspopup="dialog" aria-controls="fiok" aria-expanded="false">${HAMBURGER}<span>Menü</span></button>
 <div class="marka-blokk"><a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a><p class="szlogen">Az autód. A költségeid. A döntéseid.</p></div>
 <nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}${m.ut === 'autom/' ? ' class="menu-autom"' : ''}>${m.ut === 'autom/' ? JEL_KICSI : ''}${m.nev}</a>`).join('')}</nav>
 </div></header>
@@ -244,7 +245,7 @@ export const HOL_TALALOM = `<details class="hol-talalom"><summary>Hol találom e
 export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = false, osztaly = '' }) {
   const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Törlöm</button></div>' : '';
   const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Elmentem az autómat</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
-  return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}>${gilos()}<div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${['gyors', 'gepjarmuado', 'atiras', 'fenntartas'].includes(kalk) ? HOL_TALALOM : ''}${fent}${tartalom}${lent}</form>`;
+  return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}><span class="gilos" aria-hidden="true"></span><div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${['gyors', 'gepjarmuado', 'atiras', 'fenntartas'].includes(kalk) ? HOL_TALALOM : ''}${fent}${tartalom}${lent}</form>`;
 }
 
 /** Az elszámolás kerete a pecséttel. */

@@ -1,7 +1,7 @@
 // Karbantartási jelentés: mi esedékes a kézi teendők közül, és mit jelzett a napi NAV-ellenőrzés.
 // A napi futás ebből nyit vagy frissít egy GitHub-jelzést (issue), amiről a GitHub e-mailt küld.
 // Futtatás: node frissito/karbantartas.mjs [kimenet.md]   → ha nincs teendő, a kimenet üres.
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { olvas, maBudapest } from '../forras/adat.mjs';
 
 /** Az utolsó esedékesség napja (ma vagy korábban), vagy null, ha még nem jött el. */
@@ -19,11 +19,11 @@ export function esedekesek(k, ma) {
   });
 }
 
-export function jelentes(k, allapot, ma) {
+export function jelentes(k, allapot, ma, linkhibak = '') {
   const tennivalo = esedekesek(k, ma);
   const nav = [allapot.uzemanyag, allapot.tetelek].filter((x) => x && x.ok === false).map((x) => x.uzenet);
   const figy = allapot.figyelmeztetesek || [];
-  if (!tennivalo.length && !nav.length && !figy.length) return '';
+  if (!tennivalo.length && !nav.length && !figy.length && !linkhibak) return '';
   let s = `Az autózom karbantartási listája, ${ma}. Ez a jelzés magától frissül minden reggel, és bezárul, ha minden rendben.\n`;
   if (nav.length || figy.length) {
     s += '\n## A napi NAV-ellenőrzés jelzései\n\n';
@@ -35,12 +35,15 @@ export function jelentes(k, allapot, ma) {
       s += `### ${t.mit}\n- **Hol:** ${t.hol}\n- **Mit kell tenni:** ${t.hogyan}\n${t.forras ? `- **Forrás:** ${t.forras}\n` : ''}- Ha kész, írd be a mai napot a \`data/karbantartas.json\` fájlban a \`${t.id}\` tétel \`utoljara\` mezőjébe.\n\n`;
     }
   }
-  return s;
+  return s + linkhibak;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const ma = maBudapest();
-  const s = jelentes(olvas('data/karbantartas.json'), olvas('data/allapot.json'), ma);
+  // A heti linkellenőrzés eredménye (ha aznap futott)
+  let linkhibak = '';
+  try { linkhibak = readFileSync(process.argv[3] || 'linkhibak.md', 'utf8'); } catch { /* aznap nem futott */ }
+  const s = jelentes(olvas('data/karbantartas.json'), olvas('data/allapot.json'), ma, linkhibak);
   if (process.argv[2]) writeFileSync(process.argv[2], s);
   console.log(s || 'Nincs esedékes teendő.');
 }

@@ -87,7 +87,7 @@ p { margin: 0; }
 
 /* Forgalmi-kártya (űrlap) */
 .forgalmi { position: relative; background: var(--lap); border: 1px solid var(--vonal); border-radius: 18px; padding: 30px 32px 32px; overflow: hidden; isolation: isolate; }
-.forgalmi .gilos { position: absolute; right: -90px; top: -110px; width: 420px; height: 420px; z-index: -1; color: var(--gilos); opacity: .7; pointer-events: none; }
+.forgalmi .gilos { position: absolute; right: -90px; top: -110px; width: 420px; height: 420px; z-index: -1; background: var(--gilos); -webkit-mask: url(gilos.svg) center / contain no-repeat; mask: url(gilos.svg) center / contain no-repeat; opacity: .7; pointer-events: none; }
 .forgalmi-fej { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; margin-bottom: 22px; }
 .forgalmi-fej h2 { font-size: 20px; letter-spacing: -.01em; }
 .forgalmi-fej p { font-size: 14px; color: var(--tinta2); }
@@ -577,3 +577,10 @@ a.jel:hover { text-decoration: underline; }
   .fejlec .keret { gap: 14px; }
 }
 @media (max-width: 420px) { .fiok-gomb span { display: none; } .fiok-gomb { padding: 7px; } .menu a.menu-autom { padding: 5px 11px 5px 8px; font-size: 14px; } }
+.sr-csak { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Sorfejlécek az összehasonlító táblákban: úgy néznek ki, mint az első oszlop cellái */
+.tabla tbody th { font-weight: 400; color: var(--tinta2); text-align: left; white-space: normal; padding-left: 0; }
+table.kompakt tr.osszeg th { font-weight: 700; color: var(--tinta); border-top: 1px solid var(--tinta); }
+table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
+@media (max-width: 700px) { table.kompakt tbody th { padding-right: 8px; } }

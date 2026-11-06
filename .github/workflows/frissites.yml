@@ -52,6 +52,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # A forráslinkeket hetente (hétfőn) és kézi indításkor ellenőrizzük
+          if [ "$(TZ=Europe/Budapest date +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then node frissito/linkek.mjs linkhibak.md || true; fi
           node frissito/karbantartas.mjs jelentes.md
           gh label create karbantartas --color B3261E --description "Az oldal kézi teendői" 2>/dev/null || true
           SZAM=$(gh issue list --label karbantartas --state open --json number --jq '.[0].number')

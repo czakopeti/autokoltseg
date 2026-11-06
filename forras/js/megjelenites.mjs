@@ -77,6 +77,8 @@ function tetel(nev, ertek, { cls = '', al = '', href = '', forras = '', forrasUr
   const n = href ? `<a href="${href}">${nev}</a>` : nev;
   return `<li class="${cls}"><span>${n}${forras ? ` ${jel(forras, forrasUrl)}` : ''}${al ? `<span class="al">${al}</span>` : ''}</span><span class="ossz-ertek">${ertek}</span></li>`;
 }
+/** A táblázat tbody-sorainak első cellája sorfejléc (th scope=row), hogy a felolvasó minden számhoz kimondja, mi az. */
+const sorfejek = (html) => html.replace(/(<tr[^>]*>)<td>(.*?)<\/td>/g, '$1<th scope="row">$2</th>');
 const megjegyzes = (s, cls = '') => `<p class="megjegyzes ${cls}">${s}</p>`;
 export const hibaPanel = (uz) => `<p class="hiba" role="alert">${esc(uz)}</p>`;
 
@@ -296,7 +298,7 @@ export function osszehasonlitasPanel(adat, r, { szeles = 640 } = {}) {
   }
   // Rövid táv: havonta és 100 km-en
   const maxSzaz = Math.max(A.szaz, B.szaz) || 1;
-  h += `<div class="ket-oszlop"><section><h3>Havonta, ha ma veszed</h3><table class="tabla kompakt"><thead><tr><th></th><th>${esc(A.nev)}</th><th>${esc(B.nev)}</th></tr></thead><tbody>
+  h += sorfejek(`<div class="ket-oszlop"><section><h3>Havonta, ha ma veszed</h3><table class="tabla kompakt"><thead><tr><th><span class="sr-csak">Tétel</span></th><th>${esc(A.nev)}</th><th>${esc(B.nev)}</th></tr></thead><tbody>
 <tr><td>${A.hajtas === 'elektromos' && B.hajtas === 'elektromos' ? 'Töltés' : 'Üzemanyag, töltés'} ${jel('sajat')}</td><td>${ftx(A.energiaHavi)}</td><td>${ftx(B.energiaHavi)}</td></tr>
 <tr><td>Gépjárműadó ${jel('hivatalos')}</td><td>${ftx(A.gjElso / 12)}</td><td>${ftx(B.gjElso / 12)}</td></tr>
 ${A.cegElso || B.cegElso ? `<tr><td>Cégautóadó ${jel('hivatalos')}</td><td>${ftx(A.cegElso / 12)}</td><td>${ftx(B.cegElso / 12)}</td></tr>` : ''}
@@ -304,15 +306,15 @@ ${A.cegElso || B.cegElso ? `<tr><td>Cégautóadó ${jel('hivatalos')}</td><td>${
 <tr class="osszeg"><td>Havi kiadás</td><td>${ftx(A.futoHavi)}</td><td>${ftx(B.futoHavi)}</td></tr>
 </tbody><caption>Az értékvesztés nélkül: ezt fizeted ki havonta.</caption></table></section>
 <section><h3>100 kilométer energiája</h3><div class="savok">${r.autok.map((a, i) => `<div class="sav-sor"><span class="sav-nev">${esc(a.nev)}</span><span class="sav-sin"><span class="sav-toltes g-${i ? 'b' : 'a'}-hatter" style="--arany:${(a.szaz / maxSzaz).toFixed(3)}"></span></span><span class="sav-ertek">${ftx(a.szaz)}</span></div>`).join('')}</div>
-${r.autok.some((a) => a.hajtas === 'elektromos' || a.hajtas === 'plugin') ? `<p class="kicsi halk">Otthoni áram átlagosan ${tized((r.autok.find((a) => a.otthoniAr)?.otthoniAr) || 0, 1)} Ft/kWh a 2523 kWh-s sávhatárral, ${fmt(r.autok.find((a) => a.kwhEv)?.kwhEv || 0)} kWh töltés évente, a töltési veszteséggel együtt.</p>` : ''}</section></div>`;
+${r.autok.some((a) => a.hajtas === 'elektromos' || a.hajtas === 'plugin') ? `<p class="kicsi halk">Otthoni áram átlagosan ${tized((r.autok.find((a) => a.otthoniAr)?.otthoniAr) || 0, 1)} Ft/kWh a 2523 kWh-s sávhatárral, ${fmt(r.autok.find((a) => a.kwhEv)?.kwhEv || 0)} kWh töltés évente, a töltési veszteséggel együtt.</p>` : ''}</section></div>`);
   // Hosszú táv tételesen
   const sor = (nev, kulcs, cls = '', f = '') => `<tr class="${cls}"><td>${nev}${f ? ` ${jel(f)}` : ''}</td>${r.autok.map((a) => `<td>${ftx(a[kulcs])}</td>`).join('')}</tr>`;
   const eladasJel = r.sajatEladas?.every(Boolean) ? 'sajat' : 'becsles';
-  h += `<section class="hosszu"><h3>${r.evek} év alatt tételesen</h3><table class="tabla kompakt"><thead><tr><th></th>${r.autok.map((a) => `<th>${esc(a.nev)}</th>`).join('')}</tr></thead><tbody>
+  h += sorfejek(`<section class="hosszu"><h3>${r.evek} év alatt tételesen</h3><table class="tabla kompakt"><thead><tr><th><span class="sr-csak">Tétel</span></th>${r.autok.map((a) => `<th>${esc(a.nev)}</th>`).join('')}</tr></thead><tbody>
 ${sor('Vételár', 'ar', '', 'sajat')}${sor(`Eladási ár ${r.evek} év múlva`, 'eladas', '', eladasJel)}${sor('Értékvesztés', 'ertekvesztes', 'kiemelt-sor', eladasJel)}${sor('Üzemanyag, töltés', 'energia', '', 'sajat')}${sor('Illeték, gépjárműadó' + (r.autok.some((a) => a.cegOssz) ? ', cégautóadó' : ''), 'adok', '', 'hivatalos')}${sor('Szerviz, biztosítás', 'fixOssz', '', 'sajat')}
 <tr class="osszeg"><td>Összesen</td>${r.autok.map((a) => `<td>${ftx(a.osszesen)}</td>`).join('')}</tr>
 <tr><td>Kilométerenként</td>${r.autok.map((a) => `<td>${tized(a.ftKm, 1)} Ft</td>`).join('')}</tr>
-</tbody></table></section>`;
+</tbody></table></section>`);
   if (r.hatarKm) {
     const olcsobbKm = B.energia < A.energia ? B : A, masik = olcsobbKm === A ? B : A;
     h += `<p class="megjegyzes">Ha évente ${fmt(Math.ceil(r.hatarKm / 500) * 500)} km-nél többet jársz, ${r.evek} év alatt ${nevvel(olcsobbKm.nev)} jön ki olcsóbban. Ha kevesebbet, ${nevvel(masik.nev)}.</p>`;
@@ -347,7 +349,7 @@ export function szerzodes(adat, d) {
   const n = adat.szabalyok.adasvetel;
   const dt = (iso) => (iso ? datumHu(iso) : pont('', 18));
   const fel = (p) => `<p><b>${esc(p === 'e' ? 'Eladó' : 'Vevő')}:</b> ${pont(d[p + 'Nev'])}, született ${pont(d[p + 'SzulHely'], 14)}, ${dt(d[p + 'SzulIdo'])}, anyja neve: ${pont(d[p + 'Anyja'])}, lakcím: ${pont(d[p + 'Cim'], 34)}, személyazonosító okmány száma: ${pont(d[p + 'Okmany'], 12)}.</p>`;
-  return `<article class="szerzodes-lap">
+  return `<article class="szerzodes-lap" tabindex="0" aria-label="A kész szerződés előnézete">
 <h2>Gépjármű-adásvételi szerződés</h2>
 <p class="kozep">amely létrejött az alábbi felek között:</p>
 ${fel('e')}${fel('v')}

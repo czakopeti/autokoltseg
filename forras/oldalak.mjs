@@ -131,7 +131,7 @@ export function gepjarmuadoOldal(k) {
     { k: 'Ki fizet, ha év közben eladom az autót?', v: ['A NAV az év eleji nyilvántartás szerint vet ki adót, ezért az adott évet általában még az eladó fizeti, a vevő a következő évtől. Ha másképp osztanátok el, írjátok bele az adásvételi szerződésbe.'] },
   ];
   const honapok = S.HONAPOK.map((h, i) => [i + 1, h]);
-  const leiras = `Gépjárműadó ${aktualis}${jovo ? ` és ${jovo}` : ''}: a kW és a gyártási év alapján kiszámoljuk az éves adót a NAV tételeivel. Elektromos és plug-in hibrid mentesség, év közbeni forgalomba helyezés.`;
+  const leiras = `Gépjárműadó ${aktualis}${jovo ? ` és ${jovo}` : ''}: a kW és a gyártási év alapján kiszámoljuk az éves adót a NAV tételeivel. Elektromos és plug-in hibrid mentesség.`;
 
   const tartalom = (L) => `
 ${(() => {
@@ -536,9 +536,9 @@ ${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gy
 <h2>A mentett autód</h2>
 <p>Ha az „Elmentem az autómat” gombra kattintasz, az autó adatai a böngésződ saját tárolójába kerülnek ezen az eszközön. Hozzánk nem jutnak el, fiók nincs. Bármikor átírhatod és újra mentheted, vagy a „Törlöm” gombbal törölheted. A böngésző adatainak törlésekor is eltűnik. Másik böngészőben vagy másik eszközön nem látszik, mert nem szinkronizáljuk sehová.</p>
 <h2>Hibajelentés</h2>
-<p>A „Szerinted hibás?” gomb csak megnyitja a levelezőprogramodat egy előkészített levéllel, amit te küldesz el, ha akarod. A levélben az oldal címe van a kalkulátorba beírt számokkal (például teljesítmény, gyártási év, árak) és a kapott eredmény. Név, lakcím vagy rendszám nem kerül bele, a szerződés-űrlap adatai sem.</p>
+<p>A „Szerinted hibás?” gomb csak megnyitja a levelezőprogramodat egy előkészített levéllel, amit te küldesz el, ha akarod. A levélben az oldal címe van a kalkulátorba beírt számokkal (például teljesítmény, gyártási év, árak) és a kapott eredmény. Név, lakcím vagy rendszám nem kerül bele, a szerződés-űrlap adatai sem. Ha elküldöd, a leveledet és az e-mail-címedet csak a válaszhoz és a hiba kijavításához használjuk, és legfeljebb egy évig őrizzük meg.</p>
 <h2>Szervernapló</h2>
-<p>Az oldalt a ${cfg.tarhely.nev} (${cfg.tarhely.cim}) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző), a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk, és nem kötjük személyhez.</p>
+<p>Az oldalt a ${cfg.tarhely.nev} (${cfg.tarhely.cim}) szolgálja ki. Mint minden tárhelyszolgáltató, technikai naplót vezet a kérésekről (például IP-cím, időpont, böngésző), a szolgáltatás biztonsága és működése érdekében. Ezeket mi nem használjuk, és nem kötjük személyhez. A Cloudflare amerikai cég, és tagja az EU–USA adatvédelmi keretrendszernek (Data Privacy Framework), ezért az Európai Unióból továbbított adatokra az uniós szintű védelem vonatkozik.</p>
 <h2>Adatkezelő és jogaid</h2>
 <p>Adatkezelő: ${kitoltendo(cfg.uzemelteto.nev)}${cfg.kapcsolat_email ? `, ${cfg.kapcsolat_email}` : ''}. Kérhetsz tájékoztatást, helyesbítést, törlést és korlátozást, és tiltakozhatsz az adatkezelés ellen. Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhatsz (NAIH, 1055 Budapest, Falk Miksa utca 9–11., naih.hu).</p>
 </article></div>`;
@@ -601,7 +601,7 @@ export function osszehasonlitoOldal(k) {
     { k: 'Kell gépjárműadót és illetéket fizetni villanyautó után?', v: ['Nem. A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó mentes a gépjárműadó, az átírási illeték és a cégautóadó alól is. A plug-in hibrid és a hagyományos hibrid nem mentes.'] },
     { k: 'Mennyit ér egy villanyautó 3 év múlva?', v: [`A német DAT adatai szerint 2026 nyarán a 3 éves villanyautók átlagosan az újkori listaáruk ${M.tized(m.elektromos.harom)}%-át érték, a benzinesek ${M.tized(m.benzin.harom)}%-át, a dízelek ${M.tized(m.dizel.harom)}%-át. A különbség az utóbbi egy évben szűkült. A magyar használtautó-piacon a KSH modellje szerint utána a benzinesek évente ${M.tized(m.benzin.evi)}%-ot, a villanyautók és a dízelek ${M.tized(m.elektromos.evi)}%-ot veszítenek az értékükből.`] },
   ];
-  const leiras = `Benzines vagy elektromos autó? Két autó teljes költsége havonta és ${PELDA.evek} évre előre: értékvesztés, üzemanyag vagy töltés a 2523 kWh-s szabállyal, gépjárműadó, illeték, cégautóadó. Megtérülési idő és km-határ.`;
+  const leiras = `Benzines vagy elektromos autó? Két autó teljes költsége havonta és ${PELDA.evek} évre előre: értékvesztés, energia, adók. Mikor térül meg a drágább autó, és hány km-től éri meg.`;
 
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Benzin vagy villany'], cim: 'Benzines vagy elektromos autó: melyik éri meg?', valasz: `Otthon töltve 100 km áramból nagyjából harmadannyiba kerül, mint benzinből, de az elektromos autó drágább, és az első években gyorsabban veszít az értékéből. Hogy megéri-e, főleg azon múlik, mennyit autózol és hol töltesz.` })}
@@ -788,7 +788,7 @@ ${tovabb(L, ut)}
 </article></div>`;
   const leiras = 'Kitölthető adásvételi szerződés minta használt autóhoz: a kötelező elemekkel, a vételár betűvel kiírva, tanúkkal, nyomtatható és PDF-be menthető formában.';
   return oldal(k, {
-    cim: 'Adásvételi szerződés minta autóhoz: kitölthető és nyomtatható',
+    cim: 'Adásvételi szerződés autóhoz: kitölthető minta',
     leiras, ut, tartalom,
     adatJson: { szabalyok: { adasvetel: n } },
     jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Adásvételi szerződés', ut }])],
@@ -844,7 +844,7 @@ ${forrasLista([
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: 'Plug-in hibrid 2027: adó, cégautóadó, parkolás és rendszámcsere',
+    cim: 'Plug-in hibrid 2027: adó, parkolás és rendszámcsere',
     leiras, ut, tartalom,
     adatJson: { tetelek: { gepjarmuado: adat.tetelek.gepjarmuado, gepjarmuado_mozgaskorlatozott: adat.tetelek.gepjarmuado_mozgaskorlatozott, cegautoado: adat.tetelek.cegautoado }, szabalyok: { phev: p }, ma: k.ma },
     jsonld: [alkalmazasLd(k.cfg, 'Plug-in hibrid 2027 kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Plug-in hibrid 2027', ut }])],
@@ -917,7 +917,7 @@ export function hitelOldal(k) {
     { k: 'Kell casco az autóhitelhez?', v: ['Általában igen: a bankok a hitel vagy a lízing teljes idejére casco-t kérnek. Ez évente több tízezer, drágább autónál több százezer forint is lehet, ezért kérj rá ajánlatot még a szerződés előtt.'] },
     { k: 'Hitel vagy lízing?', v: ['Hitelnél az autó a te neveden van, a bank zálogjogot jegyeztet be. Pénzügyi lízingnél a futamidő alatt a lízingcég a tulajdonos, te vagy az üzembentartó. A lízinghez kevesebb önerő is elég lehet, cégnél pedig másképp számolják el az áfát és a költségeket.'] },
   ];
-  const leiras = 'Autóhitel-kalkulátor: havi törlesztő THM-mel, a kamat és a díjak összege, az átírás költsége és az autó értékvesztése, vagyis hogy mennyibe kerül valójában az autó hitelből.';
+  const leiras = 'Havi törlesztő THM-mel, a kamat és a díjak összege, az átírás és az értékvesztés: mennyibe kerül valójában az autó hitelből.';
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Autóhitel'], cim: 'Mennyibe kerül valójában az autó hitelből?', valasz: `A havi törlesztő a hitelösszegből, a futamidőből és a THM-ből jön ki. Forintban felvett autóhitelnél a bank legfeljebb az autó értékének ${h.hfm_hitel}%-át hitelezheti, vagyis legalább ${100 - h.hfm_hitel}% önerő kell.` })}
 <div class="keret asztal">
@@ -951,7 +951,7 @@ ${forrasLista([...forrasbol(h.forrasok), { nev: 'NAV: a gépjárműadó és az i
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: 'Autóhitel-kalkulátor: törlesztő és az autó valódi költsége',
+    cim: 'Autóhitel-kalkulátor: törlesztő és valódi költség',
     leiras, ut, tartalom,
     adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany, hitel: h }, ev: k.ev, ma: k.ma },
     jsonld: [alkalmazasLd(k.cfg, 'Autóhitel-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Autóhitel', ut }])],
