@@ -45,9 +45,24 @@ Biztonsági elvek: csak akkor ír át adatot, ha a NAV-oldal felépítése a vá
 - **Január:** nézd át a `szabalyok.json` díjait (okmánydíjak, normaköltség, munkába járás), mert ezek jogszabályváltozással módosulnak.
 - **Félévente:** `szabalyok.json` → `energia` (lakossági áram, villámtöltő) és `maradvany` (DAT/KSH maradványértékek). Ezeket nem frissíti gép, mert nincs hivatalos, gépileg olvasható forrásuk.
 
+## Kézi teendők: naptár és jelzés
+
+A kézi teendők a `data/karbantartas.json` fájlban vannak, dátummal. A napi futás egy `karbantartas` címkéjű GitHub-issue-t nyit vagy frissít, ha valami esedékes (a GitHub erről e-mailt küld), és bezárja, ha minden kész. Hétfőnként a forráslinkeket is ellenőrzi. Havonta (minden hónap 2-án) egy ütemezett Claude-futás elvégzi az esedékes teendőket.
+
+## Claude nélkül is
+
+Az oldal futásához nem kell Claude: a GitHub (napi frissítés) és a Cloudflare (tárhely) ingyenes csomagja viszi. Ha egy adatot kézzel kell átírni:
+
+1. A GitHubon nyisd meg a fájlt (például `data/szabalyok.json`), és kattints a ceruza ikonra.
+2. Írd át a számot, és ha van, a forrás nevét, URL-jét és időszakát is.
+3. Commit changes. A GitHub lefuttatja a teszteket és újraépíti az oldalt, a Cloudflare pár perc múlva kiteszi. Ha a futás piros, a módosítás hibás volt: az oldal a korábbi állapotban marad.
+4. A `data/karbantartas.json` fájlban a tétel `utoljara` mezőjébe írd be a mai napot, így a jelzés bezárul.
+
+Nagyobb módosításhoz (új kalkulátor, szöveg) bármelyik kódoló AI-asszisztens vagy fejlesztő elég: a felépítést ez a fájl írja le, a szöveg szabályait a `SZOVEG_STILUS.md`.
+
 ## Élesítés
 
 1. GitHub-repó, ide feltöltve.
 2. Cloudflare Pages → Create → Connect to Git → ez a repó. Build command: üres, output directory: `web`.
 3. `config.json`: márkanév, domain, üzemeltető adatai, kapcsolati e-mail, majd `"eles": true`. Amíg nincs kitöltve, minden oldal `noindex`, és az építő nem engedi élesíteni.
-4. Saját domain beállítása a Cloudflare-ben.
+4. Saját domain beállítása a Cloudflare-ben. (Kész: 2026. november 6., autozom.hu; a www és a régi pages.dev cím az autozom.hu-ra visz. A domain a Forpsinál van, évente meg kell újítani.)
