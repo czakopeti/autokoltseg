@@ -1,0 +1,15 @@
+# Biztonsági fejlécek minden oldalra
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  X-Frame-Options: SAMEORIGIN
+  Cross-Origin-Opener-Policy: same-origin
+
+# A betűk és a verziózott fájlok sokáig gyorsítótárazhatók
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# A Cloudflare próbacímei ne kerüljenek a keresőkbe, ha már saját domain van
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

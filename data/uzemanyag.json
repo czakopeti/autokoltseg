@@ -1,0 +1,94 @@
+{
+  "leiras": "A NAV által havonta közzétett, a fogyasztási norma szerinti elszámolásban alkalmazható üzemanyagárak. Ft/l, a CNG Ft/kg. A védett ár csak azokban a hónapokban szerepel, amikor a NAV közölte. Ezt a fájlt a frissito/futtat.mjs tartja naprakészen.",
+  "forras": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2026-ban-alkalmazhato-uzemanyagarak",
+  "evek": {
+    "2026": {
+      "1": {
+        "benzin": 572,
+        "dizel": 586,
+        "keverek": 624,
+        "lpg": 328,
+        "cng": 810
+      },
+      "2": {
+        "benzin": 560,
+        "dizel": 572,
+        "keverek": 613,
+        "lpg": 324,
+        "cng": 810
+      },
+      "3": {
+        "benzin": 564,
+        "dizel": 578,
+        "keverek": 616,
+        "lpg": 324,
+        "cng": 810
+      },
+      "4": {
+        "benzin": 565,
+        "dizel": 590,
+        "keverek": 618,
+        "lpg": 324,
+        "cng": 810
+      },
+      "5": {
+        "benzin_vedett": 595,
+        "benzin": 704,
+        "dizel_vedett": 615,
+        "dizel": 802,
+        "keverek": 756,
+        "lpg": 356,
+        "cng": 860
+      },
+      "6": {
+        "benzin_vedett": 595,
+        "benzin": 698,
+        "dizel_vedett": 615,
+        "dizel": 731,
+        "keverek": 752,
+        "lpg": 376,
+        "cng": 860
+      },
+      "7": {
+        "benzin_vedett": 595,
+        "benzin": 662,
+        "dizel_vedett": 615,
+        "dizel": 677,
+        "keverek": 716,
+        "lpg": 376,
+        "cng": 860
+      },
+      "8": {
+        "benzin": 580,
+        "dizel": 592,
+        "keverek": 636,
+        "lpg": 366,
+        "cng": 800
+      },
+      "9": {
+        "benzin": 604,
+        "dizel": 667,
+        "keverek": 660,
+        "lpg": 351,
+        "cng": 800
+      },
+      "10": {
+        "benzin": 605,
+        "dizel": 681,
+        "keverek": 660,
+        "lpg": 356,
+        "cng": 850
+      },
+      "11": {
+        "benzin": 639,
+        "dizel": 712,
+        "keverek": 695,
+        "lpg": 365,
+        "cng": 890
+      }
+    }
+  },
+  "kozzeteve": {
+    "2026-11": "2026-10-25"
+  }
+}

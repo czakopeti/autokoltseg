@@ -1,0 +1,54 @@
+{
+  "leiras": "Ritkán változó szabályok és díjak. Kézzel karbantartott; a forrasok mezőben a jogszabály vagy a NAV-tájékoztató.",
+  "km": {
+    "normakoltseg_ft_km": 15,
+    "munkaba_jaras_ft_km": 30,
+    "norma_benzin": [
+      [1000, 7.6],
+      [1500, 8.6],
+      [2000, 9.5],
+      [3000, 11.4],
+      [null, 13.3]
+    ],
+    "norma_dizel": [
+      [1500, 5.7],
+      [2000, 6.7],
+      [3000, 7.6],
+      [null, 9.5]
+    ],
+    "lpg_szorzo": 1.2,
+    "cng_kg_per_l": 0.64,
+    "plugin_szorzo": 0.7,
+    "elektromos_benzin_l_100km": 3,
+    "forrasok": [
+      {
+        "nev": "60/1992. (IV. 1.) Korm. rendelet (alapnormák)",
+        "url": null
+      },
+      {
+        "nev": "NAV 08. információs füzet – gépjárművek költségelszámolása",
+        "url": "https://nav.gov.hu/ugyfeliranytu/nezzen-utana/inf_fuz"
+      },
+      {
+        "nev": "Szja tv. 82. § (2) – a NAV havi üzemanyagára",
+        "url": "https://njt.hu/jogszabaly/1995-117-00-00"
+      }
+    ]
+  },
+  "okmanyok": {
+    "forgalmi_engedely": 6000,
+    "torzskonyv": 6000,
+    "torzskonyv_postazas": 2000,
+    "eredetisegvizsgalat_alap": 24975,
+    "eredetisegvizsgalat_min": 22950,
+    "eredetisegvizsgalat_max": 27000,
+    "forras": {
+      "nev": "47/2024. (XII. 6.) ÉKM rendelet (hatályos 2025. február 1-jétől)",
+      "url": null
+    }
+  },
+  "hataridok": {
+    "gepjarmuado_befizetes": "április 15.",
+    "atiras_napok": 15
+  }
+}

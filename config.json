@@ -1,0 +1,18 @@
+{
+  "marka": "Autóköltség",
+  "domain": "https://autokoltseg.pages.dev",
+  "eles": false,
+  "kapcsolat_email": "",
+  "uzemelteto": {
+    "nev": "",
+    "szekhely": "",
+    "adoszam": "",
+    "nyilvantartasi_szam": ""
+  },
+  "tarhely": {
+    "nev": "Cloudflare, Inc.",
+    "cim": "101 Townsend St, San Francisco, CA 94107, USA",
+    "web": "https://www.cloudflare.com"
+  },
+  "megjegyzes": "Az eles: true csak akkor kapcsolható be, ha a márkanév, a domain és az üzemeltető adatai ki vannak töltve. Addig minden oldal noindex, és az építő figyelmeztet."
+}

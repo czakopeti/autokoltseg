@@ -1,0 +1,52 @@
+name: Napi frissítés
+# Minden reggel: NAV-üzemanyagár és adótételek ellenőrzése → tesztek → újraépítés → mentés.
+# A Cloudflare Pages minden mentésnél magától kiteszi a web/ mappát.
+# Ha a NAV-ellenőrzés hibát jelez, a korábbi (ellenőrzött) adat marad kint, a futás piros lesz, és a GitHub e-mailt küld.
+on:
+  schedule:
+    - cron: "17 4 * * *"   # 05:17 / 06:17 budapesti idő szerint
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["forras/**", "data/**", "epit.mjs", "config.json", "tesztek/**"]
+permissions:
+  contents: write
+concurrency:
+  group: frissites
+  cancel-in-progress: false
+jobs:
+  frissit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: NAV-adatok ellenőrzése
+        id: nav
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: node frissito/futtat.mjs
+      - name: Tesztek
+        run: node --test tesztek/*.test.mjs
+      - name: Építés
+        run: node epit.mjs
+      - name: Mentés
+        run: |
+          git config user.name "autokoltseg-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A data web
+          if git diff --cached --quiet; then echo "Nincs változás."; exit 0; fi
+          git commit -m "Napi frissítés $(TZ=Europe/Budapest date +%F)"
+          for i in 1 2 3; do
+            git fetch -q origin main && git rebase -X theirs origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep 10
+          done
+          exit 1
+      - name: Jelzés, ha a NAV-ellenőrzés hibát talált
+        if: steps.nav.outcome == 'failure'
+        run: |
+          echo "::error::A NAV-adatok ellenőrzése hibát jelzett. Részletek fent és a data/allapot.json-ban. Az oldal a korábbi adattal fut."
+          exit 1
