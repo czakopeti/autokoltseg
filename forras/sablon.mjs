@@ -40,6 +40,7 @@ export const FIOK = [
     ['le-kw-atvaltas/', 'LE–kW átváltás', 'Hány kW egy lóerő'],
   ] },
   { cim: 'Az oldalról', elemek: [
+    ['adatok/', 'Adatok és idősorok', 'Üzemanyagár, adótételek, matrica, CSV-ben'],
     ['forrasok/', 'Honnan vannak a számok?', ''],
     ['valtozasok/', 'Mi változott?', ''],
     ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
@@ -203,6 +204,7 @@ function lablec(k, L) {
 <div><h2>Kalkulátorok</h2><ul>${[...MENU, ...TOBB_KALK].map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}">Adásvételi szerződés minta</a></li>
+<li><a href="${L.l('adatok/')}">Adatok és idősorok</a></li>
 <li><a href="${L.l('forrasok/')}">Források és frissítés</a></li>
 <li><a href="${L.l('valtozasok/')}">Mi változott?</a></li>
 <li><a href="${L.l('rolunk/')}">Rólunk és szerkesztői elvek</a></li>

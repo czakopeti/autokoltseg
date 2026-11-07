@@ -18,6 +18,10 @@
 - [LE–kW átváltás](https://autozom.hu/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon
 
+## Adatok
+
+- [Adatok és idősorok](https://autozom.hu/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés, CC BY 4.0
+
 ## Vállalkozóknak
 
 - [Vállalkozóknak](https://autozom.hu/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra

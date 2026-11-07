@@ -354,6 +354,30 @@ function visszajelzes() {
 }
 visszajelzes();
 
+/* ---------- Idősor-grafikon súgója (adatok/ oldal) ---------- */
+function idosorSugo() {
+  const fig = $('.grafikon.idosor');
+  if (!fig) return;
+  const svg = $('svg', fig), tipp = $('.g-tipp', fig), mutato = $('.g-mutato', svg);
+  const n = Number(svg.dataset.n), bal = Number(svg.dataset.bal), jobb = Number(svg.dataset.jobb), W = Number(svg.dataset.w);
+  const adatok = JSON.parse(svg.dataset.ertekek);
+  const hu = (k) => { const [e, h] = k.split('-').map(Number); return `${e}. ${S.HONAPOK[h - 1]}`; };
+  const mozog = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const xv = ((ev.clientX - r.left) / r.width) * W;
+    const i = Math.round(Math.min(1, Math.max(0, (xv - bal) / (W - bal - jobb))) * (n - 1));
+    const x = bal + (i / (n - 1)) * (W - bal - jobb);
+    mutato.setAttribute('x1', x); mutato.setAttribute('x2', x); mutato.setAttribute('visibility', 'visible');
+    const [k, b, d, bv, dv] = adatok[i];
+    tipp.innerHTML = `<div>${hu(k)}</div><div><i class="g-a-hatter"></i>Benzin: <b>${b} Ft</b>${bv ? ` (védett: ${bv} Ft)` : ''}</div><div><i class="g-b-hatter"></i>Dízel: <b>${d} Ft</b>${dv ? ` (védett: ${dv} Ft)` : ''}</div>`;
+    tipp.hidden = false;
+    tipp.style.left = `${Math.min(82, Math.max(18, (x / W) * 100))}%`;
+  };
+  svg.addEventListener('pointermove', mozog);
+  svg.addEventListener('pointerleave', () => { tipp.hidden = true; mutato.setAttribute('visibility', 'hidden'); });
+}
+idosorSugo();
+
 /* ---------- Mentett autó: csak ha kéred, és csak gombnyomásra töltjük be ---------- */
 const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
 const HAJTAS_SZO = { benzin: 'benzines', dizel: 'dízeles', hibrid: 'hibrid', plugin: 'plug-in hibrid', elektromos: 'elektromos' };

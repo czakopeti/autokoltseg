@@ -647,3 +647,12 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 @media (max-width: 560px) { .fiok-gomb span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .fiok-gomb { padding: 7px; } }
 @media (max-width: 420px) { .jegy .logo { width: 112px; } .menu + .vall-gomb { margin-left: 0; } }
 @media (max-width: 380px) { .fejlec .keret { gap: 8px; } }
+
+/* ---------- Adatok és idősorok ---------- */
+.idosor .g-nev { fill: var(--tinta); font-size: 13px; }
+.idosor svg { touch-action: pan-y; }
+.letoltes { font-weight: 700; color: var(--tinta); }
+.letoltes::before { content: "↓ "; }
+.tabla-reszlet { margin: 6px 0 28px; }
+.tabla-reszlet summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
+.tabla-reszlet .tabla-tarto { max-height: 460px; overflow: auto; }

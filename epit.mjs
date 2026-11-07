@@ -65,6 +65,7 @@ const oldalak = [
   ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
   ['vallalkozoknak/', O.vallalkozoknakOldal(k)],
+  ['adatok/', O.adatokOldal(k)],
   ['cegautoado-kalkulator/', O.cegautoadoOldal(k)],
   ['cegauto-vagy-sajat-auto/', O.cegautoOldal(k)],
   ['autom/', O.automOldal(k)],
@@ -93,6 +94,8 @@ if (!elonezet) {
   // A lastmod az adatok utolsó ellenőrzött dátuma, nem az építésé: így csak akkor változik, ha tényleg frissült valami
   const lastmod = S_adatDatum(adat).iso;
   const urlek = oldalak.filter(([ut]) => ut !== 'impresszum/').map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
+  // Letölthető idősorok (adatok/ oldal)
+  for (const [f, tart] of Object.entries(O.adatCsvk(adat))) writeFileSync(join(KI, 'adatok', f), tart);
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
 /*
@@ -138,6 +141,10 @@ https://:version.:project.pages.dev/*
 - [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
+
+## Adatok
+
+- [Adatok és idősorok](${cfg.domain}/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés, CC BY 4.0
 
 ## Vállalkozóknak
 
