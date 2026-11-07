@@ -9,6 +9,9 @@ if (process.argv[2] === '--lista') {
   for (const url of ['https://nav.gov.hu/ugyfeliranytu/uzemanyag', 'https://nav.gov.hu/ugyfeliranytu/uzemanyag/Korabbi_evben_alkalma20150212']) {
     const html = await N.letolt(url).catch((e) => `HIBA ${e.message}`);
     console.log(`== ${url}`);
+    const fo = (html || '').split(/<h1/i)[1] || '';
+    console.log(`TARTALOM: ${N.szoveg(fo).slice(0, 1500)}`);
+    console.log(`FÁJLOK: ${[...(html || '').matchAll(/href="([^"]*(?:\$file|download|letolt|\.pdf|\.xlsx?|\.docx?|Korabbi)[^"]*)"/gi)].map((m) => m[1]).filter((x, i, a) => a.indexOf(x) === i).slice(0, 40).join(' ')}`);
     console.log(`táblák: ${((html || '').match(/<table/gi) || []).length}; első táblázat: ${N.szoveg(((html || '').match(/<table[\s\S]*?<\/table>/i) || [''])[0]).slice(0, 600)}`);
     console.log([...(html || '').matchAll(/href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)].map((m) => `${m[1]} | ${N.szoveg(m[2]).slice(0, 80)}`).filter((x) => /uzemanyag|üzemanyag|20\d\d/i.test(x)).join('\n'));
   }
