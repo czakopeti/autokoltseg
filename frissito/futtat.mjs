@@ -77,6 +77,9 @@ async function tetelek() {
         const minta = t.cegautoado[c.ev - 1] || Object.values(t.cegautoado).pop();
         t.cegautoado[c.ev] = { oszlopok: minta.oszlopok, sorok: minta.sorok, tabla: c.tabla, kozzeteve: ma, forras: N.tetelUrlek.cegautoado()[0], automatikus: true };
         valt.push(`cégautóadó ${c.ev}`);
+      } else if (JSON.stringify(t.cegautoado[c.ev].tabla) !== JSON.stringify(c.tabla)) {
+        // Ha a NAV utólag más táblázatot közöl (pl. új teljesítménysávok), nem írjuk felül vakon: kézi ellenőrzés kell.
+        jelzesek.push(`A NAV ${c.ev}. évi cégautóadó-táblázata eltér a tárolttól. Lehet, hogy új teljesítménysávok jöttek (lásd karbantartas.json: cegautoado-2027-javaslat). Kézzel kell frissíteni a data/tetelek.json-t és a sávokat.`);
       }
     }
   } catch (e) { jelzesek.push(`Cégautóadó: ${e.message}`); }
