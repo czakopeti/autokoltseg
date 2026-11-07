@@ -44,17 +44,17 @@ const OSZLOP = [
  * Az évi üzemanyagár-táblázat feldolgozása. Visszaad: { 11: { benzin, dizel, ... }, 10: {...} }.
  * Hibát dob, ha nem talál értelmes táblázatot – ilyenkor semmit nem írunk át.
  */
-export function uzemanyagFeldolgoz(html) {
+export function uzemanyagFeldolgoz(html, { kotelezo = ['benzin', 'dizel', 'lpg', 'cng'] } = {}) {
   const tablak = [...html.matchAll(/<table[\s\S]*?<\/table>/gi)].map((m) => m[0]);
-  const tabla = tablak.find((t) => /cng/i.test(t) && /(ólmozatlan|benzin)/i.test(szoveg(t)));
-  if (!tabla) throw new Error('Nem található az üzemanyagár-táblázat (CNG és benzin oszloppal).');
+  const tabla = tablak.find((t) => (!kotelezo.includes('cng') || /cng/i.test(t)) && /(ólmozatlan|benzin)/i.test(szoveg(t)) && /gázolaj|dízel/i.test(szoveg(t)));
+  if (!tabla) throw new Error('Nem található az üzemanyagár-táblázat (benzin és gázolaj oszloppal).');
   const sorok = [...tabla.matchAll(/<tr[\s\S]*?<\/tr>/gi)].map((m) => [...m[0].matchAll(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi)].map((c) => szoveg(c[1])));
 
   // Fejléc: az első sor(ok), amelyekben nincs hónapnév az első cellában
   const honapIndex = (c) => HONAPOK.indexOf((c || '').toLowerCase().replace(/[^a-záéíóöőúüű]/g, ''));
   const fejSorok = [];
   for (const s of sorok) { if (honapIndex(s[0]) >= 0) break; fejSorok.push(s); }
-  const fej = fejSorok.find((s) => s.filter((c) => OSZLOP.some(([re]) => re.test(c))).length >= 4);
+  const fej = fejSorok.find((s) => s.filter((c) => OSZLOP.some(([re]) => re.test(c))).length >= Math.min(4, kotelezo.length));
   if (!fej) throw new Error('A táblázat fejléce nem a várt felépítésű.');
   const vedettSor = fejSorok.find((s) => s !== fej && s.some((c) => /védett/i.test(c)));
 
@@ -73,7 +73,7 @@ export function uzemanyagFeldolgoz(html) {
     lattuk[k] = true;
     kulcsok.push(k);
   });
-  for (const k of ['benzin', 'dizel', 'lpg', 'cng']) if (!kulcsok.includes(k)) throw new Error(`Hiányzik a(z) ${k} oszlop a fejlécből.`);
+  for (const k of kotelezo) if (!kulcsok.includes(k)) throw new Error(`Hiányzik a(z) ${k} oszlop a fejlécből.`);
 
   const eredmeny = {};
   for (const s of sorok) {
@@ -92,7 +92,7 @@ export function uzemanyagFeldolgoz(html) {
   }
   if (!Object.keys(eredmeny).length) throw new Error('A táblázatban nincs egyetlen hónap sem.');
   for (const [h, x] of Object.entries(eredmeny)) {
-    for (const k of ['benzin', 'dizel', 'lpg', 'cng']) if (x[k] == null) throw new Error(`${HONAPOK[h - 1]}: hiányzik a(z) ${k} ár.`);
+    for (const k of kotelezo) if (x[k] == null) throw new Error(`${HONAPOK[h - 1]}: hiányzik a(z) ${k} ár.`);
     for (const [k, v] of Object.entries(x)) {
       const [min, max] = k === 'cng' ? [300, 2500] : k === 'lpg' ? [150, 1200] : [250, 1500];
       if (v < min || v > max) throw new Error(`${HONAPOK[h - 1]}: a(z) ${k} ára (${v}) kívül esik az ésszerű tartományon.`);

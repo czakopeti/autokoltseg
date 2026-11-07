@@ -1,0 +1,35 @@
+name: Idősor visszatöltése
+# Egyszeri, kézzel indítható: a NAV régebbi évi üzemanyagárait tölti be a data/uzemanyag.json-ba.
+# Csak hiányzó éveket ír, a teszteken át kell mennie, és csak akkor ment.
+on:
+  workflow_dispatch:
+    inputs:
+      tol: { description: 'Első év', default: '2012', required: true }
+      ig: { description: 'Utolsó év', default: '2025', required: true }
+      proba: { description: 'Csak próba (nem ment)', type: boolean, default: true }
+permissions:
+  contents: write
+jobs:
+  tolt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Letöltés
+        run: node frissito/visszatolt.mjs ${{ inputs.tol }} ${{ inputs.ig }} ${{ inputs.proba && '--proba' || '' }}
+      - name: Tesztek és építés
+        if: ${{ !inputs.proba }}
+        run: |
+          node --test tesztek/*.test.mjs
+          node epit.mjs && node epit.mjs --elonezet
+      - name: Mentés
+        if: ${{ !inputs.proba }}
+        run: |
+          git config user.name "autokoltseg-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Nincs változás."; exit 0; }
+          git commit -m "Idősor: NAV üzemanyagárak ${{ inputs.tol }}–${{ inputs.ig }} visszatöltve"
+          git pull --rebase && git push
