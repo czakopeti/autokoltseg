@@ -6,9 +6,10 @@ import * as N from './nav.mjs';
 
 if (process.argv[2] === '--lista') {
   // A NAV üzemanyagár-főoldalának évi aloldalai (a régebbi évek címe eltérhet a mintától)
-  for (const url of ['https://nav.gov.hu/ugyfeliranytu/uzemanyag', 'https://nav.gov.hu/ugyfeliranytu/uzemanyag/korabbi-evek-uzemanyagarai']) {
+  for (const url of ['https://nav.gov.hu/ugyfeliranytu/uzemanyag', 'https://nav.gov.hu/ugyfeliranytu/uzemanyag/Korabbi_evben_alkalma20150212']) {
     const html = await N.letolt(url).catch((e) => `HIBA ${e.message}`);
     console.log(`== ${url}`);
+    console.log(`táblák: ${((html || '').match(/<table/gi) || []).length}; első táblázat: ${N.szoveg(((html || '').match(/<table[\s\S]*?<\/table>/i) || [''])[0]).slice(0, 600)}`);
     console.log([...(html || '').matchAll(/href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)].map((m) => `${m[1]} | ${N.szoveg(m[2]).slice(0, 80)}`).filter((x) => /uzemanyag|üzemanyag|20\d\d/i.test(x)).join('\n'));
   }
   process.exit(0);
