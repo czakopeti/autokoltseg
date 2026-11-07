@@ -520,7 +520,7 @@ ${oldalfej(L, { morzsa: ['Impresszum'], cim: 'Impresszum' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <div class="tabla-tarto"><table class="tabla"><tbody>
 <tr><td>Weboldal</td><td>${cfg.domain.replace('https://', '')}</td></tr>
-<tr><td>Üzemeltető</td><td>${kitoltendo(u.nev ? `${esc(u.nev)}${u.tipus ? ` (${esc(u.tipus)})` : ''}` : '')}</td></tr>
+<tr><td>Üzemeltető</td><td>${kitoltendo(u.nev ? esc(u.nev) : '')}</td></tr>
 ${u.tipus === 'magánszemély' && !u.szekhely ? '' : `<tr><td>Székhely</td><td>${kitoltendo(u.szekhely)}</td></tr>`}
 ${u.tipus === 'magánszemély' && !u.adoszam ? '' : `<tr><td>Adószám</td><td>${kitoltendo(u.adoszam)}</td></tr>`}
 ${u.tipus === 'magánszemély' && !u.nyilvantartasi_szam ? '' : `<tr><td>Nyilvántartási szám</td><td>${kitoltendo(u.nyilvantartasi_szam)}</td></tr>`}
