@@ -30,7 +30,10 @@ for (let ev = tol; ev <= ig; ev++) {
       break;
     } catch (e) {
       const fej = N.szoveg((html.match(/<table[\s\S]*?<\/tr>/i) || [''])[0]).slice(0, 200);
-      jelentes.push(`${ev}: ${url} → nem értelmezhető: ${e.message} | táblázat eleje: ${fej}`);
+      const cim = N.szoveg((html.match(/<h1[\s\S]*?<\/h1>/i) || [''])[0]).slice(0, 120);
+      const linkek = [...html.matchAll(/href="([^"]*(?:uzemanyag|\.pdf|\.xlsx?)[^"]*)"/gi)].map((m) => m[1]).filter((x, i, a) => a.indexOf(x) === i).slice(0, 12);
+      const tablak = (html.match(/<table/gi) || []).length;
+      jelentes.push(`${ev}: ${url} → nem értelmezhető: ${e.message} | cím: ${cim} | táblák: ${tablak} | táblázat eleje: ${fej} | linkek: ${linkek.join(' ')}`);
     }
   }
   if (!ok) jelentes.push(`${ev}: KIHAGYVA`);
