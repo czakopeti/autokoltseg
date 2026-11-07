@@ -873,21 +873,33 @@ ${tovabb(L, ut)}
 export function matricaOldal(k) {
   const { adat } = k;
   const ut = 'autopalya-matrica-kalkulator/';
-  const m = adat.szabalyok.matrica, d = m.d1;
-  const r = S.matrica(adat, { napi: 1 });
+  const m = adat.szabalyok.matrica;
+  const evek = S.matricaEvek(adat, k.ev);
+  const ev = evek[0], kov = evek[1];
+  // novembertől a következő év az alapértelmezett, ha már ismertek a díjai
+  const alapEv = kov && Number(k.ma.slice(5, 7)) >= 11 ? kov : ev;
+  const d = m.evek[ev].d1, dk = kov ? m.evek[kov].d1 : null;
+  const r = S.matrica(adat, { ev, napi: 1 });
+  const rk = kov ? S.matrica(adat, { ev: kov, napi: 1 }) : null;
+  const evSzo = (e) => M.rag(e, 'ban', 'ben');
   const kerdesek = [
-    { k: 'Mennyibe kerül az éves autópálya-matrica?', v: [`Személyautóra (D1) az éves országos matrica ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)} vármegyénként. Az éves matrica ${m.eves_ervenyes} érvényes, vagyis 13 hónapig.`] },
-    { k: 'Mikor éri meg az éves matrica?', v: [`Ha egy évben legalább ${r.hatar.napi} napi, ${r.hatar.tiznapos} tíznapos vagy ${r.hatar.havi} havi matricát vennél helyette, vagy ha legalább ${r.hatar.varmegyei} vármegyében autópályázol rendszeresen. Ha a kettő keveredik, a kalkulátor kiszámolja.`] },
-    { k: 'Mi az M1 regionális matrica?', v: [`${M.ftx(d.m1_regionalis)}-ért egy évig használhatod a díjköteles utakat ${m.m1_varmegyek.slice(0, -1).join(', ')} és ${m.m1_varmegyek.at(-1)} vármegyében. Négy vármegyei matrica ${M.ftx(4 * d.varmegyei)} lenne, három ${M.ftx(3 * d.varmegyei)}.`] },
-    { k: 'Mennyi a pótdíj, ha nincs matricám?', v: [`Személyautóval ${M.ftx(m.potdij.alap)}. Ha 60 napon belül nem fizeted be, ${M.ftx(m.potdij.hatvan_nap_utan)}.`] },
-    { k: 'Kapható már a 2027-es matrica?', v: [`A 2027-es díjakat még nem tették közzé. Ha most veszel éves matricát, az ${m.eves_ervenyes} érvényes, így 2027 januárját is lefedi.`] },
+    { k: 'Mennyibe kerül az éves autópálya-matrica?', v: [`Személyautóra (D1) az éves országos matrica ${evSzo(ev)} ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)} vármegyénként.${dk ? ` ${evSzo(kov)} az éves országos ${M.ftx(dk.eves)}, a vármegyei ${M.ftx(dk.varmegyei)} lesz.` : ''} Az éves matrica ${m.eves_ervenyes} érvényes, vagyis 13 hónapig.`] },
+    { k: 'Mikor éri meg az éves matrica?', v: [`Ha egy évben legalább ${(rk || r).hatar.napi} napi, ${(rk || r).hatar.tiznapos} tíznapos vagy ${(rk || r).hatar.havi} havi matricát vennél helyette, vagy ha legalább ${(rk || r).hatar.varmegyei} vármegyében autópályázol rendszeresen. Ha a kettő keveredik, a kalkulátor kiszámolja.`] },
+    { k: 'Mi az M1 regionális matrica?', v: [`${M.ftx((dk || d).m1_regionalis)}-ért egy évig használhatod a díjköteles utakat ${m.m1_varmegyek.slice(0, -1).join(', ')} és ${m.m1_varmegyek.at(-1)} vármegyében. Négy vármegyei matrica ${M.ftx(4 * (dk || d).varmegyei)} lenne, három ${M.ftx(3 * (dk || d).varmegyei)}.`] },
+    { k: 'Mennyi a pótdíj, ha nincs matricám?', v: [`Személyautóval ${evSzo(ev)} ${M.ftx(m.evek[ev].potdij.alap)}, ha 60 napon belül nem fizeted be, ${M.ftx(m.evek[ev].potdij.hatvan_nap_utan)}.${kov ? ` ${evSzo(kov)} ${M.ftx(m.evek[kov].potdij.alap)}, illetve ${M.ftx(m.evek[kov].potdij.hatvan_nap_utan)}.` : ''}`] },
+    kov
+      ? { k: `Mennyibe kerül a matrica ${evSzo(kov)}?`, v: [`A Magyar Közút ${M.datumNapon(m.evek[kov].kozzeteve)} tette közzé a ${M.os(kov)} díjakat. Személyautóra a napi ${M.ftx(dk.napi)}, a tíznapos ${M.ftx(dk.tiznapos)}, a havi ${M.ftx(dk.havi)}, az éves országos ${M.ftx(dk.eves)}, a vármegyei ${M.ftx(dk.varmegyei)}. Az M1 regionális matrica ára nem változik. A ${M.os(ev)} éves matrica ${kov}. január 31-ig érvényes.`] }
+      : { k: `Mennyibe kerül a matrica ${evSzo(ev + 1)}?`, v: [`A ${ev + 1}. évi díjakat még nem tették közzé. Ha most veszel éves matricát, az ${m.eves_ervenyes} érvényes, így ${ev + 1} januárját is lefedi.`] },
     { k: 'Hol vehetek matricát?', v: ['A Nemzeti Útdíjfizetési Szolgáltató oldalán, a mobilos alkalmazásokban és a benzinkutakon. Az e-matrica a rendszámhoz kötődik, az autóra nem kell semmit ragasztani.'] },
   ];
-  const leiras = 'Melyik autópálya-matricát érdemes megvenni? Éves, havi, tíznapos, napi és vármegyei e-matrica személyautóra: kiszámoljuk, neked melyik a legolcsóbb.';
+  const leiras = `Melyik autópálya-matricát érdemes megvenni? ${evek.join(' és ')}. évi díjak: éves, havi, tíznapos, napi, vármegyei és M1 regionális e-matrica személyautóra, és kiszámoljuk, neked melyik a legolcsóbb.`;
+  const tor = (x) => M.ftx(x);
+  const sorok = [['Napi', 'napi', 'a megadott napon'], ['Tíznapos', 'tiznapos', 'tíz egymást követő napon'], ['Havi', 'havi', 'a kezdőnaptól a következő hónap azonos napjáig'], ['Éves országos', 'eves', m.eves_ervenyes], ['Éves vármegyei', 'varmegyei', `egy vármegyére, ${m.eves_ervenyes}`], ['M1 regionális', 'm1_regionalis', 'a négy M1 menti vármegyére, egy évre']];
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Autópálya-matrica'], cim: 'Melyik autópálya-matricát érdemes megvenni?', valasz: `Személyautóra az éves országos matrica ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)}, a napi ${M.ftx(d.napi)}. Az éves akkor éri meg, ha egy évben legalább ${r.hatar.napi} napot vagy ${r.hatar.tiznapos} tíznapos utat autópályázol.` })}
+${oldalfej(L, { morzsa: ['Autópálya-matrica'], cim: 'Melyik autópálya-matricát érdemes megvenni?', valasz: dk ? `Személyautóra az éves országos matrica ${evSzo(ev)} ${M.ftx(d.eves)}, ${evSzo(kov)} ${M.ftx(dk.eves)}. Az éves akkor éri meg, ha egy évben legalább ${rk.hatar.napi} napot vagy ${rk.hatar.tiznapos} tíznapos utat autópályázol.` : `Személyautóra az éves országos matrica ${M.ftx(d.eves)}, a vármegyei ${M.ftx(d.varmegyei)}, a napi ${M.ftx(d.napi)}. Az éves akkor éri meg, ha egy évben legalább ${r.hatar.napi} napot vagy ${r.hatar.tiznapos} tíznapos utat autópályázol.` })}
 <div class="keret asztal">
 ${forgalmi({ kalk: 'matrica', cim: 'Merre és mennyit autózol?', tartalom: `
+${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), alapEv)) : `<input type="hidden" name="ev" value="${ev}">`}
 <fieldset><legend>Alkalmi utak egy évben</legend>
 ${sor('', szamMezo({ id: 'napi', cim: 'Egynapos utak', me: 'db', placeholder: 'pl. 3', min: 0, max: 365 }))}
 ${sor('', szamMezo({ id: 'tiznapos', cim: 'Legfeljebb tíznapos utak', me: 'db', placeholder: 'pl. 1', min: 0, max: 36, sugo: 'Például a nyaralás. A tíznapos matrica egymást követő tíz napra szól.' }))}
@@ -895,20 +907,15 @@ ${sor('', szamMezo({ id: 'havi', cim: 'Hónapok, amikor sokat autópályázol', 
 </fieldset>
 <fieldset><legend>Rendszeres utak</legend>
 ${sor('', szamMezo({ id: 'varmegyek', cim: 'Hány vármegyében autópályázol rendszeresen?', me: 'db', placeholder: 'pl. 1', min: 0, max: 19, sugo: 'Például munkába járáskor. Minden vármegyéhez külön vármegyei matrica kell.' }))}
-${sor('', jelolo('m1', 'Ezek mind M1 menti vármegyék', `${m.m1_varmegyek.join(', ')}. Ide ${M.ftx(d.m1_regionalis)}-ért regionális matrica is kapható.`))}
+${sor('', jelolo('m1', 'Ezek mind M1 menti vármegyék', `${m.m1_varmegyek.join(', ')}. Ide ${M.ftx((dk || d).m1_regionalis)}-ért regionális matrica is kapható.`))}
 </fieldset>` })}
 ${elszamolas(k, M.uresPanel('Add meg, évente hányszor és hol autópályázol.'))}
 </div>
 <div class="keret"><article class="cikk">
 <h2 id="dijak">Az e-matrica díjai személyautóra</h2>
-<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Matrica</th><th>Díj, ${m.ev}</th><th>Meddig érvényes?</th></tr></thead><tbody>
-<tr><td>Napi</td><td>${M.ftx(d.napi)}</td><td>a megadott napon</td></tr>
-<tr><td>Tíznapos</td><td>${M.ftx(d.tiznapos)}</td><td>tíz egymást követő napon</td></tr>
-<tr><td>Havi</td><td>${M.ftx(d.havi)}</td><td>a kezdőnaptól a következő hónap azonos napjáig</td></tr>
-<tr><td>Éves országos</td><td>${M.ftx(d.eves)}</td><td>${m.eves_ervenyes}</td></tr>
-<tr><td>Éves vármegyei</td><td>${M.ftx(d.varmegyei)}</td><td>egy vármegyére, ${m.eves_ervenyes}</td></tr>
-<tr><td>M1 regionális</td><td>${M.ftx(d.m1_regionalis)}</td><td>a négy M1 menti vármegyére, egy évre</td></tr>
-</tbody><caption>D1 kategória: személyautó. A ${m.ev + 1}. évi díjakat még nem tették közzé.</caption></table></div>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Matrica</th>${evek.map((e) => `<th>${e}</th>`).join('')}<th>Meddig érvényes?</th></tr></thead><tbody>
+${sorok.map(([nev, kulcs, meddig]) => `<tr><td>${nev}</td>${evek.map((e) => `<td>${tor(m.evek[e].d1[kulcs])}</td>`).join('')}<td>${meddig}</td></tr>`).join('\n')}
+</tbody><caption>D1 kategória: személyautó.${kov ? ` A ${M.os(kov)} díjakat a Magyar Közút ${M.datumNapon(m.evek[kov].kozzeteve)} tette közzé, ${kov}. január 1-jétől érvényesek.` : ` A ${ev + 1}. évi díjakat még nem tették közzé.`}</caption></table></div>
 <h2>Gyakori kérdések</h2>
 ${gyik(kerdesek)}
 <h2>Források</h2>
@@ -916,9 +923,9 @@ ${forrasLista(forrasbol(m.forrasok))}
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: `Autópálya-matrica ${m.ev}: melyik éri meg? Kalkulátor`,
+    cim: `Autópálya-matrica ${evek.join(', ')}: melyik éri meg? Kalkulátor`,
     leiras, ut, tartalom,
-    adatJson: { szabalyok: { matrica: m } },
+    adatJson: { szabalyok: { matrica: m }, ev },
     jsonld: [alkalmazasLd(k.cfg, 'Autópálya-matrica kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Autópálya-matrica', ut }])],
   });
 }

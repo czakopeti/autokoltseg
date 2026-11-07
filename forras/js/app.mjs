@@ -262,7 +262,7 @@ const KALK = {
   },
   matrica: (adat, e) => {
     if (ures(e, ['napi', 'tiznapos', 'havi', 'varmegyek'])) return mintaval('matrica', adat, e);
-    const r = S.matrica(adat, { napi: szam(e.napi), tiznapos: szam(e.tiznapos), havi: szam(e.havi), varmegyek: szam(e.varmegyek), m1: !!e.m1 });
+    const r = S.matrica(adat, { ev: Number(e.ev) || adat.ev, napi: szam(e.napi), tiznapos: szam(e.tiznapos), havi: szam(e.havi), varmegyek: szam(e.varmegyek), m1: !!e.m1 });
     return r.hiba ? M.hianyPanel(r.hiba) : M.matricaPanel(adat, r);
   },
   hitel: (adat, e) => {

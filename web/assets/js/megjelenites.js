@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=0da1de4f';
+import * as S from './szamitas.js?v=87fc90e8';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -418,14 +418,15 @@ export function phevPanel(adat, r, ma = '') {
 /* ---------- Autópálya-matrica ---------- */
 export function matricaPanel(adat, r) {
   if (r.hiba) return hianyPanel(r.hiba);
-  const m = adat.szabalyok.matrica, d = m.d1;
-  let h = vegosszeg('Neked ez a legolcsóbb', r.legjobb.ft, `${esc(r.legjobb.nev)}. ${r.megtakaritas > 0 ? `${ftx(r.megtakaritas)}-tal olcsóbb, mint a másik lehetőség.` : 'A két lehetőség ugyanannyiba kerül.'}`);
+  const m = adat.szabalyok.matrica, d = S.matricaEv(adat, r.ev).d1;
+  let h = vegosszeg(`Neked ez a legolcsóbb ${rag(r.ev, 'ban', 'ben')}`, r.legjobb.ft, `${esc(r.legjobb.nev)}. ${r.megtakaritas > 0 ? `${ftx(r.megtakaritas)}-tal olcsóbb, mint a másik lehetőség.` : 'A két lehetőség ugyanannyiba kerül.'}`);
   h += '<ul class="tetelek">';
   for (const l of r.lehetosegek) h += tetel(esc(l.nev), ftx(l.ft), { forras: 'hivatalos', forrasUrl: m.forrasok[0]?.url, al: esc(l.al), cls: l === r.legjobb ? 'kiemelt-sor' : '' });
   h += '</ul>';
   h = jelekkel(h);
   h += `<p class="igy">Az éves országos matrica (${ftx(d.eves)}) akkor éri meg, ha egy évben legalább <strong>${r.hatar.napi} napi</strong>, <strong>${r.hatar.tiznapos} tíznapos</strong> vagy <strong>${r.hatar.havi} havi</strong> matricát vennél helyette, vagy ha <strong>${r.hatar.varmegyei} vármegyében</strong> autópályázol rendszeresen.</p>`;
-  h += megjegyzes(`${m.ev}-es díjakkal számolunk. A következő évi díjakat még nem tették közzé, de a ${m.ev}-es éves matrica ${m.eves_ervenyes} érvényes.`);
+  const kov = m.evek[r.ev + 1];
+  h += megjegyzes(`${r.ev}. évi díjakkal számolunk. A ${r.ev}. évi éves matrica ${r.ev + 1}. január 31-ig érvényes.${kov ? ` A ${r.ev + 1}. évi díjak már ismertek: az éves országos ${ftx(kov.d1.eves)} lesz, fent átválthatsz rá.` : ''}`);
   return h;
 }
 

@@ -204,15 +204,41 @@
     ]
   },
   "matrica": {
-    "leiras": "Országos és vármegyei e-matrica, D1 kategória (személyautó). A 2027-es díjakat még nem tették közzé, addig a 2026-os díjakkal számolunk.",
-    "ev": 2026,
-    "d1": {
-      "napi": 5550,
-      "tiznapos": 6900,
-      "havi": 11170,
-      "eves": 61760,
-      "varmegyei": 7190,
-      "m1_regionalis": 15000
+    "leiras": "Országos és vármegyei e-matrica, D1 kategória (személyautó), évenként.",
+    "evek": {
+      "2026": {
+        "d1": {
+          "napi": 5550,
+          "tiznapos": 6900,
+          "havi": 11170,
+          "eves": 61760,
+          "varmegyei": 7190,
+          "m1_regionalis": 15000
+        },
+        "potdij": {
+          "alap": 27790,
+          "hatvan_nap_utan": 95730
+        },
+        "forras": "https://nemzetiutdij.hu/",
+        "kozzeteve": "2025-12-05"
+      },
+      "2027": {
+        "d1": {
+          "napi": 5630,
+          "tiznapos": 6990,
+          "havi": 11320,
+          "eves": 62560,
+          "varmegyei": 7280,
+          "m1_regionalis": 15000
+        },
+        "potdij": {
+          "alap": 28150,
+          "hatvan_nap_utan": 96970
+        },
+        "forras": "https://nemzetiutdij.hu/",
+        "kozzeteve": "2026-11-06",
+        "megjegyzes": "A Magyar Közút 2026. november 6-án tette közzé; az augusztusi 1,3%-os infláció szerint, tízesre kerekítve. Az M1 regionális matrica ára nem változik."
+      }
     },
     "m1_varmegyek": [
       "Pest",
@@ -220,10 +246,6 @@
       "Komárom-Esztergom",
       "Győr-Moson-Sopron"
     ],
-    "potdij": {
-      "alap": 27790,
-      "hatvan_nap_utan": 95730
-    },
     "eves_ervenyes": "a következő év január 31-ig",
     "forrasok": [
       {
@@ -240,6 +262,16 @@
         "nev": "Nemzeti Útdíjfizetési Szolgáltató: e-matrica vásárlás",
         "url": "https://ematrica.nemzetiutdij.hu/",
         "idoszak": "hivatalos vásárlási felület"
+      },
+      {
+        "nev": "Totalcar: hivatalossá váltak a 2027-es e-matrica-árak (2026. 11. 06.)",
+        "url": "https://totalcar.hu/hirek/2026/11/06/autopalya-matrica-2027-hivatalos-arlista/",
+        "idoszak": "2027. január 1-jétől"
+      },
+      {
+        "nev": "Pénzcentrum: megjelentek a 2027-es autópálya-matrica árak (2026. 11. 06.)",
+        "url": "https://www.penzcentrum.hu/auto/20261106/hivatalos-megjelentek-a-2027-es-autopalya-matrica-arak-ennyit-fizetnek-a-magyar-autosok-1208598",
+        "idoszak": "2027. január 1-jétől"
       }
     ]
   },

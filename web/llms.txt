@@ -11,7 +11,7 @@
 - [Kilométertérítés](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026. 11. hónap), fogyasztási norma, munkába járás
 - [Plug-in hibrid 2027](https://autozom.hu/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
 - [Autóhitel](https://autozom.hu/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt
-- [Autópálya-matrica](https://autozom.hu/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (2026. évi díjak)
+- [Autópálya-matrica](https://autozom.hu/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (2026, 2027. évi díjak)
 - [Javítás vagy csere](https://autozom.hu/megjavitsam-vagy-csereljem/): megjavítsam a régi autót, vagy eladjam és vegyek másikat; két út teljes költsége évekre, értékvesztéssel és átírással
 - [Kötelező biztosítás váltás](https://autozom.hu/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
 - [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület

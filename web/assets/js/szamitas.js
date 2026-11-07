@@ -487,12 +487,20 @@ export function phev(adat, b) {
 
 /* ---------------- Autópálya-matrica ---------------- */
 const ezres = (x) => new Intl.NumberFormat('hu-HU', { useGrouping: 'always' }).format(Math.round(x));
+/** Az ismert matricaévek (a megadott évtől), és egy év díjai: { ev, d1, potdij, kozzeteve }. */
+export const matricaEvek = (adat, tol = 0) => Object.keys(adat.szabalyok.matrica.evek).map(Number).filter((e) => e >= tol).sort();
+export function matricaEv(adat, ev) {
+  const evek = matricaEvek(adat);
+  const e = evek.includes(Number(ev)) ? Number(ev) : evek.filter((x) => x <= Number(ev)).pop() ?? evek[0];
+  return { ev: e, ...adat.szabalyok.matrica.evek[e] };
+}
 /**
  * A legolcsóbb matrica-kombináció egy évre, személyautóval (D1).
- * b: { napi, tiznapos, havi: alkalmi utak száma, varmegyek: rendszeresen használt vármegyék száma, m1: mind az M1 menti négy vármegyében van }
+ * b: { ev, napi, tiznapos, havi: alkalmi utak száma, varmegyek: rendszeresen használt vármegyék száma, m1: mind az M1 menti négy vármegyében van }
  */
 export function matrica(adat, b) {
-  const d = adat.szabalyok.matrica.d1;
+  const me = matricaEv(adat, b.ev ?? adat.ev);
+  const d = me.d1;
   const n = (x) => Math.max(0, Math.round(Number(x) || 0));
   const napi = n(b.napi), tiz = n(b.tiznapos), havi = n(b.havi), vm = n(b.varmegyek);
   if (!napi && !tiz && !havi && !vm) return { hiba: 'Add meg, évente hányszor és hol autópályázol.' };
@@ -510,7 +518,7 @@ export function matrica(adat, b) {
   lehetosegek.sort((x, y) => x.ft - y.ft);
   const legjobb = lehetosegek[0];
   return {
-    napi, tiz, havi, vm, alkalmi, lehetosegek, legjobb, megtakaritas: lehetosegek[1].ft - legjobb.ft,
+    ev: me.ev, napi, tiz, havi, vm, alkalmi, lehetosegek, legjobb, megtakaritas: lehetosegek[1].ft - legjobb.ft,
     hatar: { napi: Math.ceil(d.eves / d.napi), tiznapos: Math.ceil(d.eves / d.tiznapos), havi: Math.ceil(d.eves / d.havi), varmegyei: Math.ceil(d.eves / d.varmegyei) },
   };
 }

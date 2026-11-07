@@ -124,12 +124,19 @@ test('plug-in hibrid: 2027-ben lejár a mentesség', () => {
 });
 
 test('autópálya-matrica: a legolcsóbb kombináció', () => {
-  const d = adat.szabalyok.matrica.d1;
-  const r = S.matrica(adat, { napi: 3, tiznapos: 1 });
+  const d = adat.szabalyok.matrica.evek[2026].d1;
+  const r = S.matrica(adat, { ev: 2026, napi: 3, tiznapos: 1 });
   assert.equal(r.legjobb.ft, 3 * d.napi + d.tiznapos);
   assert.equal(S.matrica(adat, { napi: 12 }).legjobb.kulcs, 'eves');
   assert.equal(S.matrica(adat, { varmegyek: 4, m1: true }).legjobb.kulcs, 'm1');
   assert.equal(S.matrica(adat, { varmegyek: 2, m1: true }).legjobb.ft, 2 * d.varmegyei);
+  // 2027: a Magyar Közút 2026. november 6-án közzétett díjai
+  const d27 = adat.szabalyok.matrica.evek[2027].d1;
+  assert.deepEqual([d27.napi, d27.tiznapos, d27.havi, d27.eves, d27.varmegyei, d27.m1_regionalis], [5630, 6990, 11320, 62560, 7280, 15000]);
+  assert.equal(S.matrica(adat, { ev: 2027, napi: 3, tiznapos: 1 }).lehetosegek.find((l) => l.kulcs === 'alkalmi').ft, 3 * 5630 + 6990);
+  assert.equal(S.matrica(adat, { ev: 2027, napi: 3 }).ev, 2027);
+  // ismeretlen év: a legutóbbi ismert év díjai
+  assert.equal(S.matricaEv(adat, 2030).ev, 2027);
   assert.equal(r.hatar.napi, Math.ceil(d.eves / d.napi));
 });
 

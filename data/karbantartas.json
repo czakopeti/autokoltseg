@@ -3,12 +3,12 @@
   "teendok": [
     {
       "id": "matrica-dijak",
-      "mikor": "--12-01",
+      "mikor": "--11-15",
       "mit": "A következő évi e-matrica díjai",
-      "hol": "data/szabalyok.json → matrica (ev, d1, potdij)",
+      "hol": "data/szabalyok.json → matrica.evek (évenként d1, potdij, kozzeteve)",
       "forras": "https://ematrica.nemzetiutdij.hu/",
-      "hogyan": "Decemberben jelennek meg. Írd át a díjakat és az évet, a kalkulátor és a táblázat magától követi.",
-      "utoljara": "2026-11-06"
+      "hogyan": "Novemberben vagy decemberben jelennek meg a következő évi díjak (a Magyar Közút / NÚSZ oldalán). Vedd fel új évként a matrica.evek alá, a kalkulátor, a táblázat és az évválasztó magától követi.",
+      "utoljara": "2026-11-07"
     },
     {
       "id": "jogszabalyi-dijak",

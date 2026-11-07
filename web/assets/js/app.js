@@ -1,7 +1,7 @@
 // Böngészős réteg: menü, űrlapok, élő elszámolás, mentett autó (csak kérésre), megosztható link, grafikon.
 // Szerverre csak az megy, amit a látogató a visszajelzés-dobozban maga elküld.
-import * as S from './szamitas.js?v=0da1de4f';
-import * as M from './megjelenites.js?v=0da1de4f';
+import * as S from './szamitas.js?v=87fc90e8';
+import * as M from './megjelenites.js?v=87fc90e8';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -262,7 +262,7 @@ const KALK = {
   },
   matrica: (adat, e) => {
     if (ures(e, ['napi', 'tiznapos', 'havi', 'varmegyek'])) return mintaval('matrica', adat, e);
-    const r = S.matrica(adat, { napi: szam(e.napi), tiznapos: szam(e.tiznapos), havi: szam(e.havi), varmegyek: szam(e.varmegyek), m1: !!e.m1 });
+    const r = S.matrica(adat, { ev: Number(e.ev) || adat.ev, napi: szam(e.napi), tiznapos: szam(e.tiznapos), havi: szam(e.havi), varmegyek: szam(e.varmegyek), m1: !!e.m1 });
     return r.hiba ? M.hianyPanel(r.hiba) : M.matricaPanel(adat, r);
   },
   hitel: (adat, e) => {
