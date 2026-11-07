@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - name: Névszerverek és DNS
         run: |
           for t in NS A; do echo "== autozom.hu $t"; dig +short $t autozom.hu @1.1.1.1; done
@@ -45,3 +46,11 @@ jobs:
             https://autozom.hu/api/visszajelzes || true
           curl -sS -m 20 -X POST -H 'origin: https://autozom.hu' -H 'content-type: application/json' -d '{"ut":"/gepjarmuado-kalkulator/","ertek":"fel"}' https://autozom.hu/api/visszajelzes || true
           echo; curl -sS -m 20 https://autozom.hu/api/visszajelzes || true
+      - name: A sitemap minden oldala és az IndexNow-kulcs
+        run: |
+          for u in $(curl -sS -m 20 https://autozom.hu/sitemap.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//'); do
+            printf '%s %s\n' "$(curl -sS -m 20 -o /dev/null -w '%{http_code}' "$u")" "$u"
+          done
+          k=$(jq -r .indexnow_kulcs config.json 2>/dev/null || true)
+          [ -n "$k" ] && printf 'kulcsfájl: %s\n' "$(curl -sS -m 20 https://autozom.hu/$k.txt)"
+          echo "== Vállalkozóknak gomb a főoldalon"; curl -sS -m 20 https://autozom.hu/ | grep -c 'class="vall-gomb"' || true
