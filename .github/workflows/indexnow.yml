@@ -16,11 +16,16 @@ on:
         default: false
 permissions:
   contents: read
+# Egyszerre csak egy beküldés fusson: két párhuzamos kérésre a Bing 403-mal válaszolt.
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
 jobs:
   bekuld:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    # A napi frissítés push-ra is lefut; az ilyen élesítést a push-ág már beküldi, ezért csak az ütemezett futás után küldünk.
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'push') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,9 +51,17 @@ jobs:
             urlek = sitemap.filter((u) => utak.includes(u));
           }
           if (!urlek.length) { console.log("Nincs változott oldal."); process.exit(0); }
-          const r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "content-type": "application/json; charset=utf-8" },
-            body: JSON.stringify({ host, key: cfg.indexnow_kulcs, keyLocation: `${cfg.domain}/${cfg.indexnow_kulcs}.txt`, urlList: urlek }) });
-          console.log(r.status, await r.text());
+          const body = JSON.stringify({ host, key: cfg.indexnow_kulcs, keyLocation: `${cfg.domain}/${cfg.indexnow_kulcs}.txt`, urlList: urlek });
           console.log(urlek.join("\n"));
-          if (r.status >= 400) process.exit(1);
+          // 403/429/5xx: a Bing átmenetileg elutasít (túl sűrű beküldés, kulcs-újraellenőrzés). Kétszer újrapróbáljuk.
+          let r;
+          for (const varj of [0, 90, 240]) {
+            if (varj) { console.log(`Újra ${varj} mp múlva…`); await new Promise((ok) => setTimeout(ok, varj * 1000)); }
+            r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "content-type": "application/json; charset=utf-8" }, body });
+            console.log(r.status, await r.text());
+            if (r.status < 400 || ![403, 429, 500, 502, 503].includes(r.status)) break;
+          }
+          if (r.status < 400) process.exit(0);
+          if ([403, 429, 500, 502, 503].includes(r.status)) { console.log(`::warning::IndexNow ${r.status}: átmeneti elutasítás, a következő élesítés újra beküldi. A Google-t ez nem érinti.`); process.exit(0); }
+          process.exit(1);
           '
