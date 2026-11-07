@@ -79,6 +79,8 @@ export function uzemanyagFeldolgoz(html, { kotelezo = ['benzin', 'dizel', 'lpg',
   for (const s of sorok) {
     const h = honapIndex(s[0]);
     if (h < 0) continue;
+    // „december (2024)”: az előző év záró hónapja, amit a NAV az új év táblázatának elején is mutat
+    if (/\d{4}/.test(s[0])) continue;
     const ertekek = {};
     s.slice(1).forEach((c, i) => {
       const k = kulcsok[i];

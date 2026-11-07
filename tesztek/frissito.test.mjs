@@ -19,6 +19,17 @@ test('üzemanyagár: „védett” felirat nélküli dupla oszlop is jól képz�
   assert.deepEqual(t[8], { benzin: 580, dizel: 592, keverek: 636, lpg: 366, cng: 800 });
 });
 
+test('üzemanyagár: az előző év „december (2025)” sora nem kerül az idei decemberbe', () => {
+  // A NAV az új év táblázatában az előző év decemberét is mutatja; ez nem az idei december
+  const eredeti = minta('nav-uzemanyag-2026.html');
+  const i = eredeti.indexOf('</tr>', eredeti.search(/november/i)) + 5;
+  const html = `${eredeti.slice(0, i)}<tr><td>december (2025)</td><td>-</td><td>580</td><td>-</td><td>587</td><td>632</td><td>328</td><td>800</td></tr>${eredeti.slice(i)}`;
+  assert.ok(html.includes('december (2025)'));
+  const t = N.uzemanyagFeldolgoz(html);
+  assert.equal(t[12], undefined);
+  assert.equal(Object.keys(t).length, 11);
+});
+
 test('üzemanyagár: átalakított oldalnál hibát dob, nem ír át semmit', () => {
   assert.throws(() => N.uzemanyagFeldolgoz('<html><body><p>Az oldal megújult.</p></body></html>'));
   assert.throws(() => N.uzemanyagFeldolgoz(minta('nav-uzemanyag-2026.html').replace('639', '6390')));
