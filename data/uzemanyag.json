@@ -2,6 +2,264 @@
   "leiras": "A NAV által havonta közzétett, a fogyasztási norma szerinti elszámolásban alkalmazható üzemanyagárak. Ft/l, a CNG Ft/kg. A védett ár csak azokban a hónapokban szerepel, amikor a NAV közölte. Ezt a fájlt a frissito/futtat.mjs tartja naprakészen.",
   "forras": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2026-ban-alkalmazhato-uzemanyagarak",
   "evek": {
+    "2023": {
+      "1": {
+        "benzin": 655,
+        "dizel": 713,
+        "keverek": 530,
+        "lpg": 407,
+        "cng": 1991
+      },
+      "2": {
+        "benzin": 645,
+        "dizel": 721,
+        "keverek": 695,
+        "lpg": 399,
+        "cng": 1481
+      },
+      "3": {
+        "benzin": 629,
+        "dizel": 686,
+        "keverek": 679,
+        "lpg": 392,
+        "cng": 999
+      },
+      "4": {
+        "benzin": 608,
+        "dizel": 622,
+        "keverek": 657,
+        "lpg": 372,
+        "cng": 899
+      },
+      "5": {
+        "benzin": 616,
+        "dizel": 606,
+        "keverek": 666,
+        "lpg": 359,
+        "cng": 899
+      },
+      "6": {
+        "benzin": 583,
+        "dizel": 573,
+        "keverek": 632,
+        "lpg": 342,
+        "cng": 889
+      },
+      "7": {
+        "benzin": 580,
+        "dizel": 562,
+        "keverek": 629,
+        "lpg": 323,
+        "cng": 889
+      },
+      "8": {
+        "benzin": 577,
+        "dizel": 569,
+        "keverek": 627,
+        "lpg": 319,
+        "cng": 820
+      },
+      "9": {
+        "benzin": 616,
+        "dizel": 602,
+        "keverek": 665,
+        "lpg": 318,
+        "cng": 820
+      },
+      "10": {
+        "benzin": 647,
+        "dizel": 661,
+        "keverek": 697,
+        "lpg": 318,
+        "cng": 820
+      },
+      "11": {
+        "benzin": 650,
+        "dizel": 682,
+        "keverek": 699,
+        "lpg": 313,
+        "cng": 820
+      },
+      "12": {
+        "benzin": 615,
+        "dizel": 645,
+        "keverek": 664,
+        "lpg": 314,
+        "cng": 820
+      }
+    },
+    "2024": {
+      "1": {
+        "benzin": 583,
+        "dizel": 614,
+        "keverek": 632,
+        "lpg": 317,
+        "cng": 820
+      },
+      "2": {
+        "benzin": 566,
+        "dizel": 606,
+        "keverek": 616,
+        "lpg": 320,
+        "cng": 820
+      },
+      "3": {
+        "benzin": 601,
+        "dizel": 638,
+        "keverek": 650,
+        "lpg": 332,
+        "cng": 794
+      },
+      "4": {
+        "benzin": 617,
+        "dizel": 652,
+        "keverek": 666,
+        "lpg": 342,
+        "cng": 794
+      },
+      "5": {
+        "benzin": 646,
+        "dizel": 653,
+        "keverek": 695,
+        "lpg": 345,
+        "cng": 762
+      },
+      "6": {
+        "benzin": 640,
+        "dizel": 629,
+        "keverek": 689,
+        "lpg": 352,
+        "cng": 762
+      },
+      "7": {
+        "benzin": 604,
+        "dizel": 610,
+        "keverek": 653,
+        "lpg": 351,
+        "cng": 762
+      },
+      "8": {
+        "benzin": 620,
+        "dizel": 634,
+        "keverek": 669,
+        "lpg": 352,
+        "cng": 762
+      },
+      "9": {
+        "benzin": 617,
+        "dizel": 625,
+        "keverek": 668,
+        "lpg": 352,
+        "cng": 762
+      },
+      "10": {
+        "benzin": 603,
+        "dizel": 609,
+        "keverek": 653,
+        "lpg": 363,
+        "cng": 790
+      },
+      "11": {
+        "benzin": 588,
+        "dizel": 593,
+        "keverek": 639,
+        "lpg": 363,
+        "cng": 790
+      },
+      "12": {
+        "benzin": 608,
+        "dizel": 612,
+        "keverek": 659,
+        "lpg": 368,
+        "cng": 790
+      }
+    },
+    "2025": {
+      "1": {
+        "benzin": 626,
+        "dizel": 638,
+        "keverek": 677,
+        "lpg": 379,
+        "cng": 800
+      },
+      "2": {
+        "benzin": 631,
+        "dizel": 651,
+        "keverek": 682,
+        "lpg": 392,
+        "cng": 825
+      },
+      "3": {
+        "benzin": 638,
+        "dizel": 649,
+        "keverek": 689,
+        "lpg": 389,
+        "cng": 855
+      },
+      "4": {
+        "benzin": 624,
+        "dizel": 638,
+        "keverek": 675,
+        "lpg": 384,
+        "cng": 855
+      },
+      "5": {
+        "benzin": 612,
+        "dizel": 621,
+        "keverek": 664,
+        "lpg": 383,
+        "cng": 855
+      },
+      "6": {
+        "benzin": 594,
+        "dizel": 603,
+        "keverek": 646,
+        "lpg": 376,
+        "cng": 855
+      },
+      "7": {
+        "benzin": 592,
+        "dizel": 586,
+        "keverek": 644,
+        "lpg": 359,
+        "cng": 855
+      },
+      "8": {
+        "benzin": 596,
+        "dizel": 600,
+        "keverek": 648,
+        "lpg": 348,
+        "cng": 855
+      },
+      "9": {
+        "benzin": 590,
+        "dizel": 610,
+        "keverek": 642,
+        "lpg": 345,
+        "cng": 810
+      },
+      "10": {
+        "benzin": 593,
+        "dizel": 597,
+        "keverek": 645,
+        "lpg": 334,
+        "cng": 810
+      },
+      "11": {
+        "benzin": 591,
+        "dizel": 596,
+        "keverek": 643,
+        "lpg": 331,
+        "cng": 810
+      },
+      "12": {
+        "benzin": 580,
+        "dizel": 587,
+        "keverek": 632,
+        "lpg": 328,
+        "cng": 800
+      }
+    },
     "2026": {
       "1": {
         "benzin": 572,
@@ -91,5 +349,9 @@
   "kozzeteve": {
     "2026-11": "2026-10-25"
   },
-  "forrasok_evente": {}
+  "forrasok_evente": {
+    "2023": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2023-ban-alkalmazhato-uzemanyagarak",
+    "2024": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2024-ben-alkalmazhato-uzemanyagarak",
+    "2025": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2025-ben-alkalmazhato-uzemanyagarak"
+  }
 }
