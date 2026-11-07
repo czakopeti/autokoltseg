@@ -54,3 +54,8 @@ jobs:
           k=$(jq -r .indexnow_kulcs config.json 2>/dev/null || true)
           [ -n "$k" ] && printf 'kulcsfájl: %s\n' "$(curl -sS -m 20 https://autozom.hu/$k.txt)"
           echo "== Vállalkozóknak gomb a főoldalon"; curl -sS -m 20 https://autozom.hu/ | grep -c 'class="vall-gomb"' || true
+          echo "== Letölthető adatok"
+          for f in web/adatok/*.csv; do
+            u="https://autozom.hu/adatok/$(basename "$f")"
+            printf '%s %s sorok=%s\n' "$(curl -sS -m 20 -o /dev/null -w '%{http_code} %{content_type}' "$u")" "$u" "$(curl -sS -m 20 "$u" | wc -l)"
+          done
