@@ -4,6 +4,15 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import * as N from './nav.mjs';
 
+if (process.argv[2] === '--lista') {
+  // A NAV üzemanyagár-főoldalának évi aloldalai (a régebbi évek címe eltérhet a mintától)
+  for (const url of ['https://nav.gov.hu/ugyfeliranytu/uzemanyag', 'https://nav.gov.hu/ugyfeliranytu/uzemanyag/korabbi-evek-uzemanyagarai']) {
+    const html = await N.letolt(url).catch((e) => `HIBA ${e.message}`);
+    console.log(`== ${url}`);
+    console.log([...(html || '').matchAll(/href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)].map((m) => `${m[1]} | ${N.szoveg(m[2]).slice(0, 80)}`).filter((x) => /uzemanyag|üzemanyag|20\d\d/i.test(x)).join('\n'));
+  }
+  process.exit(0);
+}
 const [tol, ig] = process.argv.slice(2, 4).map(Number);
 const proba = process.argv.includes('--proba');
 if (!tol || !ig || tol > ig) { console.error('Használat: node frissito/visszatolt.mjs <tól> <ig> [--proba]'); process.exit(2); }

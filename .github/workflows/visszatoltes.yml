@@ -7,6 +7,7 @@ on:
       tol: { description: 'Első év', default: '2012', required: true }
       ig: { description: 'Utolsó év', default: '2025', required: true }
       proba: { description: 'Csak próba (nem ment)', type: boolean, default: true }
+      lista: { description: 'Csak a NAV évi oldalainak listája', type: boolean, default: false }
 permissions:
   contents: write
 jobs:
@@ -17,7 +18,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
+      - name: Lista
+        if: ${{ inputs.lista }}
+        run: node frissito/visszatolt.mjs --lista
       - name: Letöltés
+        if: ${{ !inputs.lista }}
         run: node frissito/visszatolt.mjs ${{ inputs.tol }} ${{ inputs.ig }} ${{ inputs.proba && '--proba' || '' }}
       - name: Tesztek és építés
         if: ${{ !inputs.proba }}
