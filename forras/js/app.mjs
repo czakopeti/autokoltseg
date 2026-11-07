@@ -138,6 +138,8 @@ const MINTAK = {
   matrica: { adat: { napi: '3', tiznapos: '1', varmegyek: '1' }, leiras: 'évente három egynapos és egy tíznapos út, és rendszeres autópályázás egy vármegyében', kerd: 'Írd be a saját útjaidat, és a minta helyett azzal számolunk.' },
   kgfb: { adat: { evfordulo: `${new Date().getFullYear() + 1}-01-01`, osztaly: 'B10', karok: '0' }, leiras: 'január 1-jei évforduló, B10-es besorolás, kármentes év', kerd: 'Írd be a saját évfordulódat, és a minta helyett azzal számolunk.' },
   javitas: { adat: { a_gyartasiEv: '2003', a_hajtas: 'benzin', a_ertekMost: '1500000', a_javitas: '1000000', a_ertekJavitva: '2300000', a_fenntartas: '450000', c_ar: '3300000', c_gyartasiEv: '2016', c_hajtas: 'benzin', c_kw: '110', c_fenntartas: '300000', evek: '3' }, leiras: 'egy 2003-as autó egymilliós motorjavítás előtt, és egy 3,3 millió forintos, 2016-os másik autó, 3 évre', kerd: 'Írd be a saját számaidat, és a minta helyett azzal számolunk.' },
+  cegautoado: { adat: { kw: '110', osztaly: 'euro56', gyartasiEv: '2021' }, leiras: 'egy 2021-es, 110 kW-os, Euro 6-os („15”) céges autó, egész évre', kerd: 'Írd be a saját autódat, és a minta helyett azzal számolunk.' },
+  cegauto: { adat: { kw: '110', osztaly: 'euro56', gyartasiEv: '2021', uzemanyag: 'benzin', cm3: '1498', ertekvesztes: '900000', energia: '700000', fix: '400000', uzletiKm: '15000' }, leiras: 'egy 2021-es, 110 kW-os, 1,5 literes benzines autó évi 2 millió forint költséggel és 15 000 km üzleti úttal', kerd: 'Írd be a saját autódat és költségeidet, és a minta helyett azzal számolunk.' },
   hitel: { adat: { ar: '6000000', onero: '1500000', evek: '5', thm: '11,9', kw: '110', gyartasiEv: '2021', hajtas: 'benzin' }, leiras: 'egy 6 millió forintos, 2021-es benzines autó 1,5 millió önerővel, 5 évre, 11,9% THM-mel', kerd: 'Írd be a saját autódat és a bank ajánlatát, és a minta helyett azzal számolunk.' },
 };
 let mintaMutat = false;
@@ -242,6 +244,16 @@ const KALK = {
     const n = (k) => szam(e[k]);
     const r = S.javitasVagyCsere(adat, { ev: adat.ev, datum: adat.ma, evek: n('evek') || 3, a: { gyartasiEv: n('a_gyartasiEv'), hajtas: e.a_hajtas || 'benzin', ertekMost: n('a_ertekMost') || 0, javitas: n('a_javitas'), ertekJavitva: n('a_ertekJavitva'), fenntartas: n('a_fenntartas') || 0 }, c: { ar: n('c_ar'), gyartasiEv: n('c_gyartasiEv'), hajtas: e.c_hajtas || 'benzin', kw: n('c_kw'), fenntartas: n('c_fenntartas') || 0 } });
     return r.hiba ? M.hianyPanel(r.hiba) : M.javitasPanel(adat, r);
+  },
+  cegautoado: (adat, e) => {
+    if (ures(e, ['kw', 'gyartasiEv']) && !e.osztaly) return mintaval('cegautoado', adat, e);
+    const r = S.cegautoado(adat, { ev: Number(e.ev) || adat.ev, kw: kwErtek(e), osztaly: e.osztaly, gyartasiEv: szam(e.gyartasiEv), phevRegi: !!e.phevRegi, valtozas: e.valtozas || '', honap: Number(e.honap) || 1 });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.cegautoadoPanel(adat, r);
+  },
+  cegauto: (adat, e) => {
+    if (ures(e, ['kw', 'gyartasiEv', 'cm3', 'ertekvesztes', 'energia', 'fix', 'uzletiKm']) && !e.osztaly) return mintaval('cegauto', adat, e);
+    const r = S.cegautoVagySajat(adat, { ev: Number(e.ev) || adat.ev, kw: kwErtek(e), osztaly: e.osztaly, gyartasiEv: szam(e.gyartasiEv), phevRegi: !!e.phevRegi, uzemanyag: e.uzemanyag || 'benzin', motor: e.uzemanyag === 'dizel' ? 'dizel' : 'benzin', cm3: szam(e.cm3), uzletiKm: szam(e.uzletiKm), ertekvesztes: szam(e.ertekvesztes), energia: szam(e.energia), fix: szam(e.fix), szocho: e.szocho !== '0', arEv: adat.lf.ev, arHonap: adat.lf.honap });
+    return r.hiba ? M.hianyPanel(r.hiba) : M.cegautoPanel(adat, r);
   },
   phev: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv'])) return mintaval('phev', adat, e);

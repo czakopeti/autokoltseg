@@ -353,5 +353,57 @@
         "url": "https://infostart.hu/gazdasag/2025/11/14/meg-kitart-az-e-autos-palyazat"
       }
     ]
+  },
+  "vallalkozo": {
+    "tao_kulcs": 0.09,
+    "osztalek_szja": 0.15,
+    "szocho": 0.13,
+    "szocho_plafon_minimalber_szorzo": 24,
+    "minimalber": {
+      "2026": 322800
+    },
+    "cegauto_javaslat": {
+      "ev": 2027,
+      "benyujtva": "2026-10-27",
+      "allapot": "törvényjavaslat",
+      "kw_hatar": 120,
+      "pelda_250kw_felett_regi_ft": 204500,
+      "forrasok": [
+        {"nev": "PKF: Őszi adócsomag, adóváltozások 2027 (2026. 10. 30.)", "url": "https://pkf.hu/2026/10/30/oszi-adocsomag-adovaltozasok-2027/"},
+        {"nev": "Andersen: 2026-os őszi adócsomag, törvényjavaslat", "url": "https://hu.andersen.com/hu/hirek/2026-os-oszi-adocsomag-torvenyjavaslat/"}
+      ]
+    },
+    "forrasok": [
+      {
+        "nev": "NAV 31. információs füzet – A cégautóadó és az ahhoz kapcsolódó szja-szabályok (2026. 01. 22.)",
+        "url": "https://nav.gov.hu/ugyfeliranytu/nezzen-utana/inf_fuz",
+        "mi": "cegauto"
+      },
+      {
+        "nev": "1991. évi LXXXII. törvény (Gjt.) IV. fejezet – cégautóadó",
+        "url": "https://njt.hu/jogszabaly/1991-82-00-00",
+        "mi": "cegauto"
+      },
+      {
+        "nev": "1995. évi CXVII. törvény (Szja tv.) 1. sz. melléklet 8.37. pont – a céges személygépkocsi magáncélú használata adómentes; 3. sz. melléklet – kiküldetés",
+        "url": "https://njt.hu/jogszabaly/1995-117-00-00",
+        "mi": "szja"
+      },
+      {
+        "nev": "1996. évi LXXXI. törvény (Tao tv.) 3. sz. melléklet B) 6. pont – a cégautó költségei",
+        "url": "https://njt.hu/jogszabaly/1996-81-00-00",
+        "mi": "tao"
+      },
+      {
+        "nev": "2018. évi LII. törvény (Szocho tv.) – osztalék utáni szocho és a felső határ",
+        "url": "https://njt.hu/jogszabaly/2018-52-00-00",
+        "mi": "szocho"
+      },
+      {
+        "nev": "NAV: az átalányadózók 2026-os adómentes összege (az éves minimálbér fele: 1 936 800 Ft)",
+        "url": "https://nav.gov.hu/szja/ujdonsagok-tudnivalok/Kedvezo_valtozasok_az_atalanyadozasban",
+        "mi": "minimalber"
+      }
+    ]
   }
 }

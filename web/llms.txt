@@ -17,6 +17,12 @@
 - [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](https://autozom.hu/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon
+
+## Vállalkozóknak
+
+- [Vállalkozóknak](https://autozom.hu/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra
+- [Cégautóadó](https://autozom.hu/cegautoado-kalkulator/): havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők (2026, 2027. évi NAV-tételek)
+- [Cégautó vagy saját autó](https://autozom.hu/cegauto-vagy-sajat-auto/): kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben
 - [Adásvételi szerződés](https://autozom.hu/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
 
 ## Források és frissítés

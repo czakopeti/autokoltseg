@@ -505,3 +505,89 @@ export function javitasPanel(adat, r) {
   h += megjegyzes('Nem számol a kockázattal: egy régi autónál a következő nagy javítás bármikor jöhet, egy másik használt autónál pedig rejtett hiba lehet. Ha bizonytalan vagy, a régi autó éves fenntartását számold bőkezűbben.');
   return h;
 }
+
+/* ---------- Vállalkozóknak: cégautóadó ---------- */
+/** Benyújtott, még el nem fogadott törvényjavaslat a cégautóadóról: figyelmeztetés a 2027-es számokhoz. */
+export function javaslatMegj(adat, ev, kw, levonas) {
+  const j = adat.szabalyok.vallalkozo?.cegauto_javaslat;
+  if (!j || j.allapot === 'elfogadva' || ev < j.ev) return '';
+  const r = [];
+  if (kw > j.kw_hatar) r.push(`a ${j.kw_hatar} kW feletti sávot négy sávra bontaná, és az erősebb autók tétele jelentősen nőne (a 250 kW feletti, régebbi besorolású autóké például havi ${ftx(j.pelda_250kw_felett_regi_ft)} lenne)`);
+  if (levonas) r.push(r.length ? 'a gépjárműadót pedig adózónként csak egy választott autónál engedné levonni' : 'a gépjárműadót adózónként csak egy választott autónál engedné levonni');
+  if (!r.length) return '';
+  return megjegyzes(`<strong>Változhat:</strong> a ${datumNapon(j.benyujtva)} benyújtott törvényjavaslat ${rag(j.ev, 'tól', 'től')} ${r.join(', ')}. Itt a NAV által közzétett ${j.ev}. évi tételekkel számolunk. Ha a javaslatot elfogadják, frissítjük.`, 'figyelem');
+}
+const szazalek = (x) => `${String(Math.round(x * 1000) / 10).replace('.', ',')}%`;
+
+export function cegautoadoPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  if (r.mentes === 'villany') {
+    return vegosszeg(`Cégautóadó, ${r.ev}`, 0, 'Az elektromos („5E”) és a nulla emissziós („5Z”) autó nem tartozik a cégautóadó alá, és gépjárműadót sem fizet.')
+      + megjegyzes('A céges villanyautó magáncélú használata is adómentes. A cég a költségeit (értékcsökkenés, töltés, szerviz) elszámolhatja.');
+  }
+  if (r.mentes === 'phev') {
+    const k = S.cegautoado(adat, { ev: r.ev + 1, kw: r.kw, osztaly: r.osztaly });
+    return vegosszeg(`Cégautóadó, ${r.ev}`, 0, `A 2025. január 1. előtt forgalomba helyezett plug-in hibrid ${r.ev}. december 31-ig mentes.`)
+      + (k.hiba ? '' : megjegyzes(`${rag(k.ev, 'tól', 'től')} fizetni kell: ${CEG_SAVOK_HU(k.sav)} havonta ${ftx(k.havi)}, évente ${ftx(k.teljes)}, amiből a gépjárműadó levonható.`) + javaslatMegj(adat, k.ev, k.kw, 1));
+  }
+  const al = r.honapok === 12
+    ? `Negyedévente nagyjából ${ftx(r.negyedev)}, mindig a negyedévet követő hónap 20-áig.`
+    : r.valtozas === 'eladta' ? `${r.honapok} hónapra, januártól az eladás hónapjáig (${S.HONAPOK[r.honap - 1]}).`
+    : `${r.honapok} hónapra, a vételt követő hónaptól.`;
+  let h = vegosszeg(`Cégautóadó, ${r.ev}`, r.fizetendo, al);
+  h += '<ul class="tetelek">';
+  h += tetel('Havi tétel', ftx(r.havi), { forras: 'hivatalos', forrasUrl: r.forras, al: `${CEG_SAVOK_HU(r.sav)}, ${r.osztalyNev}${r.kozzeteve ? `. NAV, közzétéve ${datumHu(r.kozzeteve)}` : ''}` });
+  h += tetel(r.honapok === 12 ? 'Egész évre' : `${r.honapok} hónapra`, ftx(r.teljes), { forras: 'sajat', al: `${ftx(r.havi)} × ${r.honapok}` });
+  if (r.gj) h += tetel('Levonható gépjárműadó', `−${ftx(r.levonas)}`, { cls: 'levonas', forras: 'hivatalos', al: r.gj.mentes ? 'az autó mentes a gépjárműadó alól' : r.valtozas === 'uj' ? `a forgalomba helyezést követő ${r.honapok} hónapra` : r.valtozas === 'eladta' ? `az éves ${ftx(r.gj.fizetendo)}-ból ${r.honapok} hónapra` : `éves gépjárműadó: ${ftx(r.gj.fizetendo)}` });
+  h += tetel('Fizetendő', ftx(r.fizetendo), { cls: 'vegso' });
+  h += '</ul>';
+  h += `<p class="igy">Így jön ki: <strong>${ftx(r.havi)} × ${r.honapok} hónap = ${ftx(r.teljes)}</strong>${r.levonas ? `, ebből levonva a gépjárműadót <strong>${ftx(r.fizetendo)}</strong>` : ''}.</p>`;
+  if (r.valtozas === 'hasznalt') h += megjegyzes('Használtan vett autónál az idei gépjárműadót az eladó fizeti, mert január 1-jén ő szerepelt a nyilvántartásban. Ezért ebben az évben nincs mit levonni, jövőre már igen.');
+  else if (!r.gj) h += megjegyzes('Add meg a gyártási évet is, és levonjuk a gépjárműadót. Ugyanarra az autóra, ugyanazokra a hónapokra befizetett gépjárműadó levonható a cégautóadóból.');
+  h += megjegyzes(`Bevallás és befizetés negyedévente, a negyedévet követő hónap 20-áig: ${r.ev}. április 20., július 20., október 20. és ${r.ev + 1}. január 20.${r.levonas ? ' A gépjárműadó csak akkor vonható le, ha határidőben befizették.' : ''}`);
+  h += javaslatMegj(adat, r.ev, r.kw, r.levonas);
+  const kov = adat.tetelek.cegautoado[r.ev + 1];
+  if (kov) {
+    h += megjegyzes(`${rag(r.ev + 1, 'ban', 'ben')} a NAV közzétett tétele erre az autóra havonta ${ftx(kov.tabla[r.sav][r.oszlop])} (közzétéve ${datumHu(kov.kozzeteve)}).`);
+    h += javaslatMegj(adat, r.ev + 1, r.kw, 0);
+  }
+  return jelekkel(h);
+}
+const CEG_SAVOK_HU = (sav) => ['legfeljebb 50 kW', '51–90 kW', '91–120 kW', '120 kW felett'][sav];
+
+/* ---------- Vállalkozóknak: cégautó vagy saját autó ---------- */
+export function cegautoPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const d = r.kulonbseg;
+  const kozel = Math.abs(d) < 25000;
+  const fej = kozel ? 'Nagyjából mindegy, évente legfeljebb ennyi a különbség'
+    : d > 0 ? 'A saját autó évente ennyivel olcsóbb' : 'A cégautó évente ennyivel olcsóbb';
+  const sub = `Annyi üzleti úttal, amennyit megadtál (${fmt(r.uzletiKm)} km), abban mérve, mennyi pénz marad nálad.`;
+  let h = vegosszeg(fej, Math.abs(d), sub);
+  const k = r.kmDij;
+  h += '<p class="panel-cim">Cégautó</p><ul class="tetelek">';
+  h += tetel('Az autó éves költsége', ftx(r.C), { forras: 'sajat', al: `értékvesztés ${ftx(r.ertekvesztes)}, üzemanyag vagy áram ${ftx(r.energia)}, biztosítás és szerviz ${ftx(r.fix)}` });
+  h += tetel('Gépjárműadó', ftx(r.gj), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[r.ev]?.forras });
+  h += tetel('Cégautóadó', ftx(r.ca.fizetendo), { forras: 'hivatalos', forrasUrl: r.ca.forras, al: r.ca.mentes ? 'az autó mentes' : `havi ${ftx(r.ca.havi)} × 12, a gépjárműadóval csökkentve` });
+  h += tetel('A cég kiadása', ftx(r.aCeg), { al: 'a magáncélú használat után nem kell adót fizetni' });
+  h += tetel('Neked ennyibe kerül', ftx(r.aZseb), { cls: 'vegso', al: `ennyivel kevesebb osztalékot veszel ki (a céges forint ${szazalek(r.r)}-a)` });
+  h += '</ul>';
+  h += '<p class="panel-cim">Saját autó, kilométertérítéssel</p><ul class="tetelek">';
+  h += tetel('Az autó éves költsége', ftx(r.C), { forras: 'sajat', al: 'te fizeted' });
+  h += tetel('Gépjárműadó', ftx(r.gj), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[r.ev]?.forras, al: 'te fizeted, cégautóadó nincs' });
+  if (r.terites) {
+    h += tetel('Adómentes km-térítés a cégtől', `−${ftx(r.terites)}`, { cls: 'levonas', forras: 'hivatalos', al: `${fmt(r.uzletiKm)} km × ${String(Math.round(r.ftKm * 100) / 100).replace('.', ',')} Ft/km: ${k.normaLeiras}, ${k.arForras}, plusz ${adat.szabalyok.km.normakoltseg_ft_km} Ft/km` });
+    h += tetel('A térítés miatt kevesebb osztalék', `+${ftx(r.terites * r.r)}`, { al: 'a cég ezt rád költi, nem osztalékként adja' });
+  }
+  h += tetel('Neked ennyibe kerül', ftx(r.bZseb), { cls: 'vegso' });
+  h += '</ul>';
+  if (r.kmFordulo != null) {
+    h += megjegyzes(r.kmFordulo === 0
+      ? 'Ennél az autónál a saját autó üzleti út nélkül is olcsóbb: a cégautóadó többe kerül, mint amennyit azzal nyersz, hogy a cég fizeti a költségeket.'
+      : `Ugyanekkora éves futással és költséggel: ha a futásodból évente legalább <strong>${fmt(r.kmFordulo)} km</strong> üzleti út, a saját autó, ha kevesebb, a cégautó jön ki olcsóbban. Ha az üzleti utak miatt összesen is többet mész, a nagyobb üzemanyag- és szervizköltséget is írd be.`);
+  } else h += megjegyzes('Add meg a hengerűrtartalmat is, és kiszámoljuk, hány km üzleti út felett éri meg a saját autó.');
+  h += `<p class="igy">A mérce: 100 Ft céges nyereségből osztalékként <strong>${String(Math.round(r.r * 1000) / 10).replace('.', ',')} Ft</strong> jut hozzád (${adat.szabalyok.vallalkozo.tao_kulcs * 100}% társasági adó, utána ${adat.szabalyok.vallalkozo.osztalek_szja * 100}% szja${r.szocho ? ` és ${adat.szabalyok.vallalkozo.szocho * 100}% szocho` : ''}). Amit a cég az autóra költ, azt ezen az arányon számoljuk át a te pénzedre.</p>`;
+  h += javaslatMegj(adat, r.ev, r.kw, r.ca.levonas);
+  h += megjegyzes('Nem számoljuk: az áfát (cégautónál egyes tételek áfájának egy része visszaigényelhető lehet), a kisvállalati adót (kiva), a veszteséges céget és a vételárba kötött pénz kamatát. A munkába járás nem üzleti út. Mielőtt döntesz, beszéld meg a könyvelőddel.');
+  return jelekkel(h);
+}

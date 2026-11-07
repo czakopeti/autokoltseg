@@ -64,6 +64,9 @@ const oldalak = [
   ['vetlen-baleset/', O.vetlenOldal(k)],
   ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
+  ['vallalkozoknak/', O.vallalkozoknakOldal(k)],
+  ['cegautoado-kalkulator/', O.cegautoadoOldal(k)],
+  ['cegauto-vagy-sajat-auto/', O.cegautoOldal(k)],
   ['autom/', O.automOldal(k)],
   ['forrasok/', O.forrasokOldal(k)],
   ['valtozasok/', O.valtozasokOldal(k)],
@@ -82,6 +85,8 @@ if (!elonezet) {
   // de nem ad meg oldaltérképet. A noindex a HTML-ben és fejlécben is ott van, minden fájlra.
   // Élesben minden kereső- és AI-robot számára nyitott (a ceevio mintájára, név szerint is felsorolva).
   const ROBOTOK = ['OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Googlebot', 'Bingbot', 'Applebot'];
+  // IndexNow: a kulcsfájllal igazoljuk a Bingnek, hogy a domain a miénk (lásd .github/workflows/indexnow.yml)
+  if (cfg.eles && cfg.indexnow_kulcs) writeFileSync(join(KI, `${cfg.indexnow_kulcs}.txt`), cfg.indexnow_kulcs);
   writeFileSync(join(KI, 'robots.txt'), cfg.eles
     ? `# ${cfg.marka}: minden kereső- és AI-robot számára nyitott.\nUser-agent: *\nAllow: /\n\n${ROBOTOK.map((r) => `User-agent: ${r}\nAllow: /\n`).join('\n')}\nSitemap: ${cfg.domain}/sitemap.xml\n`
     : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
@@ -133,6 +138,12 @@ https://:version.:project.pages.dev/*
 - [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
+
+## Vállalkozóknak
+
+- [Vállalkozóknak](${cfg.domain}/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra
+- [Cégautóadó](${cfg.domain}/cegautoado-kalkulator/): havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők (${Object.keys(adat.tetelek.cegautoado).join(', ')}. évi NAV-tételek)
+- [Cégautó vagy saját autó](${cfg.domain}/cegauto-vagy-sajat-auto/): kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben
 - [Adásvételi szerződés](${cfg.domain}/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
 
 ## Források és frissítés

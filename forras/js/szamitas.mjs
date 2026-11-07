@@ -634,3 +634,124 @@ export function javitasVagyCsere(adat, b) {
   const olcsobb = tart.osszes <= csere.osszes ? 'tart' : 'csere';
   return { evek: N, tart, csere, olcsobb, kulonbseg: Math.abs(tart.osszes - csere.osszes), ertekJavitva, ertekJavitvaBecsles, ertekMost: szam(a.ertekMost), ar: szam(c.ar) };
 }
+
+/* ---------------- Vállalkozóknak: cégautóadó ---------------- */
+
+// A környezetvédelmi osztályjelzés (forgalmi engedély V.9 sor) → a NAV-táblázat oszlopa.
+// „0”–„4”: 0. oszlop, „6”–„10”: 1. oszlop, „5”, „14”, „15”: 2. oszlop. Az „5E”, „5Z” nem tartozik
+// a cégautóadó alá; az „5P”, „5N” 2025-től igen, de a 2025 előtt forgalomba helyezettek 2026 végéig mentesek.
+export const CEG_OSZTALYOK = {
+  euro56: { oszlop: 2, nev: '„14” vagy „15” (Euro 5, Euro 6)' },
+  hibrid: { oszlop: 2, nev: '„5” (hibrid, gáz)' },
+  phev: { oszlop: 2, phev: true, nev: '„5P” vagy „5N” (plug-in vagy növelt hatótávú hibrid)' },
+  villany: { mentes: true, nev: '„5E” vagy „5Z” (elektromos)' },
+  euro34: { oszlop: 1, nev: '„6”–„10” (Euro 3, Euro 4)' },
+  regi: { oszlop: 0, nev: '„0”–„4” (Euro 2 vagy régebbi)' },
+};
+export const CEG_SAVOK = ['0–50 kW', '51–90 kW', '91–120 kW', '120 kW felett'];
+
+/** A gépjárműadó-kalkulátor hajtás-értéke az osztályjelzésből. */
+const osztalyHajtas = (o) => (o.mentes ? 'elektromos' : o.phev ? 'plugin' : 'hagyomanyos');
+
+/**
+ * Cégautóadó egy évre (Gjt. IV. fejezet, NAV 31. füzet).
+ * @param b { ev, kw, osztaly, gyartasiEv?, phevRegi?, valtozas?, honap? }
+ *   valtozas: '' egész évben a cégé | 'uj' a cég nevére helyezték forgalomba | 'hasznalt' használtan vette | 'eladta' eladta
+ *   honap: a változás hónapja (1–12). Vételnél a következő hónaptól, eladásnál az eladás hónapjáig jár az adó.
+ * A gépjárműadó levonható (Gjt. 17/F §), ha ugyanarra az autóra, ugyanazokra a hónapokra ugyanaz az adóalany fizeti:
+ * használtan vett autónál az idei gépjárműadót az eladó fizeti, ezért ott nincs levonás.
+ */
+export function cegautoado(adat, b) {
+  const kw = Math.round(Number(b.kw));
+  if (!(kw > 0)) return { hiba: 'Add meg a teljesítményt.' };
+  const o = CEG_OSZTALYOK[b.osztaly];
+  if (!o) return { hiba: 'Válaszd ki a környezetvédelmi osztályt.' };
+  const ev = Number(b.ev);
+  const valtozas = ['uj', 'hasznalt', 'eladta'].includes(b.valtozas) ? b.valtozas : '';
+  const honap = Math.min(12, Math.max(1, Math.round(Number(b.honap) || 1)));
+  const honapok = valtozas === 'eladta' ? honap : valtozas ? 12 - honap : 12;
+  const alap = { ev, kw, osztaly: b.osztaly, osztalyNev: o.nev, honapok, valtozas, honap };
+  if (o.mentes) return { ...alap, mentes: 'villany', havi: 0, teljes: 0, levonas: 0, fizetendo: 0 };
+  if (o.phev && b.phevRegi && ev <= 2026) return { ...alap, mentes: 'phev', havi: 0, teljes: 0, levonas: 0, fizetendo: 0 };
+  const t = evAdat(adat.tetelek.cegautoado, ev);
+  if (!t) return { hiba: 'Erre az évre még nincs cégautóadó-tétel.' };
+  const sav = CEG_SOR(kw);
+  const havi = t.tabla[sav][o.oszlop];
+  const teljes = havi * honapok;
+  let gj = null, levonas = 0;
+  const gy = Number(b.gyartasiEv);
+  if (gy && valtozas !== 'hasznalt') {
+    const g = gepjarmuado(adat, { ev, kw, gyartasiEv: gy, hajtas: osztalyHajtas(o), phevRegi: !!b.phevRegi, valtozas: valtozas === 'uj' ? 'uj' : '', evkozbenHonap: valtozas === 'uj' ? honap : 0 });
+    if (g.hiba) return { hiba: g.hiba };
+    gj = g;
+    // új autónál a gépjárműadó is a következő hónaptól jár (g.fizetendo már arányos); eladásnál az egész évit a cég fizette, ebből az eladásig tartó hónapoké vonható le
+    levonas = Math.min(teljes, valtozas === 'eladta' ? ft(g.fizetendo * honapok / 12) : g.fizetendo);
+  }
+  const fizetendo = teljes - levonas;
+  const negyedev = honapok === 12 ? ft(fizetendo / 4) : null;
+  return { ...alap, tetelEv: t.ev, kozzeteve: t.kozzeteve, forras: t.forras, sav, oszlop: o.oszlop, havi, teljes, gj, levonas, fizetendo, negyedev };
+}
+
+/* ---------------- Vállalkozóknak: cégautó vagy saját autó ---------------- */
+
+/** 100 forint céges (adózás előtti) nyereségből ennyi jut osztalékként a tulajdonoshoz. */
+export function osztalekArany(adat, szocho) {
+  const v = adat.szabalyok.vallalkozo;
+  return (1 - v.tao_kulcs) * (1 - v.osztalek_szja - (szocho ? v.szocho : 0));
+}
+
+/**
+ * Kft. vagy bt. tulajdonosának két útja ugyanarra az autóra:
+ *  A) cégautó: minden költséget a cég fizet, és cégautóadót fizet; a magánhasználat adómentes.
+ *  B) saját autó: a költségeket te fizeted, a cég az üzleti utakra kiküldetési rendelvénnyel
+ *     adómentes km-térítést fizet (60/1992. Korm. r. alapnorma × NAV-ár + 15 Ft/km), cégautóadó nélkül.
+ * Közös mérce: mennyivel kevesebb pénz marad nálad. A céges forintot az osztalékként kivehető részével
+ * (osztalekArany) váltjuk át, mert amit a cég az autóra költ, azt nem tudod osztalékként kivenni.
+ * @param b { ev, kw, osztaly, gyartasiEv, phevRegi, uzemanyag, cm3, uzletiKm, ertekvesztes, energia, fix, szocho, arEv, arHonap }
+ */
+export function cegautoVagySajat(adat, b) {
+  const o = CEG_OSZTALYOK[b.osztaly];
+  if (!o) return { hiba: 'Válaszd ki a környezetvédelmi osztályt.' };
+  const kw = Math.round(Number(b.kw)), gy = Number(b.gyartasiEv);
+  if (!(kw > 0) || !gy) return { hiba: 'Add meg a teljesítményt és a gyártási évet.' };
+  const uzletiKm = Math.max(0, Number(b.uzletiKm) || 0);
+  const ertekvesztes = Math.max(0, Number(b.ertekvesztes) || 0);
+  const energia = Math.max(0, Number(b.energia) || 0);
+  const fix = Math.max(0, Number(b.fix) || 0);
+  const C = ertekvesztes + energia + fix;
+  if (!(C > 0)) return { hiba: 'Add meg az autó éves költségeit.' };
+
+  const hajtas = osztalyHajtas(o);
+  const gjr = gepjarmuado(adat, { ev: b.ev, kw, gyartasiEv: gy, hajtas, phevRegi: !!b.phevRegi });
+  if (gjr.hiba) return { hiba: gjr.hiba };
+  const gj = gjr.fizetendo;
+  const ca = cegautoado(adat, { ev: b.ev, kw, osztaly: b.osztaly, gyartasiEv: gy, phevRegi: !!b.phevRegi });
+  if (ca.hiba) return { hiba: ca.hiba };
+
+  // km-térítés forint/km-ben (100 km-re számolva); a hengerűrtartalom csak akkor kötelező, ha van üzleti út
+  const uzemanyag = o.mentes ? 'elektromos' : o.phev ? 'plugin' : b.uzemanyag;
+  const vanCm3 = uzemanyag === 'elektromos' || Number(b.cm3) > 0;
+  if (uzletiKm > 0 && !vanCm3) return { hiba: 'Add meg a hengerűrtartalmat: ebből jön a km-térítés.' };
+  let kmDij = null;
+  if (vanCm3) {
+    kmDij = kikuldetes(adat, { km: 100, uzemanyag, motor: b.motor || 'benzin', cm3: b.cm3, ev: b.arEv, honap: b.arHonap });
+    if (kmDij.hiba) return { hiba: kmDij.hiba };
+  }
+  const ftKm = kmDij ? kmDij.ftKm : 0;
+  const terites = ft(uzletiKm * ftKm);
+
+  const r = osztalekArany(adat, !!b.szocho);
+  // A) cégautó: a cég fizeti a költséget, a gépjárműadót és a (gépjárműadóval csökkentett) cégautóadót
+  const aCeg = C + gj + ca.fizetendo;
+  const aZseb = ft(aCeg * r);
+  // B) saját autó: te fizetsz mindent, a cég adómentes km-térítést ad
+  const bSajat = C + gj;
+  const bZseb = ft(bSajat - terites + terites * r);
+  // Fordulópont: a saját autó akkor nem drágább, ha a térítés K ≥ (bSajat − aCeg·r) / (1 − r)
+  const kKell = (bSajat - aCeg * r) / (1 - r);
+  const kmFordulo = ftKm > 0 ? Math.max(0, Math.ceil(kKell / ftKm)) : null;
+  return {
+    ev: b.ev, kw, osztalyNev: o.nev, C, ertekvesztes, energia, fix, gj, gjr, ca, uzletiKm, ftKm, kmDij, terites, r,
+    aCeg, aZseb, bSajat, bZseb, kulonbseg: aZseb - bZseb, kKell, kmFordulo, szocho: !!b.szocho,
+  };
+}

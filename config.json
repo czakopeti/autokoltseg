@@ -3,6 +3,7 @@
   "domain": "https://autozom.hu",
   "eles": true,
   "kapcsolat_email": "info@autozom.hu",
+  "indexnow_kulcs": "c0d5f25e47f17f5802ac6315c3f6a854",
   "uzemelteto": {
     "nev": "Czakó Péter",
     "tipus": "magánszemély",

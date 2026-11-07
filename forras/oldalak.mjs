@@ -95,6 +95,7 @@ ${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div
 <li><a href="${L.l('megjavitsam-vagy-csereljem/')}"><h3>Javítás vagy csere</h3><p>Megjavítsam a régi autót, vagy eladjam és vegyek másikat? A két út teljes költsége évekre előre.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('kotelezo-biztositas-valtas/')}"><h3>Kötelező biztosítás</h3><p>Meddig mondhatod fel a kötelezőt, mikor jön a díjértesítő, és melyik bonus-malus osztályba kerülsz jövőre.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('vetlen-baleset/')}"><h3>Vétlen baleset</h3><p>Mi jár a károkozó biztosítójától: javítás, csereautó, határidők, és mit tehetsz, ha nem fizet.</p><span class="ugrik">Elolvasom</span></a></li>
+<li><a href="${L.l('vallalkozoknak/')}"><h3>Vállalkozóknak</h3><p>Cégautóadó, kilométertérítés kiküldetési rendelvénnyel, és hogy a cég vegye-e meg az autót, vagy a sajátodat számold el.</p><span class="ugrik">Megnézem</span></a></li>
 <li><a href="${L.l('adasveteli-szerzodes-minta/')}"><h3>Adásvételi szerződés</h3><p>Kitölthető, nyomtatható minta használt autó eladásához.</p><span class="ugrik">Kitöltöm</span></a></li>
 <li><a href="${L.l('le-kw-atvaltas/')}"><h3>LE–kW átváltás</h3><p>Hány kW egy lóerő, és melyik szerepel a forgalmiban.</p><span class="ugrik">Átváltom</span></a></li>
 </ul>
@@ -1198,5 +1199,192 @@ ${tovabb(L, ut)}
     cim: 'Vétlen baleset: mi jár a biztosítótól?',
     leiras, ut, tartalom,
     jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vétlen baleset', ut }])],
+  });
+}
+
+/* ======================= VÁLLALKOZÓKNAK ======================= */
+// Kft., bt. és egyéni vállalkozók autós adói: gyűjtőoldal, cégautóadó-kalkulátor, cégautó vagy saját autó.
+const VALL_UT = 'vallalkozoknak/';
+const vallForrasok = (adat, mik) => forrasbol(adat.szabalyok.vallalkozo.forrasok.filter((f) => !mik || mik.includes(f.mi)));
+/** A benyújtott 2027-es javaslat egy mondatban (GYIK-hez), amíg nincs elfogadva. */
+function javaslatMondat(adat, savok = false) {
+  const j = adat.szabalyok.vallalkozo.cegauto_javaslat;
+  if (!j || j.allapot === 'elfogadva') return '';
+  return `A ${M.datumNapon(j.benyujtva)} benyújtott törvényjavaslat ${M.rag(j.ev, 'tól', 'től')} ${savok ? `a ${j.kw_hatar} kW feletti autók tételét négy sávra bontva jelentősen emelné, és ` : ''}a gépjárműadót adózónként csak egy választott autónál engedné levonni. Ha elfogadják, frissítjük.`;
+}
+function javaslatBekezdes(adat) {
+  const j = adat.szabalyok.vallalkozo.cegauto_javaslat;
+  if (!j || j.allapot === 'elfogadva') return '';
+  return `<p class="megjegyzes figyelem"><strong>${j.ev}-től változhat.</strong> ${javaslatMondat(adat, true).replace(/^A /, 'A ')} A 250 kW feletti, régebbi besorolású autók havi tétele például ${M.ftx(j.pelda_250kw_felett_regi_ft)} lenne. A számításban a NAV által közzétett ${j.ev}. évi tételek vannak.</p>`;
+}
+const cegEvek = (k) => Object.keys(k.adat.tetelek.cegautoado).map(Number).filter((e) => e >= k.ev).sort();
+const OSZTALY_OPCIOK = [['', 'Válaszd ki'], ...Object.entries(S.CEG_OSZTALYOK).map(([k, o]) => [k, o.nev])];
+
+/** A NAV cégautóadó-táblázata egy évre, a kiemelt sávval. */
+function cegTabla(adat, ev) {
+  const t = adat.tetelek.cegautoado[ev];
+  return `<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Teljesítmény</th>${t.oszlopok.map((o) => `<th>${o}</th>`).join('')}</tr></thead><tbody>
+${t.tabla.map((s, i) => `<tr><td>${S.CEG_SAVOK[i]}</td>${s.map((x) => `<td>${M.ftx(x)}</td>`).join('')}</tr>`).join('')}
+</tbody><caption>Havi tétel autónként, ${ev}. A környezetvédelmi osztályjelzés a forgalmi engedély V.9 sorában van. A NAV ${M.datumNapon(t.kozzeteve)} tette közzé.</caption></table></div>`;
+}
+
+export function vallalkozoknakOldal(k) {
+  const { adat } = k;
+  const ut = VALL_UT;
+  const evek = cegEvek(k);
+  const ev = evek[0], t = adat.tetelek.cegautoado[ev];
+  const min = Math.min(...t.tabla.flat()), max = Math.max(...t.tabla.flat());
+  const kerdesek = [
+    { k: 'Kell cégautóadót fizetni, ha a céges autót nem használom magáncélra?', v: ['Igen. A cég nevén lévő vagy általa pénzügyi lízingbe vett személyautó után a cégautóadót a használattól függetlenül meg kell fizetni. A céges személyautó magáncélú használata viszont adómentes, ezért nem kell külön kimutatni.'] },
+    { k: 'Levonható a gépjárműadó a cégautóadóból?', v: ['Igen, ha ugyanarra az autóra, ugyanazokra a hónapokra ugyanaz fizeti mindkettőt, és a gépjárműadót határidőben befizették. Későn befizetett gépjárműadó utólag sem vonható le.', javaslatMondat(adat)].filter(Boolean) },
+    { k: 'Kell cégautóadót fizetni a céges villanyautó után?', v: ['Nem. A tisztán elektromos („5E”) és a nulla emissziós („5Z”) autó nem tartozik a cégautóadó alá. A plug-in hibrid („5P”, „5N”) 2025 óta igen, de a 2025 előtt forgalomba helyezettek 2026. december 31-ig mentesek.'] },
+    { k: 'Mikor kell bevallani és befizetni a cégautóadót?', v: ['Negyedévente, a negyedévet követő hónap 20-áig: április 20., július 20., október 20. és január 20. A cég nevén lévő autónál az adó a szerzést követő hónap első napjától az eladás hónapjának utolsó napjáig jár. Egyéni vállalkozónál azokra a hónapokra, amelyekben az autó költségét elszámolja.'] },
+    { k: 'Érdemes a saját autómat kiküldetési rendelvénnyel elszámolni a cégautó helyett?', v: ['Attól függ, mennyi üzleti utad van, és mennyibe kerül az autó. Sok üzleti kilométernél és olcsóbb autónál általában a saját autó, drágább autónál és kevés üzleti útnál a cégautó jön ki jobban. A „Cégautó vagy saját autó?” kalkulátor a te számaiddal kiszámolja.'] },
+  ];
+  const leiras = 'Autó a vállalkozásban: cégautóadó, kilométertérítés kiküldetési rendelvénnyel, és mi vonatkozik a kft.-re, az egyéni vállalkozóra és az átalányadózóra.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Vállalkozóknak'], cim: 'Autó a vállalkozásban: mennyi adó, mi éri meg?', valasz: `Kft.-nél és bt.-nél a cég nevén lévő személyautó után havonta ${M.ftx(min)}–${M.ftx(max)} cégautóadó jár ${M.rag(ev, 'ban', 'ben')}, a saját autódat viszont kiküldetési rendelvénnyel adómentesen elszámolhatod. Átalányadózó és katás egyéni vállalkozó nem fizet cégautóadót.` })}
+<section class="szakasz"><div class="keret">
+<h2>Kalkulátorok</h2>
+<ul class="lista">
+<li><a href="${L.l('cegautoado-kalkulator/')}"><h3>Cégautóadó</h3><p>Mennyi a havi és az éves cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}, a gépjárműadó levonásával, negyedéves határidőkkel.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('cegauto-vagy-sajat-auto/')}"><h3>Cégautó vagy saját autó?</h3><p>A cég vegye meg az autót, vagy a sajátodat számold el km-térítéssel? A két út a te zsebedből nézve, és hány km üzleti út felett fordul.</p><span class="ugrik">Összehasonlítom</span></a></li>
+<li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet adómentesen a cég egy üzleti útra a saját autódért: a NAV havi üzemanyagára, az alapnorma és a 15 Ft/km.</p><span class="ugrik">Kiszámolom</span></a></li>
+</ul>
+</div></section>
+<div class="keret"><article class="cikk">
+<h2>Melyik szabály vonatkozik rád?</h2>
+<div class="tabla-tarto"><table class="tabla szoveges"><thead><tr><th>Ha</th><th>Cégautóadó</th><th>A saját autód elszámolása</th></tr></thead><tbody>
+<tr><td>Kft. vagy bt. tulajdonosa vagy</td><td>A cég nevén lévő vagy általa pénzügyi lízingbe vett személyautó után havonta jár, negyedévente kell bevallani és befizetni. A céges autó magáncélú használata adómentes.</td><td>Ha ügyvezetőként vagy munkavállalóként utazol, a cég kiküldetési rendelvénnyel adómentes km-térítést fizethet az üzleti utakra. Ha csak ezt a normás térítést fizeti, és más költséget nem számol el az autóra, nincs cégautóadó.</td></tr>
+<tr><td>Egyéni vállalkozó vagy, és a vállalkozói jövedelmed után adózol</td><td>Csak akkor kell fizetni, ha az autó költségeit tételesen elszámolod.</td><td>Útnyilvántartás nélkül havonta 500 km-t számolhatsz el átalányban. Ez nem tételes elszámolás, ezért nem jár vele cégautóadó.</td></tr>
+<tr><td>Átalányadózó egyéni vállalkozó vagy</td><td>Nem kell fizetni.</td><td>Az autót nem számolod el külön: a bevételedből levont költséghányad mindent magában foglal.</td></tr>
+<tr><td>Katás vagy</td><td>Nem kell fizetni.</td><td>Költséget nem számolsz el.</td></tr>
+</tbody><caption>A NAV 31. számú információs füzete (2026. január 22.) alapján.</caption></table></div>
+<h2>Mennyi a cégautóadó ${M.rag(ev, 'ban', 'ben')}?</h2>
+<p>A havi tétel az autó teljesítményétől és környezetvédelmi osztályától függ, a kortól nem. A legtöbb mai autó („14”, „15”, és a hibridek „5” jelzéssel) a jobb oldali oszlopban van.</p>
+${cegTabla(adat, ev)}
+${javaslatBekezdes(adat)}
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([{ nev: `NAV: a cégautóadó ${M.os(ev)} valorizált mértéke`, url: t.forras || adat.tetelek.cegautoado[evek[evek.length - 1]].forras, d: `közzétéve: ${datumHu(t.kozzeteve)}` }, ...vallForrasok(adat, ['cegauto', 'szja', 'tao'])])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Vállalkozóknak: cégautóadó, cégautó vagy saját autó',
+    leiras, ut, tartalom,
+    adatJson: {},
+    jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vállalkozóknak', ut }])],
+  });
+}
+
+export function cegautoadoOldal(k) {
+  const { adat } = k;
+  const ut = 'cegautoado-kalkulator/';
+  const evek = cegEvek(k);
+  const ev = evek[0], jovo = evek[1];
+  const t = adat.tetelek.cegautoado[ev];
+  const kerdesek = [
+    { k: `Mennyi a cégautóadó egy átlagos autó után ${M.rag(ev, 'ban', 'ben')}?`, v: [`Egy 51–90 kW-os, Euro 6-os („15”) autó után havonta ${M.ftx(t.tabla[1][2])}, egy 91–120 kW-os után ${M.ftx(t.tabla[2][2])}. Ebből évente levonható az autó gépjárműadója.`] },
+    { k: 'Hol találom a környezetvédelmi osztályt?', v: ['A forgalmi engedély V.9 sorában. A 2011 után gyártott autók többsége „14” (Euro 5) vagy „15” (Euro 6), a hibridek „5”, a plug-in hibridek „5P” vagy „5N”, a villanyautók „5E”.'] },
+    { k: 'Levonható a gépjárműadó?', v: ['Igen, ugyanarra az autóra, ugyanazokra a hónapokra, ha ugyanaz fizeti mindkettőt, és a gépjárműadót határidőben befizették. Ha a cég az autót év közben használtan vette, az adott évi gépjárműadót az eladó fizeti, így abban az évben nincs mit levonni.', javaslatMondat(adat)].filter(Boolean) },
+    { k: 'Melyik hónaptól kell fizetni?', v: ['A szerzést követő hónap első napjától az eladás, a lízingbe adónak való visszaadás, az ellopás vagy a megsemmisülés hónapjának utolsó napjáig. A forgalomból kivonás önmagában nem szünteti meg.'] },
+    { k: 'Hogyan kell bevallani?', v: [`Negyedévente, önadózással: a negyedévet követő hónap 20-áig kell bevallani és befizetni a NAV Cégautóadó bevételi számlájára (10032000-01076167). ${M.rag(2026, 'ban', 'ben')} a 2601-es nyomtatványon.`] },
+    { k: `Mennyivel drágul ${M.rag(jovo || ev, 'ban', 'ben')}?`, v: [jovo ? `A tételek a júliusi infláció szerint emelkednek, 500 vagy 1000 forintra kerekítve. A NAV által közzétett ${M.os(jovo)} tétel egy 91–120 kW-os, „15”-ös autóra havonta ${M.ftx(adat.tetelek.cegautoado[jovo].tabla[2][2])} (${M.rag(ev, 'ban', 'ben')} ${M.ftx(t.tabla[2][2])}).` : 'A tételeket a NAV minden év október 31-ig teszi közzé a következő évre.', javaslatMondat(adat, true)].filter(Boolean) },
+  ];
+  const leiras = `Cégautóadó ${evek.join(' és ')}: havi és éves összeg a kW és a környezetvédelmi osztály alapján, a gépjárműadó levonásával, a NAV tételeivel és a negyedéves határidőkkel.`;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautóadó'], cim: `Mennyi a cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}?`, valasz: `Havonta ${M.ftx(Math.min(...t.tabla.flat()))}–${M.ftx(Math.max(...t.tabla.flat()))} autónként, a teljesítménytől és a környezetvédelmi osztálytól függően. A gépjárműadó levonható belőle, a bevallás és a befizetés negyedéves.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'cegautoado', cim: 'A céges autó adatai', tartalom: `
+${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), ev)) : `<input type="hidden" name="ev" value="${ev}">`}
+${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, max: 2000, extra: egysegValto }))}
+${sor('V.9', valaszto('osztaly', 'Környezetvédelmi osztály', OSZTALY_OPCIOK, '', 'A forgalmi engedély V.9 sorában. A legtöbb mai autó „14” vagy „15”.'))}
+${sor('B', jelolo('phevRegi', '2025. január 1. előtt helyezték forgalomba', 'Ilyenkor 2026. december 31-ig mentes.'), ' data-mutat="osztaly=phev"')}
+${sor('B', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2021', min: 1950, max: k.ev + 1, sugo: 'Ebből számoljuk ki a gépjárműadót, amit levonunk.' }))}
+${sor('', negyzetek('valtozas', 'Változott valami az évben?', [['', 'Nem, egész évben a cégé'], ['uj', 'Új autó, a cég nevére helyezték forgalomba'], ['hasznalt', 'A cég használtan vette'], ['eladta', 'A cég eladta']], ''))}
+${sor('', valaszto('honap', 'Melyik hónapban?', S.HONAPOK.map((n, i) => [i + 1, n]), 6, 'Vételnél a következő hónaptól, eladásnál az eladás hónapjáig jár az adó.'), ' data-mutat="valtozas=uj|valtozas=hasznalt|valtozas=eladta"')}` })}
+${elszamolas(k, M.uresPanel('Add meg a teljesítményt és a környezetvédelmi osztályt.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>A NAV tételei</h2>
+${evek.map((e) => cegTabla(adat, e)).join('\n')}
+${javaslatBekezdes(adat)}
+<p>Az elektromos („5E”) és a nulla emissziós („5Z”) autó nem tartozik a cégautóadó alá. A tételeket a NAV minden év október 31-ig teszi közzé a következő évre, a júliusi infláció alapján.</p>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([...evek.map((e) => ({ nev: `NAV: a cégautóadó ${M.os(e)} valorizált mértéke`, url: adat.tetelek.cegautoado[e].forras || adat.tetelek.cegautoado[evek[evek.length - 1]].forras, d: `közzétéve: ${datumHu(adat.tetelek.cegautoado[e].kozzeteve)}` })), ...vallForrasok(adat, ['cegauto']), ...forrasbol(adat.szabalyok.vallalkozo.cegauto_javaslat?.forrasok || [])])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `Cégautóadó ${evek.join(', ')}: kalkulátor és táblázat`,
+    leiras, ut, tartalom,
+    adatJson: { tetelek: { gepjarmuado: adat.tetelek.gepjarmuado, gepjarmuado_mozgaskorlatozott: adat.tetelek.gepjarmuado_mozgaskorlatozott, cegautoado: adat.tetelek.cegautoado }, szabalyok: { vallalkozo: adat.szabalyok.vallalkozo }, ev },
+    jsonld: [alkalmazasLd(k.cfg, 'Cégautóadó-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vállalkozóknak', ut: VALL_UT }, { nev: 'Cégautóadó', ut }])],
+  });
+}
+
+export function cegautoOldal(k) {
+  const { adat } = k;
+  const ut = 'cegauto-vagy-sajat-auto/';
+  const v = adat.szabalyok.vallalkozo;
+  const evek = cegEvek(k);
+  const ev = evek[0];
+  const lf = S.legfrissebbHonap(adat);
+  const r65 = S.osztalekArany(adat, true), r77 = S.osztalekArany(adat, false);
+  const pct = (x) => String(Math.round(x * 1000) / 10).replace('.', ',');
+  const mb = v.minimalber[String(ev)];
+  const plafon = mb ? mb * v.szocho_plafon_minimalber_szorzo : null; // a havi minimálbér 24-szerese
+  const kerdesek = [
+    { k: 'Mikor éri meg a saját autó km-térítéssel?', v: ['Ha sok az üzleti út, és az autó nem túl drága. A km-térítés adómentesen jut el hozzád, a cégautóadó viszont az autó használatától függetlenül jár. Drága autónál és kevés üzleti útnál a cégautó jön ki jobban, mert a cég adózás előtti pénzből fizeti a költségeket.'] },
+    { k: 'Milyen feltétellel fizethet a cég km-térítést a saját autómra?', v: [`Kiküldetési rendelvénnyel, valódi üzleti utakra, ha ügyvezetőként vagy munkavállalóként utazol, és az autó magánszemély tulajdonában van, például a tiéd. A térítés az autó alapnormája szerinti üzemanyag a NAV havi árán, plusz ${adat.szabalyok.km.normakoltseg_ft_km} Ft/km. Ha a cég csak ennyit fizet, és más költséget nem számol el az autóra, a térítés adómentes, és cégautóadó sem jár utána. A munkába járás nem üzleti út.`] },
+    { k: 'Kell adót fizetni, ha a cégautót magáncélra is használom?', v: ['Nem. A céges személyautó magáncélú használata adómentes (Szja tv. 1. számú melléklet 8.37. pont). A cég a cégautóadót a használattól függetlenül fizeti, és a költségeket elszámolhatja.'] },
+    { k: 'Miért számoltok osztalékkal?', v: [`Mert ez a két út valódi különbsége: amit a cég az autóra költ, azt nem tudod osztalékként kivenni. 100 Ft céges nyereségből ${v.tao_kulcs * 100}% társasági adó után ${v.osztalek_szja * 100}% szja és ${v.szocho * 100}% szocho levonásával ${pct(r65)} Ft jut hozzád. Ha az összevont adóalapba tartozó jövedelmed (például a béred) és az osztalékod együtt már eléri a szocho felső határát (a minimálbér 24-szeresét${plafon ? `, ${M.rag(ev, 'ban', 'ben')} ${M.ftx(plafon)}` : ''}), a határ feletti osztalék után ${pct(r77)} Ft.`] },
+    { k: 'Mi nincs benne a számításban?', v: ['Az áfa (cégautónál egyes tételek áfájának egy része visszaigényelhető lehet), a kisvállalati adó (kiva), a veszteséges cég és a vételárba kötött pénz kamata. Ezekben a könyvelőd tud pontos választ adni.'] },
+  ];
+  const leiras = 'Cégautó vagy saját autó kilométertérítéssel? Kft. és bt. tulajdonosainak: a két út éves költsége a cégautóadóval, az adómentes km-térítéssel és az osztalék adójával, és hány km felett fordul.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautó vagy saját autó'], cim: 'Cégautó vagy saját autó km-térítéssel?', valasz: 'Sok üzleti úttal és olcsóbb autóval általában a saját autó, drágább autóval és kevés üzleti úttal a cégautó jön ki jobban. Kft. és bt. tulajdonosainak számolunk, abban mérve, mennyi pénz marad nálad.' })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'cegauto', cim: 'Az autó és a használat', tartalom: `
+<fieldset><legend>Az autó</legend>
+${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), ev)) : `<input type="hidden" name="ev" value="${ev}">`}
+${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, max: 2000, extra: egysegValto }))}
+${sor('V.9', valaszto('osztaly', 'Környezetvédelmi osztály', OSZTALY_OPCIOK, '', 'A forgalmi engedély V.9 sorában. A legtöbb mai autó „14” vagy „15”.'))}
+${sor('B', jelolo('phevRegi', '2025. január 1. előtt helyezték forgalomba', 'Ilyenkor 2026 végéig mentes a gépjárműadó és a cégautóadó alól.'), ' data-mutat="osztaly=phev"')}
+${sor('B', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2021', min: 1950, max: k.ev + 1 }))}
+${sor('P.3', negyzetek('uzemanyag', 'Üzemanyag', [['benzin', 'Benzin'], ['dizel', 'Dízel']], 'benzin'))}
+${sor('P.1', szamMezo({ id: 'cm3', cim: 'Hengerűrtartalom', me: 'cm³', placeholder: 'pl. 1498', min: 50, max: 10000, sugo: 'Ebből jön a km-térítés alapnormája. Villanyautónál hagyd üresen.' }))}
+</fieldset>
+<fieldset><legend>Egy év költségei</legend>
+${sor('', szamMezo({ id: 'ertekvesztes', cim: 'Értékvesztés', me: 'Ft', placeholder: 'pl. 900 000', min: 0, sugo: 'Mennyit veszít évente az értékéből. Pénzügyi lízingnél nagyjából az éves lízingdíj.' }))}
+${sor('', szamMezo({ id: 'energia', cim: 'Üzemanyag vagy áram', me: 'Ft', placeholder: 'pl. 700 000', min: 0, sugo: 'Az összes útra, a magánutakkal együtt.' }))}
+${sor('', szamMezo({ id: 'fix', cim: 'Biztosítás, szerviz, gumi, matrica', me: 'Ft', placeholder: 'pl. 400 000', min: 0 }))}
+</fieldset>
+<fieldset><legend>Használat és adózás</legend>
+${sor('', szamMezo({ id: 'uzletiKm', cim: 'Üzleti út évente', me: 'km', placeholder: 'pl. 15 000', min: 0, sugo: 'Amit kiküldetési rendelvénnyel el lehet számolni. A munkába járás nem számít.' }))}
+${sor('', negyzetek('szocho', 'Fizetsz szochót az osztalék után?', [['1', `Igen, ${v.szocho * 100}%`], ['0', 'Nem, elértem a felső határt']], '1'))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg az autó adatait és éves költségeit.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>A két út</h2>
+<p><strong>Cégautó.</strong> A cég veszi meg vagy lízingeli az autót, és mindent ő fizet: az értékvesztést, az üzemanyagot, a biztosítást, a szervizt és a gépjárműadót. Cserébe havonta cégautóadót fizet, amiből a gépjárműadó levonható. A magáncélú használat adómentes, a költségeket a cég elszámolja.</p>
+<p><strong>Saját autó.</strong> Az autó a tiéd, mindent te fizetsz. A cég az üzleti utakra kiküldetési rendelvénnyel km-térítést ad: az alapnorma szerinti üzemanyagot a NAV havi árán, plusz ${adat.szabalyok.km.normakoltseg_ft_km} Ft/km-t. Ez adómentes, és cégautóadó sem jár utána.</p>
+<p>A kettőt abban mérjük, mennyi pénz marad nálad. Amit a cég költ, azt átszámoljuk arra, amennyit osztalékként kivehetnél belőle. ${M.rag(ev, 'ban', 'ben')} 100 Ft céges nyereségből ${pct(r65)} Ft, ha az osztalék után szochót is fizetsz, és ${pct(r77)} Ft, ha már nem.</p>
+<p>A km-térítést a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával számoljuk. Feltétel, hogy ügyvezetőként vagy munkavállalóként utazz, kiküldetési rendelvénnyel, és a cég ezen felül ne számoljon el költséget az autóra.</p>
+${javaslatBekezdes(adat)}
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([{ nev: `NAV: a cégautóadó ${M.os(ev)} valorizált mértéke`, url: adat.tetelek.cegautoado[ev].forras || adat.tetelek.cegautoado[evek[evek.length - 1]].forras, d: `közzétéve: ${datumHu(adat.tetelek.cegautoado[ev].kozzeteve)}` }, ...vallForrasok(adat), ...forrasbol(adat.szabalyok.km.forrasok)])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Cégautó vagy saját autó km-térítéssel? Kalkulátor',
+    leiras, ut, tartalom,
+    adatJson: { tetelek: { gepjarmuado: adat.tetelek.gepjarmuado, gepjarmuado_mozgaskorlatozott: adat.tetelek.gepjarmuado_mozgaskorlatozott, cegautoado: adat.tetelek.cegautoado }, szabalyok: { km: adat.szabalyok.km, vallalkozo: v }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, lf, ev },
+    jsonld: [alkalmazasLd(k.cfg, 'Cégautó vagy saját autó kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vállalkozóknak', ut: VALL_UT }, { nev: 'Cégautó vagy saját autó', ut }])],
   });
 }

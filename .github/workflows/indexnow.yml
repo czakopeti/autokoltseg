@@ -1,0 +1,54 @@
+name: IndexNow
+# Minden élesítés után szól a Bingnek (és rajta keresztül a ChatGPT keresőjének és a Copilotnak),
+# mely oldalak változtak. A Google ezt nem használja, ott a sitemap.xml és a Search Console számít.
+on:
+  push:
+    branches: [main]
+    paths: ['web/**']
+  workflow_run:
+    workflows: ['Napi frissítés']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      mind:
+        description: 'Az összes oldalt beküldi, nem csak a változottakat'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  bekuld:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+      - name: Várunk, amíg a Cloudflare kiteszi az új változatot
+        run: sleep 180
+      - name: Változott oldalak beküldése
+        env:
+          MIND: ${{ inputs.mind }}
+        run: |
+          node --input-type=module -e '
+          import { readFileSync, existsSync } from "node:fs";
+          import { execSync } from "node:child_process";
+          const cfg = JSON.parse(readFileSync("config.json", "utf8"));
+          if (!cfg.eles || !cfg.indexnow_kulcs) { console.log("Nincs élesítve vagy nincs kulcs."); process.exit(0); }
+          const host = new URL(cfg.domain).host;
+          const sitemap = existsSync("web/sitemap.xml") ? [...readFileSync("web/sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]) : [];
+          let urlek = sitemap;
+          if (process.env.MIND !== "true") {
+            const valtozott = execSync("git diff --name-only HEAD~1 HEAD -- web", { encoding: "utf8" }).split("\n").filter((f) => f.endsWith("index.html"));
+            const utak = valtozott.map((f) => `${cfg.domain}/${f.replace(/^web\//, "").replace(/index\.html$/, "")}`);
+            urlek = sitemap.filter((u) => utak.includes(u));
+          }
+          if (!urlek.length) { console.log("Nincs változott oldal."); process.exit(0); }
+          const r = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "content-type": "application/json; charset=utf-8" },
+            body: JSON.stringify({ host, key: cfg.indexnow_kulcs, keyLocation: `${cfg.domain}/${cfg.indexnow_kulcs}.txt`, urlList: urlek }) });
+          console.log(r.status, await r.text());
+          console.log(urlek.join("\n"));
+          if (r.status >= 400) process.exit(1);
+          '

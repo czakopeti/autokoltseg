@@ -621,3 +621,29 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 .megosztva .szoveg-gomb { font-size: 15px; }
 
 @media print { .vj, .megosztva { display: none !important; } }
+
+/* „Vállalkozóknak” a fejléc jobb szélén: teli, szögletesebb gomb, hogy külön résznek látsszon */
+.vall-gomb { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; text-decoration: none; white-space: nowrap; font-size: 15px; font-weight: 700; color: var(--lap); background: var(--tinta); border: 1.5px solid var(--tinta); border-radius: 8px; padding: 6px 13px 6px 10px; }
+.vall-gomb svg { width: 18px; height: 18px; flex-shrink: 0; }
+.vall-gomb:hover { background: var(--lap); color: var(--tinta); }
+.vall-gomb[aria-current="page"] { box-shadow: 0 0 0 2px var(--lap), 0 0 0 4px var(--tinta); }
+@media (max-width: 1000px) and (min-width: 961px) { .vall-gomb { font-size: 14.5px; padding: 5px 11px 5px 9px; } }
+.menu + .vall-gomb { margin-left: 4px; }
+@media (max-width: 1180px) and (min-width: 961px) {
+  .menu { gap: 18px; }
+  .menu a { font-size: 14.5px; }
+}
+@media (max-width: 560px) {
+  .menu-autom-szoveg { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .menu a.menu-autom { padding: 6px; margin-left: 0; }
+  .vall-gomb { font-size: 14px; padding: 6px 10px 6px 8px; gap: 6px; }
+  .fejlec .keret { gap: 10px; }
+}
+@media (max-width: 380px) { .vall-gomb svg { display: none; } }
+@media (max-width: 1080px) {
+  .menu { margin-left: auto; gap: 0; }
+  .menu a:not(.menu-autom) { display: none; }
+}
+@media (max-width: 560px) { .fiok-gomb span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .fiok-gomb { padding: 7px; } }
+@media (max-width: 420px) { .jegy .logo { width: 112px; } .menu + .vall-gomb { margin-left: 0; } }
+@media (max-width: 380px) { .fejlec .keret { gap: 8px; } }

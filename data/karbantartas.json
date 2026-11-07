@@ -115,6 +115,27 @@
       "mit": "A visszajelzés-doboz GitHub-kulcsának megújítása",
       "hol": "GitHub → Settings → Developer settings → Fine-grained tokens, és Cloudflare → autokoltseg → Variables and Secrets → GITHUB_TOKEN",
       "hogyan": "A kulcs 2027 novemberében lejár. Csinálj újat ugyanazzal a beállítással (README, Visszajelzések, 1–2. lépés), írd át a Cloudflare-ben, és indítsd újra a telepítést. Ha kész, a mikor mezőt tedd egy évvel későbbre."
+    },
+    {
+      "id": "vallalkozoi-kulcsok",
+      "mikor": "--01-12",
+      "mit": "Vállalkozói adókulcsok és az idei minimálbér (cégautó-oldalak)",
+      "hol": "data/szabalyok.json → vallalkozo (tao_kulcs, osztalek_szja, szocho, minimalber)",
+      "hogyan": "Ellenőrizd a NAV-on és a jogszabályokban, változott-e a társasági adó (9%), az osztalék szja-ja (15%), a szocho (13%) és a felső határa (a minimálbér 24-szerese). Az idei havi minimálbért vedd fel a minimalber alá az év kulcsával."
+    },
+    {
+      "id": "cegautoado-2027-javaslat",
+      "mikor": "2026-12-10",
+      "mit": "Elfogadták-e a 2026. október 27-én benyújtott adócsomagot (cégautóadó 2027)?",
+      "hol": "data/tetelek.json → cegautoado.2027; data/szabalyok.json → vallalkozo.cegauto_javaslat; forras/js/szamitas.mjs → CEG_SOR, CEG_SAVOK, cegautoado(); forras/js/megjelenites.mjs → javaslatMegj",
+      "hogyan": "A javaslat 2027-től a 120 kW feletti sávot négy sávra bontaná (121–140, 141–180, 181–250, 250 felett), és a gépjárműadó levonását adózónként egy választott autóra szűkítené. Ha elfogadták: vedd fel az új sávokat és tételeket a NAV/Magyar Közlöny szerint, alakítsd át a CEG_SOR-t és a táblázatokat, a levonásnál írd ki az egy autós korlátot, és állítsd az allapot mezőt „elfogadva”-ra (vagy töröld a figyelmeztetést). Ha elvetették, töröld a cegauto_javaslat blokkot. Ez mérlegelést igényel: írd meg Péternek, mit változtattál."
+    },
+    {
+      "id": "kata-keva-2027",
+      "mikor": "2026-12-10",
+      "mit": "Új katás szabályok 2027-től (Vállalkozóknak oldal táblázata)",
+      "hol": "forras/oldalak.mjs → vallalkozoknakOldal, „Melyik szabály vonatkozik rád?” táblázat",
+      "hogyan": "Az őszi adócsomag 2027-től átalakítaná a katát (nem főfoglalkozásúaknak is, új tételes adó és bevételi keret). Ha elfogadták, nézd meg a NAV-on, változik-e, hogy a katás nem fizet cégautóadót, és frissítsd a sort forrással."
     }
   ]
 }

@@ -8,7 +8,6 @@ export const MENU = [
   { ut: 'atirasi-illetek-kalkulator/', nev: 'Átírás' },
   { ut: 'benzin-vagy-villany/', nev: 'Benzin vagy villany' },
   { ut: 'autofenntartas-kalkulator/', nev: 'Fenntartás' },
-  { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
   { ut: 'autom/', nev: 'Az autóm' },
 ];
 /** A balról beúszó menü: minden oldal, csoportosítva, egy rövid mondattal. */
@@ -31,6 +30,11 @@ export const FIOK = [
     ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás', 'Meddig mondhatod fel, és a bonus-malus'],
     ['vetlen-baleset/', 'Vétlen baleset', 'Mi jár a biztosítótól, és meddig'],
   ] },
+  { cim: 'Vállalkozóknak', elemek: [
+    ['vallalkozoknak/', 'Autó a vállalkozásban', 'Mi vonatkozik a kft.-re és az egyéni vállalkozóra'],
+    ['cegautoado-kalkulator/', 'Cégautóadó', 'Havonta és évente, a gépjárműadó levonásával'],
+    ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó', 'Cégautóadó vagy adómentes km-térítés'],
+  ] },
   { cim: 'Eszközök', elemek: [
     ['autom/', 'Az autóm', 'A mentett autód minden költsége egy lapon'],
     ['le-kw-atvaltas/', 'LE–kW átváltás', 'Hány kW egy lóerő'],
@@ -41,10 +45,15 @@ export const FIOK = [
     ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
   ] },
 ];
+const VALL_UTAK = ['vallalkozoknak/', 'cegautoado-kalkulator/', 'cegauto-vagy-sajat-auto/'];
+const TASKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 7.5h16a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1ZM3 12.5h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 const HAMBURGER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
 /** Kalkulátorok, amelyek nem férnek a fő menübe: a láblécben és a főoldalon vannak. */
 export const TOBB_KALK = [
+  { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
+  { ut: 'cegautoado-kalkulator/', nev: 'Cégautóadó' },
+  { ut: 'cegauto-vagy-sajat-auto/', nev: 'Cégautó vagy saját autó' },
   { ut: 'plug-in-hibrid-2027/', nev: 'Plug-in hibrid 2027' },
   { ut: 'autohitel-kalkulator/', nev: 'Autóhitel' },
   { ut: 'autopalya-matrica-kalkulator/', nev: 'Autópálya-matrica' },
@@ -160,7 +169,8 @@ ${ld}
 <header class="fejlec"><div class="keret">
 <button class="fiok-gomb" type="button" aria-label="Menü" aria-haspopup="dialog" aria-controls="fiok" aria-expanded="false">${HAMBURGER}<span>Menü</span></button>
 <div class="marka-blokk"><a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a><p class="szlogen">Az autód. A költségeid. A döntéseid.</p></div>
-<nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}${m.ut === 'autom/' ? ' class="menu-autom"' : ''}>${m.ut === 'autom/' ? JEL_KICSI : ''}${m.nev}</a>`).join('')}</nav>
+<nav class="menu" id="fomenu" aria-label="Fő menü">${MENU.map((m) => `<a href="${L.l(m.ut)}"${m.ut === ut ? ' aria-current="page"' : ''}${m.ut === 'autom/' ? ' class="menu-autom"' : ''}>${m.ut === 'autom/' ? `${JEL_KICSI}<span class="menu-autom-szoveg">${m.nev}</span>` : m.nev}</a>`).join('')}</nav>
+<a class="vall-gomb" href="${L.l('vallalkozoknak/')}"${VALL_UTAK.includes(ut) ? ' aria-current="page"' : ''}>${TASKA}<span>Vállalkozóknak</span></a>
 </div></header>
 <dialog class="fiok" id="fiok" aria-label="Minden oldal">
 <div class="fiok-fej"><a class="jegy" href="${L.l('')}" aria-label="${esc(cfg.marka)}, főoldal">${LOGO}</a><button class="fiok-zar" type="button" aria-label="Menü bezárása">✕</button></div>
@@ -208,7 +218,7 @@ function lablec(k, L) {
  * A frissességi dátum (friss) irányjelző hatású volt, ezért minden számoló oldalon kiírjuk.
  */
 export function oldalfej(L, { morzsa, cim, valasz = '', bevezeto, fo = false, friss = '' }) {
-  const m = morzsa ? `<ol class="morzsa" aria-label="Hol vagy">${[`<li><a href="${L.l('')}">Főoldal</a></li>`, ...morzsa.map((x) => `<li aria-current="page">${x}</li>`)].join('')}</ol>` : '';
+  const m = morzsa ? `<ol class="morzsa" aria-label="Hol vagy">${[`<li><a href="${L.l('')}">Főoldal</a></li>`, ...morzsa.map((x) => (Array.isArray(x) ? `<li><a href="${L.l(x[1])}">${x[0]}</a></li>` : `<li aria-current="page">${x}</li>`))].join('')}</ol>` : '';
   return `<div class="keret oldalfej${fo ? ' fo' : ''}">${m}<h1>${cim}</h1>${valasz ? `<p class="valasz">${valasz}</p>` : ''}${bevezeto ? `<p class="bevezeto">${bevezeto}</p>` : ''}${friss ? `<p class="friss">Az adatokat ${friss} ellenőriztük. <a href="${L.l('forrasok/')}">Honnan vannak a számok?</a></p>` : ''}</div>`;
 }
 
@@ -316,7 +326,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 
