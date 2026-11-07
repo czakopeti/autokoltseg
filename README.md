@@ -78,6 +78,14 @@ Egyszeri beállítás (kb. 5 perc):
 
 Amíg ez nincs kész, a gombok működnek, de a szöveg elküldésekor a látogató azt látja, hogy most nem sikerült, és megkapja az e-mail-címet. A kulcs egy év múlva lejár. A `karbantartas.json` szól, mikor kell újat csinálni (ugyanez az 1. és 2. lépés).
 
+## Idősorok
+
+Ami egyszer bekerült, az megmarad. Az évenkénti adótételek (`data/tetelek.json`), a matricadíjak (`data/szabalyok.json` → `matrica.evek`) és a NAV havi üzemanyagárai (`data/uzemanyag.json`, 2023 januárjától) évenként, illetve havonta tárolódnak, és a régiek nem íródnak felül.
+
+- **Védelem:** a `tesztek/idosor.test.mjs` minden futáskor összeveti az adatokat az előző mentett változattal. Ha egy tárolt év vagy hónap eltűnne vagy megváltozna, a napi frissítés megáll, mentés nélkül, és a GitHub e-mailt küld.
+- **Szándékos javítás:** ha egy régi adat tényleg hibás volt, írd be az útvonalát és az okát a `data/idosor_javitasok.json`-ba, például: `[{"utvonal": "uzemanyag.evek.2025.12", "ok": "…", "datum": "2026-11-07"}]`.
+- **Régebbi NAV-árak:** a NAV oldalán 2023-tól vannak meg a havi táblázatok. A visszatöltő (Actions → Idősor visszatöltése) csak hiányzó éveket ír, meglévőt soha.
+
 ## IndexNow (Bing, ChatGPT-kereső, Copilot)
 
 Minden élesítés után a `.github/workflows/indexnow.yml` szól a Bingnek, mely oldalak változtak. Ez a kézi mentésekre és a napi NAV-frissítésre is igaz. A kulcs a `config.json` `indexnow_kulcs` mezőjében van, az építés kiteszi `web/<kulcs>.txt` néven. A kulcs nyilvános, ez így rendben van. Ha minden oldalt újra be akarsz küldeni: Actions → IndexNow → Run workflow, és pipáld be a „mind” lehetőséget. A Google ezt nem használja, ott a sitemap.xml és a Search Console számít.
