@@ -392,7 +392,7 @@ export function utikoltsegOldal(k) {
   ];
   const leiras = `Mennyibe kerül az út benzinnel, dízellel, LPG-vel vagy árammal? A NAV ${honapi} árával (benzin ${ar.benzin}, dízel ${ar.dizel} Ft/l), fejenként és havonta is.`;
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Útiköltség'], cim: 'Mennyibe kerül az út üzemanyagban?', valasz: `A távolságot szorozd meg a fogyasztással, oszd el 100-zal, és szorozd az üzemanyag árával. A NAV ${honapi} ára benzinre ${ar.benzin}, dízelre ${ar.dizel} Ft/l, így 100 km egy 6,5 literes benzines autóval ${M.ftx(p100.osszesen)}.` })}
+${oldalfej(L, { morzsa: ['Útiköltség'], cim: 'Mennyibe kerül egy út autóval?', valasz: `A távolságot szorozd meg a fogyasztással, oszd el 100-zal, és szorozd az üzemanyag árával. A NAV ${honapi} ára benzinre ${ar.benzin}, dízelre ${ar.dizel} Ft/l, így 100 km egy 6,5 literes benzines autóval ${M.ftx(p100.osszesen)}.` })}
 <div class="keret asztal">
 ${forgalmi({ kalk: 'uti', cim: 'Az út és az autó', autom: true, tartalom: `
 ${sor('', szamMezo({ id: 'km', cim: 'Távolság', me: 'km', placeholder: 'pl. 120', min: 1, max: 20000, sugo: 'Egy irányban. Az útvonaltervező megmutatja.' }) + jelolo('odaVissza', 'Oda-vissza', 'A megadott távolság duplájával számolunk.'))}

@@ -22,7 +22,7 @@ export const FIOK = [
   { cim: 'Vásárlás és fenntartás', elemek: [
     ['benzin-vagy-villany/', 'Benzin vagy villany', 'Két autó teljes költsége, megtérülés'],
     ['autofenntartas-kalkulator/', 'Fenntartás', 'Mennyibe kerül havonta az autód'],
-    ['utikoltseg-kalkulator/', 'Útiköltség', 'Mennyibe kerül az út üzemanyagban'],
+    ['utikoltseg-kalkulator/', 'Útiköltség', 'Mennyibe kerül egy út autóval'],
     ['autohitel-kalkulator/', 'Autóhitel', 'Törlesztő és az autó valódi költsége'],
     ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere', 'Megjavítsam, vagy vegyek másikat?'],
     ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés', 'Kitölthető, nyomtatható minta'],

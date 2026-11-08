@@ -914,7 +914,7 @@ export function kovetkezoLepesek(kalk, e) {
     case 'km': {
       if (e.mod === 'munka') return [];
       const uz = e.uzemanyag === 'plugin' ? undefined : KOV_UTI_UZ.includes(e.uzemanyag) ? e.uzemanyag : undefined;
-      return [{ cel: 'uti', cim: 'Mennyibe kerül valójában az út üzemanyagban?', szoveg: 'A te autód valós fogyasztásával, nem a hivatalos normával.', q: { km: e.km, odaVissza: igen(e.odaVissza), uzemanyag: uz } }];
+      return [{ cel: 'uti', cim: 'Mennyibe kerül valójában az út?', szoveg: 'A te autód valós fogyasztásával, nem a hivatalos normával.', q: { km: e.km, odaVissza: igen(e.odaVissza), uzemanyag: uz } }];
     }
     case 'hitel': return [{ cel: 'fenntartas', cim: 'Mekkora lesz a teljes havi autós kiadásod?', szoveg: 'A törlesztő mellé üzemanyag, biztosítás, adó és értékvesztés.', q: { ...autoAdat, ertek: e.ar } }];
     case 'javitas': return [{ cel: 'fenntartas', cim: 'Mennyibe kerülne havonta a másik autó?', szoveg: 'Üzemanyag, biztosítás, adó és értékvesztés, tételesen.', q: { kw: e.c_kw, gyartasiEv: e.c_gyartasiEv, hajtas: e.c_hajtas, ertek: e.c_ar } }];
@@ -922,7 +922,7 @@ export function kovetkezoLepesek(kalk, e) {
     case 'cegautoado': return [{ cel: 'cegauto', cim: 'Megéri a cégautó, vagy jobb a saját autó kilométertérítéssel?', szoveg: 'A két út a tulajdonos zsebéből nézve, osztalékadóval.', q: { kw: kwKi(e), osztaly: e.osztaly, gyartasiEv: e.gyartasiEv, phevRegi: igen(e.phevRegi) } }];
     case 'cegauto': return [{ cel: 'cegautoado', cim: 'A cégautóadó negyedévenként, határidőkkel', szoveg: 'Havi és éves összeg, a gépjárműadó levonásával.', q: { kw: kwKi(e), osztaly: e.osztaly, gyartasiEv: e.gyartasiEv, phevRegi: igen(e.phevRegi) } }];
     case 'phev': return [{ cel: 'gepjarmuado', cim: 'A gépjárműadó részletesen, év közbeni változással', szoveg: 'Ha év közben veszed, eladod vagy kivonod a forgalomból.', q: { ev: '2027', kw: kwKi(e), gyartasiEv: e.gyartasiEv, hajtas: 'plugin', phevRegi: igen(e.regi) } }];
-    case 'matrica': return [{ cel: 'uti', cim: 'Mennyibe kerül az út üzemanyagban?', szoveg: 'A matrica mellé a benzin vagy az áram, fejenként is.', q: {} }];
+    case 'matrica': return [{ cel: 'uti', cim: 'Mennyibe kerül az út autóval?', szoveg: 'A matrica mellé a benzin vagy az áram, fejenként is.', q: {} }];
     default: return [];
   }
 }
