@@ -196,3 +196,12 @@ test('javítás vagy csere: a két út összevetése', () => {
   assert.ok(Math.abs(r.kulonbseg - Math.abs(r.tart.osszes - r.csere.osszes)) < 1);
   assert.ok(S.javitasVagyCsere(adat, { ev: 2026, a: {}, c: {} }).hiba);
 });
+
+test('plug-in hibrid 2027: ha jövőre kevesebb az adó, nem írja, hogy ugyanannyi', async () => {
+  const M = await import('../forras/js/megjelenites.mjs');
+  const r = S.phev(adat, { kw: 90, gyartasiEv: 2019 });
+  assert.ok(r.kulonbseg < 0);
+  const h = M.phevPanel(adat, r, '2026-11-08');
+  assert.match(h, /kevesebb, mint amennyit 2026-ban/);
+  assert.doesNotMatch(h, /Ugyanannyi/);
+});

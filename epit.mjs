@@ -54,6 +54,7 @@ const oldalak = [
   ['gepjarmuado-kalkulator/', O.gepjarmuadoOldal(k)],
   ['atirasi-illetek-kalkulator/', O.atirasOldal(k)],
   ['kilometerterites-kalkulator/', O.kmOldal(k)],
+  [O.UTI_UT, O.utikoltsegOldal(k)],
   ['benzin-vagy-villany/', O.osszehasonlitoOldal(k)],
   ['autofenntartas-kalkulator/', O.fenntartasOldal(k)],
   ['plug-in-hibrid-2027/', O.phevOldal(k)],
@@ -80,6 +81,11 @@ for (const [ut, html] of oldalak) {
   writeFileSync(join(KI, ut, 'index.html'), html);
 }
 writeFileSync(join(KI, '404.html'), O.nemTalalhatoOldal(k));
+// A mérő végpont (functions/api/meres.js) csak ezekre az oldalakra számol
+if (!elonezet) {
+  mkdirSync(join(GYOKER, 'kozos'), { recursive: true });
+  writeFileSync(join(GYOKER, 'kozos/utak.js'), `// Az oldalak listája a mérő végpontnak. Az epit.mjs írja, kézzel ne szerkeszd.\nexport const UTAK = ${JSON.stringify(oldalak.map(([ut]) => ut))};\n`);
+}
 
 if (!elonezet) {
   // Munkaverzióban (eles: false) a robots.txt engedi a bejárást, hogy a keresők lássák a noindex jelzést,
@@ -132,6 +138,7 @@ https://:version.:project.pages.dev/*
 - [Átírás](${cfg.domain}/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
 - [Benzines vagy elektromos autó](${cfg.domain}/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
 - [Fenntartás](${cfg.domain}/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
+- [Útiköltség](${cfg.domain}/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap); fejenkénti, havi és éves költség
 - [Kilométertérítés](${cfg.domain}/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap), fogyasztási norma, munkába járás
 - [Plug-in hibrid 2027](${cfg.domain}/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
 - [Autóhitel](${cfg.domain}/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt

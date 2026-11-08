@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=f664981d';
+import * as S from './szamitas.js?v=8f06fe1f';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -165,6 +165,26 @@ export function kmPanel(adat, r, b) {
   return h;
 }
 
+export function utikoltsegPanel(adat, r, b = {}) {
+  if (r.hiba) return hibaPanel(r.hiba);
+  const ut = `${fmt(r.tav)} km${b.odaVissza ? ' oda-vissza' : ''}`;
+  const hanyan = ['', '', 'ketten', 'hárman', 'négyen', 'öten', 'hatan', 'heten', 'nyolcan', 'kilencen'][r.utasok];
+  const fo = r.utasok > 1 ? ` Fejenként ${ftx(r.fejenkent)}, ha ${hanyan} osztjátok.` : '';
+  let h = vegosszeg('Az út költsége', r.osszesen, `${ut}, kilométerenként ${tized(r.ftKm, 1)} Ft ${r.egyseg === 'kWh' ? 'áramra' : 'üzemanyagra'}.${fo}`);
+  h += '<ul class="tetelek">';
+  const mennyi = `${tized(r.mennyiseg, r.mennyiseg < 10 ? 2 : 1)} ${r.egyseg} × ${tized(r.ar, 1)} Ft`;
+  const forrasUrl = r.arTipus === 'hivatalos' ? adat.uzemanyag?.forras : '';
+  h += tetel(r.egyseg === 'kWh' ? 'Áram' : `Üzemanyag (${r.uzemanyagNev})`, ftx(r.energiaFt), { al: `${mennyi}${r.veszteseg ? `, ${fmt(r.veszteseg)}% töltési veszteséggel` : ''}`, forras: r.arTipus, forrasUrl });
+  if (r.egyeb) h += tetel('Útdíj, matrica, parkolás', ftx(r.egyeb), { forras: 'sajat' });
+  h += tetel('Összesen', ftx(r.osszesen), { cls: 'vegso' });
+  if (r.utasok > 1) h += tetel(`Fejenként (${r.utasok} fő)`, ftx(r.fejenkent));
+  if (r.havi) { h += tetel(`Havonta (${fmt(r.alkalom)} alkalom)`, ftx(r.havi)); h += tetel('Évente', ftx(r.eves)); }
+  h += '</ul>';
+  h = jelekkel(h);
+  h += `<p class="igy">Fogyasztás: <strong>${tized(r.fogyasztas, 1)} ${r.egyseg}/100 km</strong> (a te adatod). Ár: ${r.arForras}.${r.arTipus === 'hivatalos' ? ' A NAV havi ára a nagy forgalmazók átlagán alapul, a kúton ettől eltérhet: ha tudod a pontos árat, írd be.' : ''}</p>`;
+  return h;
+}
+
 export function munkaPanel(adat, r) {
   if (r.hiba) return hibaPanel(r.hiba);
   let h = vegosszeg('Munkába járás, havonta', r.havi, `Évente ${ftx(r.eves)}. Ennyit adhat adómentesen a munkáltató.`);
@@ -249,7 +269,8 @@ export function uresPanel(mi) {
 }
 /** Felirat a minta-eredmény fölött: világos, hogy nem a látogató autója. */
 export const mintaJelzes = (leiras, kerd = 'Írd be a saját autódat, és a minta helyett azzal számolunk.') => `<p class="minta-jelzes"><strong>Minta:</strong> ${esc(leiras)}. ${esc(kerd)}</p>`;
-export const hianyPanel = (uz) => `<div class="ures"><p class="ures-cim">Még egy adat hiányzik.</p><p>${esc(uz)}</p></div>`;
+// „Add meg…”, „Válaszd ki…”: hiányzó adat. Minden más üzenet (tartomány, ellentmondás) a beírt adat ellenőrzését kéri.
+export const hianyPanel = (uz) => `<div class="ures"><p class="ures-cim">${/^([^.]*: )?(add meg|válaszd|válassz|írd be|töltsd ki|hiányzik)/i.test(uz) ? 'Még egy adat hiányzik.' : 'Ellenőrizd a beírt adatot.'}</p><p>${esc(uz)}</p></div>`;
 
 /* ---------- Benzines vagy villany ---------- */
 const mFt = (x) => (Math.abs(x) >= 1e6 ? `${tized(x / 1e6, 1)} M Ft` : `${fmt(x / 1e3)} E Ft`);
@@ -397,7 +418,7 @@ export function phevPanel(adat, r, ma = '') {
   const p = adat.szabalyok.phev, [a, c] = r.evek;
   const gjUrl = (ev) => adat.tetelek.gepjarmuado[ev]?.forras;
   const cegUrl = adat.tetelek.cegautoado?.[2027]?.forras;
-  let h = vegosszeg('2027-től évente', r.ev2027, r.ev2027 === r.kulonbseg && r.kulonbseg > 0 ? 'Ez mind új kiadás: 2026-ban ezekért nem fizettél.' : r.kulonbseg > 0 ? `Ez ${ftx(r.kulonbseg)}-tal több, mint amennyit 2026-ban rendszeresen fizettél.` : 'Ugyanannyi, mint 2026-ban.');
+  let h = vegosszeg('2027-től évente', r.ev2027, r.ev2027 === r.kulonbseg && r.kulonbseg > 0 ? 'Ez mind új kiadás: 2026-ban ezekért nem fizettél.' : r.kulonbseg > 0 ? `Ez ${ftx(r.kulonbseg)}-tal több, mint amennyit 2026-ban rendszeresen fizettél.` : r.kulonbseg < 0 ? `Ez ${ftx(-r.kulonbseg)}-tal kevesebb, mint amennyit 2026-ban rendszeresen fizettél.` : 'Ugyanannyi, mint 2026-ban.');
   h += '<ul class="tetelek">';
   h += tetel('Gépjárműadó, 2027', ftx(c.gj.fizetendo), { forras: 'hivatalos', forrasUrl: gjUrl(2027), al: `${fmt(r.kw)} kW × ${c.gj.ftKw} Ft/kW. 2026-ban ${a.gj.mentes ? 'mentes' : ftx(a.gj.fizetendo)}` });
   if (r.ceges) h += tetel('Cégautóadó, 2027', ftx(c.ceg), { forras: 'hivatalos', forrasUrl: cegUrl, al: `havi ${ftx(c.cegHavi)} × 12, a gépjárműadóval csökkentve. 2026-ban ${a.cegMentes ? 'mentes' : ftx(a.ceg)}` });
@@ -591,4 +612,12 @@ export function cegautoPanel(adat, r) {
   h += javaslatMegj(adat, r.ev, r.kw, r.ca.levonas);
   h += megjegyzes('Nem számoljuk: az áfát (cégautónál egyes tételek áfájának egy része visszaigényelhető lehet), a kisvállalati adót (kiva), a veszteséges céget és a vételárba kötött pénz kamatát. A munkába járás nem üzleti út. Mielőtt döntesz, beszéld meg a könyvelőddel.');
   return jelekkel(h);
+}
+
+/* ---------- Következő lépés ---------- */
+/** lepesek: S.kovetkezoLepesek eredménye; utak: kalkulátorkulcs → cím (a lap #utak adatából). */
+export function kovetkezoBlokk(lepesek, utak) {
+  const l = (lepesek || []).filter((x) => utak?.[x.cel]);
+  if (!l.length) return '';
+  return `<div class="kovetkezo"><p class="kovetkezo-cim">Következő lépés</p><ul>${l.map((x) => `<li><a href="${esc(utak[x.cel] + S.kovetkezoQuery(x.q))}" data-kovetkezo>${esc(x.cim)}</a><span>${esc(x.szoveg)}</span></li>`).join('')}</ul></div>`;
 }

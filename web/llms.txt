@@ -8,6 +8,7 @@
 - [Átírás](https://autozom.hu/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
 - [Benzines vagy elektromos autó](https://autozom.hu/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
 - [Fenntartás](https://autozom.hu/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
+- [Útiköltség](https://autozom.hu/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: 2026. 11. hónap); fejenkénti, havi és éves költség
 - [Kilométertérítés](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026. 11. hónap), fogyasztási norma, munkába járás
 - [Plug-in hibrid 2027](https://autozom.hu/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
 - [Autóhitel](https://autozom.hu/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt

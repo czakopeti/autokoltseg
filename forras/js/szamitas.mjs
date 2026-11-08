@@ -272,6 +272,61 @@ export function munkabaJaras(adat, b) {
   return { dij, haviKm, havi, eves: havi * 12 };
 }
 
+/* ---------------- Útiköltség: mennyibe kerül egy út üzemanyagban vagy áramban ---------------- */
+
+/** Az útiköltség-kalkulátor üzemanyagai: a NAV-ár kulcsa és a fogyasztás mértékegysége. */
+export const UTI_UZEMANYAG = {
+  benzin: { nev: 'benzin', arKulcs: 'benzin', egyseg: 'l', min: 1, max: 40 },
+  dizel: { nev: 'dízel', arKulcs: 'dizel', egyseg: 'l', min: 1, max: 40 },
+  lpg: { nev: 'LPG', arKulcs: 'lpg', egyseg: 'l', min: 1, max: 40 },
+  elektromos: { nev: 'áram', arKulcs: null, egyseg: 'kWh', min: 5, max: 60 },
+};
+/** Hol tölt a villanyautó: melyik árral számolunk (a szabalyok.energia értékei). */
+export const UTI_TOLTES = { otthon: 'aram_kedv', otthonPiaci: 'aram_piaci', tolto: 'tolto' };
+
+/**
+ * b: { km, odaVissza, uzemanyag, fogyasztas, ev, honap, vedett, toltes, sajatAr, utasok, egyeb, alkalom, f: { aram_kedv, aram_piaci, tolto, veszteseg } }
+ * A fogyasztás l/100 km (benzin, dízel, LPG) vagy kWh/100 km (villany, a kijelzőn látott érték; a töltési veszteséget mi tesszük hozzá).
+ */
+export function utikoltseg(adat, b) {
+  const km = Number(b.km);
+  if (!(km > 0)) return { hiba: 'Add meg a távolságot.' };
+  if (km > 20000) return { hiba: 'Ellenőrizd a távolságot: egy útra legfeljebb 20 000 km-rel számolunk.' };
+  const u = UTI_UZEMANYAG[b.uzemanyag];
+  if (!u) return { hiba: 'Válaszd ki, mivel megy az autó.' };
+  const fogy = Number(b.fogyasztas);
+  if (!(fogy > 0)) return { hiba: `Add meg a fogyasztást (${u.egyseg}/100 km).` };
+  if (fogy < u.min || fogy > u.max) return { hiba: `Ellenőrizd a fogyasztást: 100 km-re ${u.egyseg === 'l' ? 'literben' : 'kWh-ban'} kérjük, ${u.min} és ${u.max} között.` };
+  const utasok = b.utasok === '' || b.utasok == null ? 1 : Number(b.utasok);
+  if (!(Number.isInteger(utasok) && utasok >= 1 && utasok <= 9)) return { hiba: 'Az utasok száma 1 és 9 között lehet, a sofőrrel együtt.' };
+  const egyeb = Number(b.egyeb) || 0;
+  if (egyeb < 0) return { hiba: 'Az egyéb költség nem lehet negatív.' };
+  const alkalom = b.alkalom === '' || b.alkalom == null ? 0 : Number(b.alkalom);
+  if (!(alkalom >= 0 && alkalom <= 62)) return { hiba: 'Havonta legfeljebb 62 alkalommal számolunk.' };
+
+  const tav = km * (b.odaVissza ? 2 : 1);
+  let ar, arForras, arTipus, veszteseg = 0;
+  if (Number(b.sajatAr) > 0) {
+    ar = Number(b.sajatAr); arForras = 'saját ár'; arTipus = 'sajat';
+  } else if (u.arKulcs) {
+    const na = navAr(adat, b.ev, b.honap, u.arKulcs, b.vedett);
+    if (!na) return { hiba: 'Ehhez a hónaphoz még nincs NAV-ár. Add meg a saját árat.' };
+    ar = na.ar; arForras = `NAV, ${b.ev}. ${HONAPOK[b.honap - 1]}${na.vedett ? ', védett ár' : ''}`; arTipus = 'hivatalos';
+  } else {
+    const kulcs = UTI_TOLTES[b.toltes] || UTI_TOLTES.otthon;
+    ar = Number(b.f?.[kulcs]);
+    if (!(ar > 0)) return { hiba: 'Hiányzik az áramár. Add meg a saját árat.' };
+    arForras = { aram_kedv: 'otthoni töltés, kedvezményes áram', aram_piaci: 'otthoni töltés, piaci áram', tolto: 'nyilvános töltő, átlagár' }[kulcs]; arTipus = 'becsles';
+  }
+  if (!u.arKulcs) veszteseg = Number(b.f?.veszteseg) || 0;
+  const mennyiseg = (tav * fogy / 100) * (1 + veszteseg / 100);
+  const energiaFt = Math.round(mennyiseg * ar);
+  const osszesen = energiaFt + Math.round(egyeb);
+  const res = { tav, fogyasztas: fogy, egyseg: u.egyseg, uzemanyagNev: u.nev, mennyiseg, veszteseg, ar, arForras, arTipus, energiaFt, egyeb: Math.round(egyeb), osszesen, utasok, fejenkent: Math.round(osszesen / utasok), ftKm: energiaFt / tav };
+  if (alkalom > 0) { res.alkalom = alkalom; res.havi = osszesen * alkalom; res.eves = res.havi * 12; }
+  return res;
+}
+
 /* ---------------- Benzines vagy villany: teljes költség időben ---------------- */
 
 /** Maradványérték: az első 3 évben a 3 éves értékhez vezető egyenletes ütem, utána évi fix csökkenés. */
@@ -762,4 +817,119 @@ export function cegautoVagySajat(adat, b) {
     ev: b.ev, kw, osztalyNev: o.nev, C, ertekvesztes, energia, fix, gj, gjr, ca, uzletiKm, ftKm, kmDij, terites, r,
     aCeg, aZseb, bSajat, bZseb, kulonbseg: aZseb - bZseb, kKell, kmFordulo, szocho: !!b.szocho,
   };
+}
+
+/* ---------------- Mentett autó: melyik kalkulátorba mi kerül belőle, és mi kerül bele ---------------- */
+export const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
+const AUTOM_HAJTASOK = ['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'];
+/** Csak a kitöltött értékek: a hiányzó mezőt nem írjuk felül üressel. */
+const kitoltott = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
+const valaszt = (o, mezok) => Object.fromEntries(mezok.map((k) => [k, o[k]]));
+// A környezetvédelmi osztály csak villanyautónál és plug-in hibridnél következik biztosan a hajtásból; benzinesnél és dízelesnél
+// az Euro-besorolás a forgalmiban van (V.9), azt nem találgatjuk.
+const OSZTALY_HAJTASBOL = { elektromos: 'villany', plugin: 'phev' };
+const HAJTAS_OSZTALYBOL = { villany: 'elektromos', phev: 'plugin' };
+/** Üzemanyag-listából mentett hajtás: csak érvényes hajtás lehet, és a mentett hibrid vagy plug-in hibrid megmarad, ha itt benzint választott. */
+const hajtasUzemanyagbol = (uz, regi) => (['dizel', 'elektromos', 'plugin'].includes(uz) ? uz : ['hibrid', 'plugin'].includes(regi.hajtas) ? regi.hajtas : uz ? 'benzin' : undefined);
+/**
+ * Kalkulátoronként: hogyan kerül a mentett autó az űrlapba (be), és az űrlapból mi kerül a mentett autóba (ki).
+ * Ahol nincs külön szabály, a mezők neve egyezik. A km- és az útiköltség-kalkulátorban a „km” egy út hossza, nem az évi futás.
+ */
+const AUTOM_KAPCS = {
+  km: {
+    be: (a) => ({ uzemanyag: a.hajtas === 'hibrid' ? 'benzin' : a.hajtas, cm3: a.cm3 }),
+    ki: (e, regi) => ({ ...valaszt(e, AUTOM_MEZOK), km: undefined, hajtas: hajtasUzemanyagbol(e.uzemanyag, regi) }),
+  },
+  uti: {
+    be: (a) => ({ uzemanyag: ['dizel', 'elektromos'].includes(a.hajtas) ? a.hajtas : 'benzin', fogyasztas: a.fogyasztas, kwh: a.kwh }),
+    // az LPG-fogyasztás nem a benzines fogyasztás, ezért azt nem mentjük a mentett autóba
+    ki: (e, regi) => ({ fogyasztas: e.uzemanyag === 'lpg' ? undefined : e.fogyasztas, kwh: e.kwh, hajtas: hajtasUzemanyagbol(e.uzemanyag, regi) }),
+  },
+  cegautoado: {
+    be: (a) => ({ kw: a.kw, gyartasiEv: a.gyartasiEv, osztaly: OSZTALY_HAJTASBOL[a.hajtas] }),
+    ki: (e) => ({ kw: e.kw, gyartasiEv: e.gyartasiEv, hajtas: HAJTAS_OSZTALYBOL[e.osztaly] }),
+  },
+  cegauto: {
+    be: (a) => ({ kw: a.kw, gyartasiEv: a.gyartasiEv, cm3: a.cm3, osztaly: OSZTALY_HAJTASBOL[a.hajtas], uzemanyag: a.hajtas === 'dizel' ? 'dizel' : ['benzin', 'hibrid', 'plugin'].includes(a.hajtas) ? 'benzin' : undefined }),
+    ki: (e, regi) => ({ kw: e.kw, gyartasiEv: e.gyartasiEv, cm3: e.cm3, hajtas: HAJTAS_OSZTALYBOL[e.osztaly] || hajtasUzemanyagbol(e.uzemanyag, regi) }),
+  },
+  phev: {
+    be: (a) => ({ kw: a.kw, gyartasiEv: a.gyartasiEv }),
+    ki: (e) => ({ kw: e.kw, gyartasiEv: e.gyartasiEv, hajtas: 'plugin' }),
+  },
+  javitas: {
+    be: (a) => ({ a_gyartasiEv: a.gyartasiEv, a_hajtas: a.hajtas, a_ertekMost: a.ertek }),
+    ki: (e) => ({ gyartasiEv: e.a_gyartasiEv, hajtas: e.a_hajtas, ertek: e.a_ertekMost }),
+  },
+  osszevet: {
+    be: (a) => ({ km: a.km, a_nev: a.nev, a_hajtas: a.hajtas, a_kw: a.kw, a_fogyasztas: a.fogyasztas, a_kwh: a.kwh, a_szerviz: a.szerviz, a_biztositas: a.biztositas }),
+    ki: (e) => ({ km: e.km, nev: e.a_nev, hajtas: e.a_hajtas, kw: e.a_kw, fogyasztas: e.a_fogyasztas, kwh: e.a_kwh, szerviz: e.a_szerviz, biztositas: e.a_biztositas }),
+  },
+};
+const ALAP_KAPCS = { be: (a) => a, ki: (e) => valaszt(e, AUTOM_MEZOK) };
+/** A mentett autóból az űrlap értékei (a teszt is ezt hívja). */
+export function automBe(kalk, a) { return { ...kitoltott((AUTOM_KAPCS[kalk] || ALAP_KAPCS).be(a)), kwEgyseg: 'kw' }; }
+/** Az űrlapból a mentett autó új mezői; a régiek közül, ami itt nem szerepel, megmarad. */
+export function automKi(kalk, e, regi = {}) {
+  const a = kitoltott((AUTOM_KAPCS[kalk] || ALAP_KAPCS).ki(e, regi));
+  const kwMezo = kalk === 'osszevet' ? 'a_kw' : 'kw';
+  if (e.kwEgyseg === 'le' && e[kwMezo]) a.kw = String(leKw(String(e[kwMezo]).replace(',', '.')));
+  // a hajtás csak érvényes értéket kaphat
+  if (a.hajtas && !AUTOM_HAJTASOK.includes(a.hajtas)) delete a.hajtas;
+  return a;
+}
+
+/* ---------------- Következő lépés: az eredmény után a kapcsolódó kalkulátor, a már beírt adatokkal ---------------- */
+const KOV_UTI_UZ = ['benzin', 'dizel', 'lpg', 'elektromos'];
+/** kW számként, ha lóerőben írta be; a mező neve lehet más is (például c_kw). */
+const kwKi = (e, mezo = 'kw') => { const v = e[mezo]; if (v === '' || v == null) return undefined; return e.kwEgyseg === 'le' && mezo === 'kw' ? String(leKw(String(v).replace(',', '.'))) : v; };
+const igen = (v) => (v === true ? '1' : undefined);
+/**
+ * Kalkulátoronként legfeljebb két ajánlás: { cel, cim, szoveg, q }. A q a cél űrlap mezőit tölti ki (link paraméterei).
+ * Csak olyan adat megy át, amit a látogató maga írt be, és ami a célban ugyanazt jelenti.
+ */
+export function kovetkezoLepesek(kalk, e) {
+  const autoAdat = { kw: kwKi(e), gyartasiEv: e.gyartasiEv, hajtas: e.hajtas };
+  switch (kalk) {
+    case 'gepjarmuado': return [{ cel: 'fenntartas', cim: 'Mennyibe kerül havonta az autód, ha mindent beleszámolsz?', szoveg: 'Az adó mellé az üzemanyag, a biztosítás, a szerviz és az értékvesztés.', q: autoAdat }];
+    case 'atiras': return [
+      { cel: 'fenntartas', cim: 'Mennyibe kerülne évente fenntartani?', szoveg: 'Üzemanyag, biztosítás, adó és értékvesztés havonta.', q: { ...autoAdat, ertek: e.vetelar } },
+      ...(e.vetelar ? [{ cel: 'hitel', cim: 'Ha hitelből vennéd: mennyi lenne a törlesztő?', szoveg: 'Havi részlet a THM-mel, és mennyibe kerül valójában az autó.', q: { ar: e.vetelar, ...autoAdat } }] : []),
+    ];
+    case 'fenntartas': {
+      const l = [];
+      if (e.hajtas !== 'elektromos') l.push({ cel: 'osszevet', cim: 'Megérné villanyautóra váltani?', szoveg: 'A mostani autód és egy villanyautó teljes költsége évekre előre.', q: { km: e.km, a_hajtas: e.hajtas, a_kw: kwKi(e), a_fogyasztas: e.fogyasztas, a_szerviz: e.szerviz, a_biztositas: e.biztositas, a_ar: e.ertek } });
+      l.push({ cel: 'uti', cim: 'Mennyibe kerül egy konkrét út?', szoveg: 'Üzemanyagban vagy áramban, fejenként is.', q: e.hajtas === 'elektromos' ? { uzemanyag: 'elektromos', kwh: e.kwh } : { uzemanyag: e.hajtas === 'dizel' ? 'dizel' : 'benzin', fogyasztas: e.fogyasztas } });
+      return l;
+    }
+    case 'uti': {
+      const uz = e.uzemanyag;
+      const tav = (Number(String(e.km).replace(',', '.')) || 0) * (e.odaVissza === true ? 2 : 1);
+      const alkalom = Number(e.alkalom) || 0;
+      return [
+        { cel: 'fenntartas', cim: 'Mennyibe kerül az autó egész évben?', szoveg: 'Az üzemanyag mellé a biztosítás, a szerviz, az adó és az értékvesztés.', q: { hajtas: uz === 'lpg' ? 'benzin' : uz, fogyasztas: uz === 'elektromos' || uz === 'lpg' ? undefined : e.fogyasztas, kwh: uz === 'elektromos' ? e.kwh : undefined, km: alkalom && tav ? String(Math.round(tav * alkalom * 12)) : undefined } },
+        { cel: 'km', cim: 'Ha munkaügyben utazol: mennyi a kilométertérítés?', szoveg: 'Ennyit fizethet a munkáltató adómentesen, a NAV normájával.', q: { km: e.km, odaVissza: igen(e.odaVissza), uzemanyag: uz } },
+      ];
+    }
+    case 'km': {
+      if (e.mod === 'munka') return [];
+      const uz = e.uzemanyag === 'plugin' ? undefined : KOV_UTI_UZ.includes(e.uzemanyag) ? e.uzemanyag : undefined;
+      return [{ cel: 'uti', cim: 'Mennyibe kerül valójában az út üzemanyagban?', szoveg: 'A te autód valós fogyasztásával, nem a hivatalos normával.', q: { km: e.km, odaVissza: igen(e.odaVissza), uzemanyag: uz } }];
+    }
+    case 'hitel': return [{ cel: 'fenntartas', cim: 'Mekkora lesz a teljes havi autós kiadásod?', szoveg: 'A törlesztő mellé üzemanyag, biztosítás, adó és értékvesztés.', q: { ...autoAdat, ertek: e.ar } }];
+    case 'javitas': return [{ cel: 'fenntartas', cim: 'Mennyibe kerülne havonta a másik autó?', szoveg: 'Üzemanyag, biztosítás, adó és értékvesztés, tételesen.', q: { kw: e.c_kw, gyartasiEv: e.c_gyartasiEv, hajtas: e.c_hajtas, ertek: e.c_ar } }];
+    case 'osszevet': return e.b_ar ? [{ cel: 'hitel', cim: 'Ha hitelből vennéd a másik autót: mennyi lenne a törlesztő?', szoveg: 'Havi részlet a THM-mel, és a futamidő alatti teljes költség.', q: { ar: e.b_ar, kw: e.b_kw, hajtas: e.b_hajtas } }] : [];
+    case 'cegautoado': return [{ cel: 'cegauto', cim: 'Megéri a cégautó, vagy jobb a saját autó kilométertérítéssel?', szoveg: 'A két út a tulajdonos zsebéből nézve, osztalékadóval.', q: { kw: kwKi(e), osztaly: e.osztaly, gyartasiEv: e.gyartasiEv, phevRegi: igen(e.phevRegi) } }];
+    case 'cegauto': return [{ cel: 'cegautoado', cim: 'A cégautóadó negyedévenként, határidőkkel', szoveg: 'Havi és éves összeg, a gépjárműadó levonásával.', q: { kw: kwKi(e), osztaly: e.osztaly, gyartasiEv: e.gyartasiEv, phevRegi: igen(e.phevRegi) } }];
+    case 'phev': return [{ cel: 'gepjarmuado', cim: 'A gépjárműadó részletesen, év közbeni változással', szoveg: 'Ha év közben veszed, eladod vagy kivonod a forgalomból.', q: { ev: '2027', kw: kwKi(e), gyartasiEv: e.gyartasiEv, hajtas: 'plugin', phevRegi: igen(e.regi) } }];
+    case 'matrica': return [{ cel: 'uti', cim: 'Mennyibe kerül az út üzemanyagban?', szoveg: 'A matrica mellé a benzin vagy az áram, fejenként is.', q: {} }];
+    default: return [];
+  }
+}
+/** A link paraméterei: csak a kitöltött értékek. */
+export function kovetkezoQuery(q) {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(q || {})) if (v !== undefined && v !== null && v !== '' && v !== false) p.set(k, String(v));
+  const s = p.toString();
+  return s ? `?${s}` : '';
 }

@@ -1,7 +1,7 @@
 // Az oldalak. Minden szám az adatfájlokból jön, a szöveg a SZOVEG_STILUS.md szerint.
 import * as S from './js/szamitas.mjs';
 import * as M from './js/megjelenites.mjs';
-import { oldal, oldalfej, forgalmi, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
+import { oldal, oldalfej, forgalmi, automFent, automLent, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
 
 function evek(k) {
   const gj = k.adat.tetelek.gepjarmuado;
@@ -87,6 +87,7 @@ ${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div
 <li><a href="${L.l('atirasi-illetek-kalkulator/')}"><h3>Átírás</h3><p>Mennyibe kerül az autó a vételáron felül: illeték, vizsgálat, okmányok, behozott autónál regisztrációs adó.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('benzin-vagy-villany/')}"><h3>Benzin vagy villany</h3><p>Két autó teljes költsége havonta és évekre előre: értékvesztés, energia, adók. Mikor térül meg a drágább villanyautó?</p><span class="ugrik">Összehasonlítom</span></a></li>
 <li><a href="${L.l('autofenntartas-kalkulator/')}"><h3>Fenntartás</h3><p>Mennyibe kerül havonta a saját autód, ha mindent beleszámolsz: üzemanyag, értékvesztés, biztosítás, szerviz, adó.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l('utikoltseg-kalkulator/')}"><h3>Útiköltség</h3><p>Mennyibe kerül az út benzinnel, dízellel vagy árammal a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával, és mennyi jut egy utasra.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet a munkáltató, ha a saját autóddal utazol: hivatali út a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával és a fogyasztási normával, munkába járás ${adat.szabalyok.km.munkaba_jaras_ft_km} Ft/km-rel.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('autom/')}"><h3>Az autóm</h3><p>Mentsd el az autódat, és egy lapon látod az adót idén és jövőre, a havi költséget és az értékvesztést.</p><span class="ugrik">Megnyitom</span></a></li>
 <li><a href="${L.l('plug-in-hibrid-2027/')}"><h3>Plug-in hibrid 2027</h3><p>Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.</p><span class="ugrik">Kiszámolom</span></a></li>
@@ -367,6 +368,70 @@ ${tovabb(L, ut)}
   });
 }
 
+/* ======================= ÚTIKÖLTSÉG ======================= */
+export const UTI_UT = 'utikoltseg-kalkulator/';
+export function utikoltsegOldal(k) {
+  const { adat } = k;
+  const ut = UTI_UT;
+  const lf = S.legfrissebbHonap(adat);
+  const ar = adat.uzemanyag.evek[lf.ev][lf.honap];
+  const e = adat.szabalyok.energia;
+  const f = { aram_kedv: e.aram_kedv, aram_piaci: e.aram_piaci, tolto: e.tolto, veszteseg: e.veszteseg };
+  const honapi = `${S.HONAPOK[lf.honap - 1]}i`;
+  const pelda = (uz, fogy, km = 100, extra = {}) => S.utikoltseg(adat, { km, uzemanyag: uz, fogyasztas: fogy, ev: lf.ev, honap: lf.honap, f, ...extra });
+  const p100 = pelda('benzin', 6.5);
+  const pVilly = pelda('elektromos', 17, 100, { toltes: 'otthon' }), pTolto = pelda('elektromos', 17, 100, { toltes: 'tolto' });
+  const FOGY = [5, 6, 7, 8, 10];
+  const kerdesek = [
+    { k: 'Mennyibe kerül 100 km benzinnel?', v: [`${M.honapBan(lf.honap)[0].toUpperCase() + M.honapBan(lf.honap).slice(1)} a NAV ára benzinre ${ar.benzin} Ft/l. Egy 6,5 literes fogyasztású autóval 100 km ${M.ftx(p100.osszesen)}, 8 literrel ${M.ftx(pelda('benzin', 8).osszesen)}. Dízelnél (${ar.dizel} Ft/l) 5,5 literrel ${M.ftx(pelda('dizel', 5.5).osszesen)}.`] },
+    { k: 'Milyen árral számoltok?', v: [`A NAV havi üzemanyagárával. A NAV minden hónapra közzéteszi, milyen áron lehet elszámolni az üzemanyagot: ez a nagy forgalmazók átlagos árán alapul, ezért jól mutatja az aktuális szintet, de a kúton ettől eltérhet. Ha tudod a pontos árat, írd be a saját ár mezőbe. Az árat minden hónapban magától frissítjük, amint a NAV közzéteszi.`] },
+    { k: 'Hogyan számol a villanyautó?', v: [`A kijelzőn látott fogyasztást (kWh/100 km) ${e.veszteseg}% töltési veszteséggel növeljük, és a töltés helye szerinti árral szorozzuk: otthon kedvezményes árammal ${M.tized(e.aram_kedv, 1)} Ft/kWh, a kedvezményes sávon felül ${M.tized(e.aram_piaci, 1)} Ft/kWh, nyilvános töltőn átlagosan ${fmt(e.tolto)} Ft/kWh. Egy 17 kWh-t fogyasztó autóval 100 km otthon töltve ${M.ftx(pVilly.osszesen)}, nyilvános töltőn ${M.ftx(pTolto.osszesen)}.`] },
+    { k: 'Hibrid vagy plug-in hibrid autóval hogyan számoljak?', v: ['Válaszd a benzint, és add meg a valós átlagfogyasztást, amit a tankolásokból vagy a fedélzeti számítógépről látsz. Plug-in hibridnél ez azon múlik, milyen gyakran töltöd: ha az út nagy részét árammal teszed meg, számold ki külön a villanyos és a benzines szakaszt.'] },
+    { k: 'Mi a különbség az útiköltség és a kilométertérítés között?', v: [`Az útiköltség az, amit ténylegesen elköltesz üzemanyagra vagy áramra. A kilométertérítés az, amit a munkáltató adómentesen kifizethet, ha a saját autóddal utazol a munkád miatt: ott a hivatalos fogyasztási normával és ${adat.szabalyok.km.normakoltseg_ft_km} Ft/km normaköltséggel számolnak, nem a valós fogyasztással.`] },
+    { k: 'Hogyan osszuk el a költséget az utasok között?', v: ['Ha megadod, hányan utaztok, a teljes költséget (üzemanyag, útdíj, parkolás) egyenlő részekre osztjuk, a sofőrrel együtt. A sofőr autójának kopását és értékvesztését ez nem tartalmazza: azt a fenntartási kalkulátor mutatja meg.'] },
+  ];
+  const leiras = `Mennyibe kerül az út benzinnel, dízellel, LPG-vel vagy árammal? A NAV ${honapi} árával (benzin ${ar.benzin}, dízel ${ar.dizel} Ft/l), fejenként és havonta is.`;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Útiköltség'], cim: 'Mennyibe kerül az út üzemanyagban?', valasz: `A távolságot szorozd meg a fogyasztással, oszd el 100-zal, és szorozd az üzemanyag árával. A NAV ${honapi} ára benzinre ${ar.benzin}, dízelre ${ar.dizel} Ft/l, így 100 km egy 6,5 literes benzines autóval ${M.ftx(p100.osszesen)}.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'uti', cim: 'Az út és az autó', autom: true, tartalom: `
+${sor('', szamMezo({ id: 'km', cim: 'Távolság', me: 'km', placeholder: 'pl. 120', min: 1, max: 20000, sugo: 'Egy irányban. Az útvonaltervező megmutatja.' }) + jelolo('odaVissza', 'Oda-vissza', 'A megadott távolság duplájával számolunk.'))}
+${sor('P.3', negyzetek('uzemanyag', 'Mivel megy az autó?', [['benzin', 'Benzin'], ['dizel', 'Dízel'], ['lpg', 'LPG'], ['elektromos', 'Áram']], ''))}
+${sor('', szamMezo({ id: 'fogyasztas', cim: 'Átlagfogyasztás', me: 'l/100 km', placeholder: 'pl. 6,5', tized: true, min: 1, max: 40, sugo: 'A valós érték a tankolásokból vagy a fedélzeti számítógépről, nem a gyári.' }), ' data-mutat="uzemanyag=benzin|uzemanyag=dizel|uzemanyag=lpg|uzemanyag="')}
+${sor('', szamMezo({ id: 'kwh', cim: 'Átlagfogyasztás', me: 'kWh/100 km', placeholder: 'pl. 17', tized: true, min: 5, max: 60, sugo: 'A kijelzőn látott érték. A töltési veszteséget mi tesszük hozzá.' }), ' data-mutat="uzemanyag=elektromos"')}
+${sor('', valaszto('toltes', 'Hol töltöd?', [['otthon', 'Otthon, kedvezményes áram'], ['otthonPiaci', 'Otthon, a sávon felül'], ['tolto', 'Nyilvános töltőn']], 'otthon', `Kedvezményes áram ${M.tized(e.aram_kedv, 1)}, a ${fmt(e.sav_kwh)} kWh-s éves sávon felül ${M.tized(e.aram_piaci, 1)}, nyilvános töltőn átlagosan ${fmt(e.tolto)} Ft/kWh.`), ' data-mutat="uzemanyag=elektromos"')}
+<div data-vedett hidden>${sor('', jelolo('vedett', 'Védett árral számolok', 'Ebben a hónapban a NAV a magyar rendszámú autókra védett árat is közölt.'))}</div>
+${sor('', szamMezo({ id: 'utasok', cim: 'Hányan utaztok?', me: 'fő', placeholder: '1', min: 1, max: 9, sugo: 'A sofőrrel együtt. A költséget egyenlő részekre osztjuk.' }))}
+<details class="feltevesek"><summary>Útdíj, saját ár, rendszeres út</summary><div>
+${sor('', szamMezo({ id: 'egyeb', cim: 'Útdíj, matrica, parkolás az úton', me: 'Ft', placeholder: 'pl. 6 000', min: 0, sugo: 'Ezt is hozzáadjuk, és elosztjuk az utasok között.' }))}
+${sor('', szamMezo({ id: 'sajatAr', cim: 'Saját ár, ha tudod a kúti árat', me: 'Ft', placeholder: 'NAV-ár', min: 1, sugo: 'Literenként, villanyautónál kWh-nként. Üresen a NAV havi árával számolunk.' }))}
+${sor('', szamMezo({ id: 'alkalom', cim: 'Hányszor teszed meg havonta?', me: 'alkalom', placeholder: 'pl. 20', min: 0, max: 62, sugo: 'Ha rendszeresen jársz erre, a havi és az éves költséget is kiírjuk.' }))}
+</div></details>` })}
+${elszamolas(k, M.uresPanel('Add meg a távolságot, az üzemanyagot és a fogyasztást.'))}
+</div>
+
+<div class="keret"><article class="cikk">
+<h2>Hogyan számolunk?</h2>
+<p>Útiköltség = távolság × fogyasztás ÷ 100 × ár. A távolság oda-vissza útnál a kétszerese, a fogyasztás a te autód valós átlaga. Az árat a NAV havi közzétételéből vesszük, és minden hónapban magától frissítjük. Villanyautónál a kijelzőn látott fogyasztáshoz ${e.veszteseg}% töltési veszteséget adunk. Az útdíjat és a parkolást, ha megadod, egyben hozzáadjuk.</p>
+<h2 id="szaz-km">Mennyibe kerül 100 km?</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Fogyasztás</th><th>Benzin (${ar.benzin} Ft/l)</th><th>Dízel (${ar.dizel} Ft/l)</th><th>LPG (${ar.lpg} Ft/l)</th></tr></thead><tbody>
+${FOGY.map((x) => `<tr><td>${x} l/100 km</td><td>${M.ftx(pelda('benzin', x).osszesen)}</td><td>${M.ftx(pelda('dizel', x).osszesen)}</td><td>${M.ftx(pelda('lpg', x * adat.szabalyok.km.lpg_szorzo).osszesen)}</td></tr>`).join('')}
+</tbody><caption>100 km üzemanyagköltsége a NAV ${honapHu(lf.ev, lf.honap)}i árával${arDatum(adat, lf.ev, lf.honap) ? ` (${arDatum(adat, lf.ev, lf.honap)})` : ''}. Az LPG-s autó a benzines fogyasztás ${M.tized(adat.szabalyok.km.lpg_szorzo)}-szeresével számol, ahogy a NAV normája.</caption></table></div>
+<p>Villanyautóval, 17 kWh/100 km fogyasztással 100 km otthon, kedvezményes árammal töltve ${M.ftx(pVilly.osszesen)}, nyilvános töltőn ${M.ftx(pTolto.osszesen)}.</p>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([{ nev: 'NAV: alkalmazható üzemanyagárak', url: adat.uzemanyag.forras, d: `${honapHu(lf.ev, lf.honap)}, havonta frissül` }, ...e.forrasok.slice(0, 3).map((x) => ({ nev: x.nev, url: x.url }))])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `Útiköltség-kalkulátor ${lf.ev}: mennyibe kerül az út?`,
+    leiras, ut, tartalom,
+    adatJson: { uzemanyag: { evek: { [lf.ev]: { [lf.honap]: ar } }, forras: adat.uzemanyag.forras }, lf, f },
+    jsonld: [alkalmazasLd(k.cfg, 'Útiköltség-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Útiköltség', ut }])],
+  });
+}
+
 /* ======================= FORRÁSOK ======================= */
 export function forrasokOldal(k) {
   const { adat } = k;
@@ -540,7 +605,9 @@ export function adatvedelemOldal(k) {
 ${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gyűjtünk rólad adatot. A kalkulátorok a böngésződben számolnak, amit beírsz, az csak akkor jut el hozzánk, ha a visszajelzés-dobozban magad elküldöd.' })}
 <div class="keret"><article class="cikk" style="padding-top:12px">
 <h2>Sütik és követés</h2>
-<p>Nem használunk sütit és követőkódot, és hirdetés sincs az oldalon. A látogatottságot a Cloudflare Web Analytics méri: ez nem tesz semmit a gépedre, nem azonosít, és mi csak összesített számokat látunk (hány oldalt néztek meg, melyik oldalról érkeztek, milyen eszközről). A betűtípusokat magunk szolgáljuk ki. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
+<p>Nem használunk sütit, nem azonosítunk, és hirdetés sincs az oldalon. A látogatottságot a Cloudflare Web Analytics méri: ez nem tesz semmit a gépedre, nem azonosít, és mi csak összesített számokat látunk (hány oldalt néztek meg, melyik oldalról érkeztek, milyen eszközről). A betűtípusokat magunk szolgáljuk ki. Ha ezen valaha változtatunk, előbb itt jelezzük, és csak a hozzájárulásoddal kapcsolunk be bármit.</p>
+<h2>Mit számolunk a kalkulátorokban?</h2>
+<p>Hogy lássuk, melyik kalkulátor működik jól, oldalanként és havonta néhány darabszámot gyűjtünk: hányan kezdtek el adatot beírni, hányan jutottak eredményig, hányan mentették az autójukat, osztották meg vagy nyomtatták ki a számítást, és hányan kattintottak tovább egy másik kalkulátorra. Csak ennyi: egy számláló nő eggyel. A beírt adataidat, az eredményt, az IP-címedet nem küldjük és nem tároljuk, sütit vagy más azonosítót nem teszünk a gépedre, és a böngésződben sem tárolunk hozzá semmit. Mivel ezekből a számokból senki sem azonosítható, ez nem személyes adat.</p>
 <h2>A mentett autód</h2>
 <p>Ha az „Elmentem az autómat” gombra kattintasz, az autó adatai a böngésződ saját tárolójába kerülnek ezen az eszközön. Hozzánk nem jutnak el, fiók nincs. Bármikor átírhatod és újra mentheted, vagy a „Törlöm” gombbal törölheted. A böngésző adatainak törlésekor is eltűnik. Másik böngészőben vagy másik eszközön nem látszik, mert nem szinkronizáljuk sehová.</p>
 <h2>Visszajelzés</h2>
@@ -554,7 +621,7 @@ ${oldalfej(L, { morzsa: ['Adatvédelem'], cim: 'Adatvédelem', bevezeto: 'Nem gy
 <h2>Adatkezelő és jogaid</h2>
 <p>Adatkezelő: ${kitoltendo(cfg.uzemelteto.nev)}${cfg.kapcsolat_email ? `, ${cfg.kapcsolat_email}` : ''}. Kérhetsz tájékoztatást, helyesbítést, törlést és korlátozást, és tiltakozhatsz az adatkezelés ellen. Panasszal a Nemzeti Adatvédelmi és Információszabadság Hatósághoz fordulhatsz (NAIH, 1055 Budapest, Falk Miksa utca 9–11., naih.hu).</p>
 </article></div>`;
-  return oldal(k, { cim: 'Adatvédelem', leiras: `Az ${cfg.marka} nem használ sütit és követőkódot, a számítás a böngészőben fut.`, ut: 'adatvedelem/', tartalom });
+  return oldal(k, { cim: 'Adatvédelem', leiras: `Az ${cfg.marka} nem használ sütit és nem azonosít, a számítás a böngészőben fut.`, ut: 'adatvedelem/', tartalom });
 }
 
 export function nemTalalhatoOldal(k) {
@@ -580,7 +647,7 @@ export const PELDA = {
 function autoKartya(betu, cim, hajtas) {
   const p = `${betu}_`;
   const vM = (h) => h.map((x) => `${p}hajtas=${x}`).join('|');
-  return `<div class="forgalmi ${betu}">${''}<div class="forgalmi-fej"><h2>${cim}</h2></div>
+  return `<div class="forgalmi ${betu}">${''}<div class="forgalmi-fej"><h2>${cim}</h2></div>${betu === 'a' ? automFent('ide') : ''}
 ${sor('', `<label for="${p}nev">Megnevezés</label><div class="beir szeles"><input id="${p}nev" name="${p}nev" type="text" placeholder="${betu === 'a' ? 'pl. a mostani autóm' : 'pl. villanyautó'}" maxlength="40" style="font-size:22px"></div>`)}
 ${sor('P.3', negyzetek(`${p}hajtas`, 'Hajtás', HAJTASOK, hajtas, p))}
 ${sor('', szamMezo({ id: `${p}ar`, cim: 'Vételár', me: 'Ft', placeholder: 'pl. 12 000 000', min: 0 }))}
@@ -593,6 +660,7 @@ ${sor('', szamMezo({ id: `${p}szerviz`, cim: 'Szerviz és javítás évente', me
 ${sor('', szamMezo({ id: `${p}biztositas`, cim: 'Biztosítás évente (kötelező és casco)', me: 'Ft', placeholder: 'pl. 150 000', min: 0 }))}
 ${sor('', szamMezo({ id: `${p}eladasiAr`, cim: 'Mennyiért adnád el a végén?', me: 'Ft', placeholder: 'üresen mi becsüljük', min: 0, sugo: 'Ha üresen hagyod, a piaci maradványérték-adatokkal számolunk.' }))}
 </div></details>
+${betu === 'a' ? automLent('Elmentem ezt az autót az autómként') : ''}
 </div>`;
 }
 
@@ -835,7 +903,7 @@ export function phevOldal(k) {
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Plug-in hibrid 2027'], cim: 'Mennyivel drágul a plug-in hibrid 2027-ben?', valasz: `2027-től minden plug-in hibrid fizet gépjárműadót, a céges autók cégautóadót is, és Budapesten megszűnik az ingyenes parkolás. A zöld rendszámot ${M.datumIg(p.rendszam_hatarido)} fehérre kell cserélni.` })}
 <div class="keret asztal">
-${forgalmi({ kalk: 'phev', cim: 'Az autó adatai', tartalom: `
+${forgalmi({ kalk: 'phev', cim: 'Az autó adatai', autom: true, tartalom: `
 ${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 135', min: 1, max: 2000, extra: egysegValto, sugo: 'A rendszerteljesítmény, ahogy a forgalmiban szerepel.' }))}
 ${sor('', szamMezo({ id: 'gyartasiEv', cim: 'Gyártási év', placeholder: 'pl. 2022', min: 1990, max: k.ev + 1 }))}
 ${sor('B', jelolo('regi', '2025. január 1. előtt helyezték forgalomba', 'Ilyenkor 2026 végéig mentes a gépjárműadó és a cégautóadó alól.'))}
@@ -1114,7 +1182,7 @@ export function javitasOldal(k) {
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Javítás vagy csere'], cim: 'Megjavítsam az autót, vagy cseréljem le?', valasz: 'Az a jobb, amelyik a következő években kevesebbe kerül, ha a végén mindkét autót eladnád. Ebbe a javítás, a vételár különbözete, az átírás, a fenntartás és az értékvesztés is beletartozik.' })}
 <div class="keret asztal">
-${forgalmi({ kalk: 'javitas', cim: 'A két lehetőség', tartalom: `
+${forgalmi({ kalk: 'javitas', cim: 'A két lehetőség', autom: { mibe: 'a régi autó helyére', felirat: 'Elmentem a régi autót az autómként' }, tartalom: `
 ${autoMezok('a', 'A mostani autó')}
 ${sor('', szamMezo({ id: 'a_javitas', cim: 'Mennyibe kerül a javítás?', me: 'Ft', placeholder: 'pl. 1 000 000', min: 0 }))}
 ${sor('', szamMezo({ id: 'a_ertekMost', cim: 'Mennyiért adnád el most, javítás nélkül?', me: 'Ft', placeholder: 'pl. 1 500 000', min: 0 }))}
@@ -1303,7 +1371,7 @@ export function cegautoadoOldal(k) {
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautóadó'], cim: `Mennyi a cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}?`, valasz: `Havonta ${M.ftx(Math.min(...t.tabla.flat()))}–${M.ftx(Math.max(...t.tabla.flat()))} autónként, a teljesítménytől és a környezetvédelmi osztálytól függően. A gépjárműadó levonható belőle, a bevallás és a befizetés negyedéves.` })}
 <div class="keret asztal">
-${forgalmi({ kalk: 'cegautoado', cim: 'A céges autó adatai', tartalom: `
+${forgalmi({ kalk: 'cegautoado', cim: 'A céges autó adatai', autom: true, tartalom: `
 ${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), ev)) : `<input type="hidden" name="ev" value="${ev}">`}
 ${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, max: 2000, extra: egysegValto }))}
 ${sor('V.9', valaszto('osztaly', 'Környezetvédelmi osztály', OSZTALY_OPCIOK, '', 'A forgalmi engedély V.9 sorában. A legtöbb mai autó „14” vagy „15”.'))}
@@ -1354,7 +1422,7 @@ export function cegautoOldal(k) {
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautó vagy saját autó'], cim: 'Cégautó vagy saját autó km-térítéssel?', valasz: 'Sok üzleti úttal és olcsóbb autóval általában a saját autó, drágább autóval és kevés üzleti úttal a cégautó jön ki jobban. Kft. és bt. tulajdonosainak számolunk, abban mérve, mennyi pénz marad nálad.' })}
 <div class="keret asztal">
-${forgalmi({ kalk: 'cegauto', cim: 'Az autó és a használat', tartalom: `
+${forgalmi({ kalk: 'cegauto', cim: 'Az autó és a használat', autom: true, tartalom: `
 <fieldset><legend>Az autó</legend>
 ${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), ev)) : `<input type="hidden" name="ev" value="${ev}">`}
 ${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 110', min: 1, max: 2000, extra: egysegValto }))}

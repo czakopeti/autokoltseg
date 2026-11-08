@@ -22,6 +22,7 @@ export const FIOK = [
   { cim: 'Vásárlás és fenntartás', elemek: [
     ['benzin-vagy-villany/', 'Benzin vagy villany', 'Két autó teljes költsége, megtérülés'],
     ['autofenntartas-kalkulator/', 'Fenntartás', 'Mennyibe kerül havonta az autód'],
+    ['utikoltseg-kalkulator/', 'Útiköltség', 'Mennyibe kerül az út üzemanyagban'],
     ['autohitel-kalkulator/', 'Autóhitel', 'Törlesztő és az autó valódi költsége'],
     ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere', 'Megjavítsam, vagy vegyek másikat?'],
     ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés', 'Kitölthető, nyomtatható minta'],
@@ -50,8 +51,12 @@ const VALL_UTAK = ['vallalkozoknak/', 'cegautoado-kalkulator/', 'cegauto-vagy-sa
 const TASKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 7.5h16a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1ZM3 12.5h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 const HAMBURGER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
+/** A kalkulátorok címe a kalkulátor kulcsa szerint: a „Következő lépés” linkjeihez (app.mjs). */
+export const KALK_UTAK = { gepjarmuado: 'gepjarmuado-kalkulator/', atiras: 'atirasi-illetek-kalkulator/', km: 'kilometerterites-kalkulator/', uti: 'utikoltseg-kalkulator/', osszevet: 'benzin-vagy-villany/', fenntartas: 'autofenntartas-kalkulator/', phev: 'plug-in-hibrid-2027/', hitel: 'autohitel-kalkulator/', matrica: 'autopalya-matrica-kalkulator/', javitas: 'megjavitsam-vagy-csereljem/', cegautoado: 'cegautoado-kalkulator/', cegauto: 'cegauto-vagy-sajat-auto/' };
+
 /** Kalkulátorok, amelyek nem férnek a fő menübe: a láblécben és a főoldalon vannak. */
 export const TOBB_KALK = [
+  { ut: 'utikoltseg-kalkulator/', nev: 'Útiköltség' },
   { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
   { ut: 'cegautoado-kalkulator/', nev: 'Cégautóadó' },
   { ut: 'cegauto-vagy-sajat-auto/', nev: 'Cégautó vagy saját autó' },
@@ -186,7 +191,7 @@ ${(() => {
 })()}
 </main>
 ${lablec(k, L)}
-${adatJson ? `<script type="application/json" id="adat">${JSON.stringify(adatJson)}</script>` : ''}
+${adatJson ? `<script type="application/json" id="adat">${JSON.stringify(adatJson)}</script>\n<script type="application/json" id="utak">${JSON.stringify(Object.fromEntries(Object.entries(KALK_UTAK).map(([kk, u]) => [kk, L.l(u)])))}</script>` : ''}
 <script type="module" src="${L.a(`js/app.js?v=${verzio}`)}"></script>
 </body>
 </html>
@@ -268,9 +273,14 @@ export const HOL_TALALOM = `<details class="hol-talalom"><summary>Hol találom e
 </ul></div></details>`;
 
 /** A forgalmi-kártya kerete. */
+/** A mentett autó sávja (betöltés, törlés) és a mentés gombja. A felirat jelzi, ha nem az egész űrlap az autód. */
+export const automFent = (mibe = '') => `<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>${mibe ? `Betöltöm ${mibe}` : 'Betöltöm'}</button><button class="szoveg-gomb" type="button" data-autom-torol>Törlöm</button></div>`;
+export const automLent = (felirat = 'Elmentem az autómat') => `<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>${felirat}</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>`;
 export function forgalmi({ cim, al = '', tartalom, kalk, extra = '', autom = false, osztaly = '' }) {
-  const fent = autom ? '<div class="autom" data-autom hidden><span>Mentett autód: <b data-autom-nev></b></span><button class="szoveg-gomb" type="button" data-autom-betolt>Betöltöm</button><button class="szoveg-gomb" type="button" data-autom-torol>Törlöm</button></div>' : '';
-  const lent = autom ? '<div class="autom-ment"><button class="szoveg-gomb" type="button" data-autom-ment>Elmentem az autómat</button><span class="kicsi">Csak ebben a böngészőben marad, és bármikor törölheted.</span></div>' : '';
+  // autom: true, vagy { mibe, felirat }, ha az autód az űrlapnak csak az egyik része (például a régi autó)
+  const ao = typeof autom === 'object' ? autom : {};
+  const fent = autom ? automFent(ao.mibe) : '';
+  const lent = autom ? automLent(ao.felirat) : '';
   return `<form class="forgalmi${osztaly ? ` ${osztaly}` : ''}"${kalk ? ` data-kalk="${kalk}"` : ''} novalidate${extra}><span class="gilos" aria-hidden="true"></span><div class="forgalmi-fej"><h2>${cim}</h2>${al ? `<p>${al}</p>` : ''}</div>${['gyors', 'gepjarmuado', 'atiras', 'fenntartas'].includes(kalk) ? HOL_TALALOM : ''}${fent}${tartalom}${lent}</form>`;
 }
 
@@ -328,7 +338,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

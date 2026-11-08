@@ -656,3 +656,12 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 .tabla-reszlet { margin: 6px 0 28px; }
 .tabla-reszlet summary { cursor: pointer; font-weight: 700; padding: 8px 0; }
 .tabla-reszlet .tabla-tarto { max-height: 460px; overflow: auto; }
+
+/* Következő lépés: az eredmény után, a kapcsolódó kalkulátor a már beírt adatokkal */
+.kovetkezo { margin-top: 22px; padding-top: 16px; border-top: 1px dashed var(--vonal2); }
+.kovetkezo-cim { margin: 0 0 8px; font-size: 13.5px; font-weight: 700; color: var(--tinta2); }
+.kovetkezo ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.kovetkezo li { display: grid; gap: 2px; }
+.kovetkezo a { font-weight: 700; color: var(--tinta); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.kovetkezo li span { font-size: 14px; color: var(--tinta2); line-height: 1.45; }
+@media print { .kovetkezo { display: none; } }

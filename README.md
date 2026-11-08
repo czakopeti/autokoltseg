@@ -78,6 +78,15 @@ Egyszeri beállítás (kb. 5 perc):
 
 Amíg ez nincs kész, a gombok működnek, de a szöveg elküldésekor a látogató azt látja, hogy most nem sikerült, és megkapja az e-mail-címet. A kulcs egy év múlva lejár. A `karbantartas.json` szól, mikor kell újat csinálni (ugyanez az 1. és 2. lépés).
 
+## Használatmérés
+
+Hogy lássuk, melyik kalkulátor működik, oldalanként és havonta néhány darabszámot gyűjtünk. Süti, azonosító, IP-cím és a beírt adatok nélkül: csak egy számláló nő eggyel. Az Adatvédelem oldal ezt leírja.
+
+- **Események:** `indit` (elkezdett beírni), `kesz` (valódi eredményig jutott), `mentes` (elmentette az autóját), `megosztas`, `nyomtat`, `kovetkezo` (a „Következő lépés” linkre kattintott), `tovabb` (az oldal alján egy másik kalkulátorra kattintott). Oldalbetöltésenként mindegyik legfeljebb egyszer.
+- **Kiolvasás:** https://autozom.hu/api/meres (a folyó hónap), vagy például https://autozom.hu/api/meres?honap=2026-11. A `befejezesi_arany` a `kesz` és az `indit` aránya százalékban.
+- **Tárolás:** ugyanaz a `SZAVAZAT` KV-tároló, `m:ÉÉÉÉ-HH:<oldal>:<esemény>` kulcsokkal, lejárat nélkül, hogy idősor legyen belőle. A végpont csak a `kozos/utak.js`-ben felsorolt oldalakra számol (az `epit.mjs` írja).
+- **Korlát:** a Cloudflare ingyenes csomagjában a KV naponta 1000 írást enged, a szavazatokkal együtt. Napi néhány száz számításig ez bőven elég. Ha egyszer a havi összesítőben az `indit` napi átlaga 300 fölé megy, érdemes a mérést a Cloudflare Analytics Engine-re költöztetni.
+
 ## Idősorok
 
 Ami egyszer bekerült, az megmarad. Az évenkénti adótételek (`data/tetelek.json`), a matricadíjak (`data/szabalyok.json` → `matrica.evek`) és a NAV havi üzemanyagárai (`data/uzemanyag.json`, 2023 januárjától) évenként, illetve havonta tárolódnak, és a régiek nem íródnak felül.
