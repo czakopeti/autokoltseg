@@ -1,0 +1,19 @@
+name: IndexNow diagnosztika
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          K=$(jq -r .indexnow_kulcs config.json)
+          for ua in "curl/8" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"; do
+            echo "== kulcsfájl, UA: $ua"; curl -sS -m 20 -D - -A "$ua" "https://autozom.hu/$K.txt" | grep -iE "^HTTP|content-type|cf-mitigated|server|^[0-9a-f]{32}" ; echo
+          done
+          echo "== http (nem https) kulcsfájl"; curl -sS -m 20 -o /dev/null -w "%{http_code} -> %{redirect_url}\n" "http://autozom.hu/$K.txt"
+          U="https%3A%2F%2Fautozom.hu%2Fadatok%2F"
+          for h in api.indexnow.org www.bing.com yandex.com search.seznam.cz; do
+            printf '%s: ' "$h"; curl -sS -m 20 -w " [%{http_code}]\n" "https://$h/indexnow?url=$U&key=$K"
+          done
