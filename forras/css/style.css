@@ -665,3 +665,22 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 .kovetkezo a { font-weight: 700; color: var(--tinta); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 .kovetkezo li span { font-size: 14px; color: var(--tinta2); line-height: 1.45; }
 @media print { .kovetkezo { display: none; } }
+
+/* Fenntartási példatábla: az autók oszlopban, a fejlécben rövid leírással */
+.peldatabla th { white-space: normal; min-width: 7.5em; }
+.peldatabla th a { display: block; font-weight: 700; color: var(--tinta); }
+.peldatabla th .kicsi { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; margin-top: 2px; line-height: 1.35; }
+.peldatabla tr.osszeg td { border-top: 1.5px solid var(--tinta); }
+@media (max-width: 600px) {
+  .peldatabla { font-size: 14px; }
+  .peldatabla th, .peldatabla td { padding: 9px 6px; }
+  .peldatabla th { min-width: 0; }
+  .peldatabla th:first-child, .peldatabla td:first-child { max-width: 6.5em; }
+  .peldatabla th .kicsi { font-size: 11.5px; }
+  .peldatabla td:last-child { white-space: normal; }
+}
+.tabla-megj { font-size: 13.5px; color: var(--tinta2); margin-top: 10px; }
+@media (max-width: 420px) {
+  .peldatabla { font-size: 13px; }
+  .peldatabla th, .peldatabla td { padding: 8px 4px; }
+}

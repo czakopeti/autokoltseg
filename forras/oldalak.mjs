@@ -748,13 +748,33 @@ ${tovabb(L, ut)}
 }
 
 /* ======================= FENNTARTÁS ======================= */
+/** „Mennyibe kerül havonta egy autó?” — a négy példaautó a fenntartási motorral, a feltevések kiírva, a saját számításra mutató linkkel. */
+// A példák becslések: százasra kerekítve írjuk ki, hogy ne tűnjenek pontosabbnak, mint amilyenek.
+const szazas = (x) => M.ftx(Math.round(x / 100) * 100);
+const szam100 = (x) => fmt(Math.round(x / 100) * 100);
+function fenntartasPeldaBlokk(L, adat, peldak, f, ev) {
+  const p = adat.szabalyok.fenntartas_peldak;
+  const e = adat.szabalyok.energia;
+  const link = (x) => `${L.l('autofenntartas-kalkulator/')}?${new URLSearchParams({ kw: x.kw, gyartasiEv: x.gyartasiEv, hajtas: x.hajtas, [x.hajtas === 'elektromos' ? 'kwh' : 'fogyasztas']: String(x.fogyasztas).replace('.', ','), km: x.km, ertek: x.ertek, biztositas: p.kgfb_atlag.ft, szerviz: x.szerviz, gumi: x.gumi })}`;
+  const min = Math.min(...peldak.map((x) => x.havi)), max = Math.max(...peldak.map((x) => x.havi));
+  return `<h2 id="havi-koltseg">Mennyibe kerül havonta egy autó ${M.rag(ev, 'ban', 'ben')}?</h2>
+<p>Négy jellemző autóval kiszámolva havi ${szazas(min)} és ${szazas(max)} között, az értékvesztéssel együtt. A legtöbbet az üzemanyag és az értékvesztés viszi, a gépjárműadó a legkisebb tétel. A számokat ugyanaz a számítás adja, mint a fenti kalkulátort, és minden hónapban a NAV friss árával frissülnek.</p>
+<div class="tabla-tarto"><table class="tabla peldatabla"><thead><tr><th>Havonta, Ft</th>${peldak.map((x) => `<th><a href="${esc(link(x))}">${x.nev}</a><span class="kicsi">${x.leiras}</span></th>`).join('')}</tr></thead><tbody>
+${[['Üzemanyag vagy áram', (x) => szam100(x.energia / 12)], ['Értékvesztés', (x) => szam100(x.ertekvesztes / 12)], ['Biztosítás és adó', (x) => szam100(x.biztAdo / 12)], ['Szerviz és gumi', (x) => szam100(x.szervizGumi / 12)]].map(([nev, fn]) => `<tr><td>${nev}</td>${peldak.map((x) => `<td>${fn(x)}</td>`).join('')}</tr>`).join('')}
+<tr class="osszeg"><td>Összesen</td>${peldak.map((x) => `<td><strong>${szam100(x.havi)}</strong></td>`).join('')}</tr>
+<tr><td>Egy km-re</td>${peldak.map((x) => `<td>${M.tized(x.ftKm, 0)}</td>`).join('')}</tr>
+</tbody><caption>Havi összegek, ${honapHu(f.lf.ev, f.lf.honap)}, forintban. A feltevések a táblázat alatt.</caption></table></div>
+<p class="tabla-megj">Üzemanyag: a NAV ${honapHu(f.lf.ev, f.lf.honap)}i ára (benzin ${f.benzin}, dízel ${f.dizel} Ft/l); a villanyautó töltésének ${e.otthoni}%-a otthon, a többi nyilvános töltőn. Gépjárműadó: a ${ev}. évi tételek. Kötelező biztosítás: az MNB szerinti országos átlag, évi ${M.ftx(p.kgfb_atlag.ft)} (${p.kgfb_atlag.idoszak}), casco nélkül. Értékvesztés: az autó mostani értékének évi átlagos csökkenése hajtásonként. A szerviz és a gumi a mi feltevésünk. Parkolás, matrica és a vételárba kötött pénz kamata nincs benne. Az autó nevére kattintva a saját számaiddal is kiszámolhatod.</p>`;
+}
+
 export function fenntartasOldal(k) {
   const { adat } = k;
   const { aktualis } = evek(k);
   const ut = 'autofenntartas-kalkulator/';
   const f = feltevesek(adat);
+  const peldak = S.fenntartasPeldak(adat, { ev: aktualis, f });
   const kerdesek = [
-    { k: 'Mennyibe kerül egy autó fenntartása havonta?', v: ['Ez leginkább a futott kilométeren, az autó értékén és a biztosításon múlik. Egy átlagos, évi 15 000 km-t futó benzines autónál gyakran az üzemanyag és az értékvesztés a két legnagyobb tétel, a gépjárműadó jóval kisebb. Írd be a saját számaidat, és tételesen látod.'] },
+    { k: 'Mennyibe kerül egy autó fenntartása havonta?', v: [`Leginkább a futott kilométeren, az autó értékén és a biztosításon múlik. A lenti négy példánk ${M.honapBan(f.lf.honap)} havi ${szazas(Math.min(...peldak.map((x) => x.havi)))} és ${szazas(Math.max(...peldak.map((x) => x.havi)))} között jön ki értékvesztéssel együtt, parkolás és casco nélkül: ${peldak.map((x) => `${x.nev.toLowerCase()} (${x.leiras}) ${szazas(x.havi)}`).join(', ')}. Írd be a saját számaidat, és tételesen látod.`] },
     { k: 'Miért számít bele az értékvesztés?', v: ['Mert az is a te pénzed: ha 4 millióért veszel egy autót, és 5 év múlva 2,5 millióért adod el, az évi 300 000 forint, akkor is, ha közben nem fizetsz érte semmit. Ha nem akarod beleszámolni, hagyd üresen.'] },
     { k: 'Honnan tudom a saját számaimat?', v: ['A fogyasztást a tankolásokból (kilométer és liter), a biztosítást a díjértesítőből, a szervizt az elmúlt egy-két év számláiból. A gépjárműadót mi számoljuk ki a NAV tételeivel.'] },
   ];
@@ -790,10 +810,11 @@ ${sor('', szamMezo({ id: 'ertekVeg', cim: 'Mennyiért adnád el akkor?', me: 'Ft
 ${elszamolas(k, M.uresPanel('Add meg a teljesítményt, a gyártási évet, a fogyasztást és az évi kilométert.'))}
 </div>
 <div class="keret"><article class="cikk">
+${fenntartasPeldaBlokk(L, adat, peldak, f, aktualis)}
 <h2>Gyakori kérdések</h2>
 ${gyik(kerdesek)}
 <h2>Források</h2>
-${forrasLista([{ nev: 'NAV: alkalmazható üzemanyagárak', url: adat.uzemanyag.forras, d: honapHu(f.lf.ev, f.lf.honap) }, { nev: 'NAV: a gépjárműadó számítása', url: 'https://nav.gov.hu/gepjarmuado/az-ado-szamitasa' }, ...adat.szabalyok.energia.forrasok.slice(0, 3).map((x) => ({ nev: x.nev, url: x.url }))])}
+${forrasLista([{ nev: 'NAV: alkalmazható üzemanyagárak', url: adat.uzemanyag.forras, d: honapHu(f.lf.ev, f.lf.honap) }, { nev: 'NAV: a gépjárműadó számítása', url: 'https://nav.gov.hu/gepjarmuado/az-ado-szamitasa' }, { nev: `MNB KGFB-index: a kötelező biztosítás átlagos éves díja`, url: adat.szabalyok.fenntartas_peldak.kgfb_atlag.forras, d: adat.szabalyok.fenntartas_peldak.kgfb_atlag.idoszak }, ...forrasbol(adat.szabalyok.maradvany.forrasok).slice(0, 2), ...adat.szabalyok.energia.forrasok.slice(0, 3).map((x) => ({ nev: x.nev, url: x.url }))])}
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
@@ -1400,6 +1421,28 @@ ${tovabb(L, ut)}
   });
 }
 
+/** A cégautós példa egy mondatban (a GYIK-ba és a táblázat fölé). */
+function cegPeldaMondat(pelda, lf) {
+  const p = pelda.pelda;
+  const auto = `egy ${p.gyartasiEv}-es, ${p.kw} kW-os, ${M.tized(p.cm3 / 1000, 1)} literes benzines autónál, évi ${M.ftx(p.ertekvesztes + p.fix)} értékvesztéssel, biztosítással és szervizzel`;
+  const sorok = pelda.sorok.map((s) => `${fmt(s.uzletiKm)} km-nél ${s.r.kulonbseg > 0 ? 'a saját autó' : 'a cégautó'} ${M.ftx(Math.round(Math.abs(s.r.kulonbseg) / 1000) * 1000)}-tal olcsóbb`).join(', ');
+  const fordulo = pelda.fordulo === null ? 'évi 100 000 km üzleti útig a cégautó marad olcsóbb' : pelda.fordulo === 0 ? 'már kevés üzleti úttal is a saját autó olcsóbb' : `nagyjából évi ${fmt(pelda.fordulo)} km üzleti út felett lesz olcsóbb a saját autó`;
+  return `Az autótól és a költségeitől függ. Egy példa: ${auto}, évi ${fmt(p.maganKm)} km magánúttal: ${sorok} évente, abban mérve, mennyi pénz marad a tulajdonosnál. Ennél az autónál ${fordulo}. Olcsóbb autóval és kisebb értékvesztéssel a fordulópont lejjebb kerül, ezért érdemes a saját számaiddal kiszámolni.`;
+}
+
+/** „Melyik éri meg?” — ugyanaz az autó három üzleti futással, a fordulóponttal és a saját számításra mutató linkkel. */
+function cegPeldaBlokk(L, pelda, ev, lf) {
+  const p = pelda.pelda;
+  const link = (s) => `${L.l('cegauto-vagy-sajat-auto/')}?${new URLSearchParams({ kw: p.kw, osztaly: p.osztaly, gyartasiEv: p.gyartasiEv, uzemanyag: p.uzemanyag, cm3: p.cm3, ertekvesztes: p.ertekvesztes, energia: s.energia, fix: p.fix, uzletiKm: s.uzletiKm })}`;
+  const ezres = (x) => M.ftx(Math.round(x / 1000) * 1000);
+  return `<h2 id="pelda">Melyik éri meg? Egy példa három üzleti futással</h2>
+<p>${cegPeldaMondat(pelda, lf)}</p>
+<div class="tabla-tarto"><table class="tabla peldatabla"><thead><tr><th>Üzleti út évente</th><th>Cégautó, neked (Ft/év)</th><th>Saját autó, neked (Ft/év)</th><th>Olcsóbb</th></tr></thead><tbody>
+${pelda.sorok.map((s) => `<tr><td><a href="${esc(link(s))}">${fmt(s.uzletiKm)} km</a></td><td>${fmt(Math.round(s.r.aZseb / 1000) * 1000)}</td><td>${fmt(Math.round(s.r.bZseb / 1000) * 1000)}</td><td>${Math.abs(s.r.kulonbseg) < 25000 ? 'nagyjából mindegy' : `${s.r.kulonbseg > 0 ? 'saját autó' : 'cégautó'}, ${ezres(Math.abs(s.r.kulonbseg))}-tal`}</td></tr>`).join('')}
+</tbody><caption>Évente, forintban, ezresre kerekítve. A feltevések a táblázat alatt.</caption></table></div>
+<p class="tabla-megj">Az autó: ${p.gyartasiEv}-es, ${p.kw} kW, Euro 5 vagy 6, ${fmt(p.cm3)} cm³ benzines, évi ${M.ftx(p.ertekvesztes)} értékvesztés és ${M.ftx(p.fix)} biztosítás, szerviz és gumi (feltevés). Az üzemanyag ${M.tized(p.fogyasztas, 1)} literes fogyasztással az összes útra jár, a NAV ${honapHu(lf.ev, lf.honap)}i árával (${fmt(pelda.ar)} Ft/l), ezért több üzleti úttal az autó költsége is nő. A gépjárműadó és a cégautóadó ${M.os(ev)} tételei, osztalék után szochóval. A „neked” oszlop: a cégautónál ennyivel kevesebb osztalékot veszel ki; a saját autónál ennyibe kerül az autó a zsebedből az adómentes km-térítés levonása után, azzal együtt, hogy a térítés miatt valamivel kevesebb osztalék marad. A km-re kattintva a saját számaiddal is kiszámolhatod.</p>`;
+}
+
 export function cegautoOldal(k) {
   const { adat } = k;
   const ut = 'cegauto-vagy-sajat-auto/';
@@ -1411,14 +1454,16 @@ export function cegautoOldal(k) {
   const pct = (x) => String(Math.round(x * 1000) / 10).replace('.', ',');
   const mb = v.minimalber[String(ev)];
   const plafon = mb ? mb * v.szocho_plafon_minimalber_szorzo : null; // a havi minimálbér 24-szerese
+  const pelda = S.cegautoPeldak(adat, { ev, lf });
   const kerdesek = [
+    { k: 'Hány kilométer üzleti út felett éri meg a saját autó?', v: [cegPeldaMondat(pelda, lf)] },
     { k: 'Mikor éri meg a saját autó km-térítéssel?', v: ['Ha sok az üzleti út, és az autó nem túl drága. A km-térítés adómentesen jut el hozzád, a cégautóadó viszont az autó használatától függetlenül jár. Drága autónál és kevés üzleti útnál a cégautó jön ki jobban, mert a cég adózás előtti pénzből fizeti a költségeket.'] },
     { k: 'Milyen feltétellel fizethet a cég km-térítést a saját autómra?', v: [`Kiküldetési rendelvénnyel, valódi üzleti utakra, ha ügyvezetőként vagy munkavállalóként utazol, és az autó magánszemély tulajdonában van, például a tiéd. A térítés az autó alapnormája szerinti üzemanyag a NAV havi árán, plusz ${adat.szabalyok.km.normakoltseg_ft_km} Ft/km. Ha a cég csak ennyit fizet, és más költséget nem számol el az autóra, a térítés adómentes, és cégautóadó sem jár utána. A munkába járás nem üzleti út.`] },
     { k: 'Kell adót fizetni, ha a cégautót magáncélra is használom?', v: ['Nem. A céges személyautó magáncélú használata adómentes (Szja tv. 1. számú melléklet 8.37. pont). A cég a cégautóadót a használattól függetlenül fizeti, és a költségeket elszámolhatja.'] },
     { k: 'Miért számoltok osztalékkal?', v: [`Mert ez a két út valódi különbsége: amit a cég az autóra költ, azt nem tudod osztalékként kivenni. 100 Ft céges nyereségből ${v.tao_kulcs * 100}% társasági adó után ${v.osztalek_szja * 100}% szja és ${v.szocho * 100}% szocho levonásával ${pct(r65)} Ft jut hozzád. Ha az összevont adóalapba tartozó jövedelmed (például a béred) és az osztalékod együtt már eléri a szocho felső határát (a minimálbér 24-szeresét${plafon ? `, ${M.rag(ev, 'ban', 'ben')} ${M.ftx(plafon)}` : ''}), a határ feletti osztalék után ${pct(r77)} Ft.`] },
     { k: 'Mi nincs benne a számításban?', v: ['Az áfa (cégautónál egyes tételek áfájának egy része visszaigényelhető lehet), a kisvállalati adó (kiva), a veszteséges cég és a vételárba kötött pénz kamata. Ezekben a könyvelőd tud pontos választ adni.'] },
   ];
-  const leiras = 'Cégautó vagy saját autó kilométertérítéssel? Kft. és bt. tulajdonosainak: a két út éves költsége a cégautóadóval, az adómentes km-térítéssel és az osztalék adójával, és hány km felett fordul.';
+  const leiras = 'Cégautó vagy saját autó km-térítéssel? Kft. és bt. tulajdonosainak: a két út éves költsége cégautóadóval, km-térítéssel, osztalékadóval, és hány km felett fordul.';
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautó vagy saját autó'], cim: 'Cégautó vagy saját autó km-térítéssel?', valasz: 'Sok üzleti úttal és olcsóbb autóval általában a saját autó, drágább autóval és kevés üzleti úttal a cégautó jön ki jobban. Kft. és bt. tulajdonosainak számolunk, abban mérve, mennyi pénz marad nálad.' })}
 <div class="keret asztal">
@@ -1450,6 +1495,7 @@ ${elszamolas(k, M.uresPanel('Add meg az autó adatait és éves költségeit.'))
 <p>A kettőt abban mérjük, mennyi pénz marad nálad. Amit a cég költ, azt átszámoljuk arra, amennyit osztalékként kivehetnél belőle. ${M.rag(ev, 'ban', 'ben')} 100 Ft céges nyereségből ${pct(r65)} Ft, ha az osztalék után szochót is fizetsz, és ${pct(r77)} Ft, ha már nem.</p>
 <p>A km-térítést a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával számoljuk. Feltétel, hogy ügyvezetőként vagy munkavállalóként utazz, kiküldetési rendelvénnyel, és a cég ezen felül ne számoljon el költséget az autóra.</p>
 ${javaslatBekezdes(adat)}
+${cegPeldaBlokk(L, pelda, ev, lf)}
 <h2>Gyakori kérdések</h2>
 ${gyik(kerdesek)}
 <h2>Források</h2>

@@ -933,3 +933,37 @@ export function kovetkezoQuery(q) {
   const s = p.toString();
   return s ? `?${s}` : '';
 }
+
+/* ---------------- Példatáblák: a fenntartási és a cégautós oldal idézhető számai ---------------- */
+/**
+ * A fenntartási oldal példaautói (szabalyok.fenntartas_peldak) a fenntartas() motorral: a kötelező biztosítás az MNB-átlag,
+ * a szerviz és a gumi feltevés, a többi hivatalos adatból jön. f: a fenntartási oldal feltevései (NAV-ár, áramár, maradványérték).
+ */
+export function fenntartasPeldak(adat, { ev, f }) {
+  const p = adat.szabalyok.fenntartas_peldak;
+  return p.autok.map((a) => {
+    const r = fenntartas(adat, { ev, km: a.km, kw: a.kw, gyartasiEv: a.gyartasiEv, hajtas: a.hajtas, fogyasztas: a.fogyasztas, ertek: a.ertek, biztositas: p.kgfb_atlag.ft, szerviz: a.szerviz, gumi: a.gumi, egyeb: 0, f });
+    if (r.hiba) throw new Error(`fenntartás-példa (${a.id}): ${r.hiba}`);
+    const t = Object.fromEntries(r.tetelek.map((x) => [x.kulcs, x.ev]));
+    return { ...a, r, energia: t.energia, ertekvesztes: t.ertekvesztes, biztAdo: t.biztositas + t.gjado, szervizGumi: t.szerviz + t.gumi, havi: r.havi, ftKm: r.ftKm };
+  });
+}
+
+/** A cégautós oldal példája: ugyanaz az autó évi 5, 15 és 30 ezer üzleti km-rel; a magánutak évi 10 000 km. */
+export const CEG_PELDA = { kw: 110, osztaly: 'euro56', gyartasiEv: 2021, uzemanyag: 'benzin', cm3: 1498, ertekvesztes: 900000, fix: 400000, fogyasztas: 6.5, maganKm: 10000, uzletiKm: [5000, 15000, 30000] };
+export function cegautoPeldak(adat, { ev, lf, szocho = true }) {
+  const p = CEG_PELDA;
+  const ar = adat.uzemanyag.evek[lf.ev][lf.honap][p.uzemanyag];
+  const szamol = (uzletiKm) => {
+    // az üzemanyag az összes útra jár (üzleti és magán), a valós fogyasztással
+    const energia = Math.round((uzletiKm + p.maganKm) * p.fogyasztas / 100 * ar);
+    const r = cegautoVagySajat(adat, { ev, kw: p.kw, osztaly: p.osztaly, gyartasiEv: p.gyartasiEv, uzemanyag: p.uzemanyag, cm3: p.cm3, ertekvesztes: p.ertekvesztes, energia, fix: p.fix, uzletiKm, szocho, arEv: lf.ev, arHonap: lf.honap });
+    if (r.hiba) throw new Error(`cégautó-példa: ${r.hiba}`);
+    return { uzletiKm, energia, r };
+  };
+  const sorok = p.uzletiKm.map(szamol);
+  // fordulópont 500 km-es lépésben: honnan olcsóbb a saját autó (ha a nulla km-nél már az, akkor 0)
+  let fordulo = null;
+  for (let km = 0; km <= 100000; km += 500) if (szamol(km).r.kulonbseg > 0) { fordulo = km; break; }
+  return { pelda: p, ar, sorok, fordulo };
+}

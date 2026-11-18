@@ -2,6 +2,15 @@
   "leiras": "A kézi teendők naptára. Amit a napi futás magától frissít (NAV-üzemanyagár, gépjárműadó, regisztrációs adó, cégautóadó), az nincs itt. A 'mikor' teljes dátum (egyszeri) vagy '--HH-NN' (minden évben). Ha elvégezted, írd az 'utoljara' mezőbe a napot: a jelzés addig marad nyitva.",
   "teendok": [
     {
+      "id": "kgfb-atlag",
+      "mikor": "--12-10",
+      "mit": "A kötelező biztosítás országos átlagdíja (MNB KGFB-index), a fenntartási példatáblához",
+      "hol": "data/szabalyok.json → fenntartas_peldak.kgfb_atlag (ft, idoszak, forras, kozzeteve)",
+      "forras": "https://statisztika.mnb.hu/",
+      "hogyan": "Az MNB negyedévente közli a normál használatú egyedi személyautók kgfb-átlagdíját (KGFB-index infografika, a negyedév után kb. két hónappal). Írd át a legfrissebbre a forrás URL-jével és az időszakkal; a táblázat magától frissül.",
+      "utoljara": "2026-11-18"
+    },
+    {
       "id": "matrica-dijak",
       "mikor": "--11-15",
       "mit": "A következő évi e-matrica díjai",
