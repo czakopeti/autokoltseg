@@ -251,14 +251,14 @@ const KALK = {
     };
     if (ures(e, ['km', 'a_ar', 'b_ar', 'a_kw', 'b_kw'])) return mintaval('osszevet', adat, e);
     const f = { ...adat.f, maradvany: adat.szabalyok.maradvany, benzin: szam(e.benzinAr) || adat.f.benzin, dizel: szam(e.dizelAr) || adat.f.dizel, aram_kedv: szam(e.aramKedv) || adat.f.aram_kedv, aram_piaci: szam(e.aramPiaci) || adat.f.aram_piaci, tolto: szam(e.tolto) || adat.f.tolto, veszteseg: Number.isFinite(szam(e.veszteseg)) ? szam(e.veszteseg) : adat.f.veszteseg, otthoni: Number.isFinite(szam(e.otthoni)) ? Math.min(100, szam(e.otthoni)) : adat.f.otthoni, haztartas: e.haztartas };
-    const r = S.osszehasonlitas(adat, { km: szam(e.km), evek: Number(e.evek) || 8, ceges: !!e.ceges, ev: adat.ev, f, autok: [auto('a'), auto('b')] });
+    const r = S.osszehasonlitas(adat, { km: szam(e.km), evek: Number(e.evek) || 8, ceges: !!e.ceges, hozam: szam(e.hozam), ev: adat.ev, f, autok: [auto('a'), auto('b')] });
     osszevetR = r.hiba ? null : r;
     return r.hiba ? M.hianyPanel(r.hiba) : M.osszehasonlitasPanel(adat, r, { szeles: grafikonSzeles() });
   },
   fenntartas: (adat, e) => {
     if (ures(e, ['kw', 'gyartasiEv', 'fogyasztas', 'kwh', 'km'])) return mintaval('fenntartas', adat, e);
     const h = e.hajtas || 'benzin';
-    const r = S.fenntartas(adat, { ev: adat.ev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek), ertekVeg: szam(e.ertekVeg), tartja: szam(e.tartja), f: { ...adat.f, haztartas: '', maradvany: adat.szabalyok?.maradvany } });
+    const r = S.fenntartas(adat, { ev: adat.ev, kw: kwErtek(e), gyartasiEv: szam(e.gyartasiEv), hajtas: h, fogyasztas: h === 'elektromos' ? szam(e.kwh) : szam(e.fogyasztas), km: szam(e.km), biztositas: szam(e.biztositas), szerviz: szam(e.szerviz), gumi: szam(e.gumi), egyeb: szam(e.egyeb), ertek: szam(e.ertek), ertekVeg: szam(e.ertekVeg), tartja: szam(e.tartja), hozam: szam(e.hozam), f: { ...adat.f, haztartas: '', maradvany: adat.szabalyok?.maradvany } });
     return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r, e);
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),

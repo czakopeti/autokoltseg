@@ -733,6 +733,7 @@ ${sor('', szamMezo({ id: 'aramKedv', cim: 'Áram a kedvezményes sávban', me: '
 ${sor('', szamMezo({ id: 'aramPiaci', cim: 'Áram a sáv felett', me: 'Ft/kWh', ertek: f.aram_piaci, min: 0, tized: true }))}
 ${sor('', szamMezo({ id: 'tolto', cim: 'Nyilvános töltő', me: 'Ft/kWh', ertek: f.tolto, min: 0, sugo: 'MOL Plugee AC-listaár. Villámtöltőn (DC) drágább, nagyjából 270–290 Ft/kWh.' }))}
 ${sor('', szamMezo({ id: 'veszteseg', cim: 'Töltési veszteség', me: '%', ertek: f.veszteseg, min: 0, max: 40 }))}
+${sor('', szamMezo({ id: 'hozam', cim: 'Kamat, amit a pénz hozna', me: '%/év', placeholder: 'pl. 5', min: 0, max: 30, tized: true, sugo: 'Nem kötelező. A drágább autóban több pénz áll: ha megadod, mennyit hozna betétben vagy állampapírban, ezt az elmaradt hozamot is beszámoljuk.' }))}
 </div></details>
 </div>
 <div class="ket-auto">
@@ -806,6 +807,7 @@ export function fenntartasOldal(k) {
   const kerdesek = [
     { k: 'Mennyibe kerül egy autó fenntartása havonta?', v: [`Leginkább a futott kilométeren, az autó értékén és a biztosításon múlik. A lenti négy példánk ${M.honapBan(f.lf.honap)} havi ${szazas(Math.min(...peldak.map((x) => x.havi)))} és ${szazas(Math.max(...peldak.map((x) => x.havi)))} között jön ki értékvesztéssel együtt, parkolás és casco nélkül: ${peldak.map((x) => `${x.nev.toLowerCase()} (${x.leiras}) ${szazas(x.havi)}`).join(', ')}. Írd be a saját számaidat, és tételesen látod.`] },
     { k: 'Miért számít bele az értékvesztés?', v: ['Mert az is a te pénzed: ha 4 millióért veszel egy autót, és 5 év múlva 2,5 millióért adod el, az évi 300 000 forint, akkor is, ha közben nem fizetsz érte semmit. Ha nem akarod beleszámolni, hagyd üresen.'] },
+    { k: 'Mi az elmaradt hozam, és kell-e vele számolni?', v: ['Az a pénz, amit az autó ára hozna, ha betétben vagy állampapírban lenne. Egy 4 millió forintot érő autóban évi 5%-kal számolva nagyjából 190 ezer forint hozam marad el évente, havonta kb. 16 ezer forint. Nem kötelező beszámolni, de ha két autót hasonlítasz össze, a drágábbnál ez is a költségek közé tartozik. Ha megadod a kamatot, külön soron mutatjuk.'] },
     { k: 'Honnan tudom a saját számaimat?', v: ['A fogyasztást a tankolásokból (kilométer és liter), a biztosítást a díjértesítőből, a szervizt az elmúlt egy-két év számláiból. A gépjárműadót mi számoljuk ki a NAV tételeivel.'] },
   ];
   const leiras = 'Mennyibe kerül havonta az autód? Üzemanyag, értékvesztés, biztosítás, szerviz, gumi és gépjárműadó egy helyen, kilométerenkénti költséggel.';
@@ -836,6 +838,7 @@ ${sor('', szamMezo({ id: 'egyeb', cim: 'Matrica, parkolás, mosás, egyéb éven
 ${sor('', szamMezo({ id: 'ertek', cim: 'Mennyit ér most az autó?', me: 'Ft', placeholder: 'pl. 4 000 000', min: 0, sugo: 'Ha csak ezt adod meg, az értékvesztést az átlagos éves csökkenéssel becsüljük.' }))}
 ${sor('', szamMezo({ id: 'tartja', cim: 'Hány év múlva adnád el?', me: 'év', placeholder: 'pl. 5', min: 1, max: 30 }))}
 ${sor('', szamMezo({ id: 'ertekVeg', cim: 'Mennyiért adnád el akkor?', me: 'Ft', placeholder: 'pl. 2 500 000', min: 0 }))}
+${sor('', szamMezo({ id: 'hozam', cim: 'Mennyi kamatot kapnál a pénzre?', me: '%/év', placeholder: 'pl. 5', min: 0, max: 30, tized: true, sugo: 'Nem kötelező. Ha az autó árát betétbe vagy állampapírba tennéd, ennyit hozna évente. Az elmaradt hozamot külön soron mutatjuk. Üresen hagyva nem számolunk vele.' }))}
 </fieldset>` })}
 ${elszamolas(k, M.uresPanel('Add meg a teljesítményt, a gyártási évet, a fogyasztást és az évi kilométert.'))}
 </div>

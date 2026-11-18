@@ -407,19 +407,26 @@ export function osszehasonlitas(adat, b) {
     const eladas = Number(a.eladasiAr) > 0 ? Number(a.eladasiAr) : ertekNEvMulva(ar, a.hajtas, N, b.f);
     // Havi lépésű halmozott költség a grafikonhoz és a megtérüléshez
     const havi = [];
-    let halmozott = ill;
+    let halmozott = ill, hozam = 0;
+    const r = Number(b.hozam) > 0 ? Number(b.hozam) / 100 / 12 : 0;
+    const ertekHo = (m) => (Number(a.eladasiAr) > 0 && N > 0 ? ar - (ar - eladas) * (m / (N * 12)) : ertekNEvMulva(ar, a.hajtas, m / 12, b.f));
     for (let m = 0; m <= N * 12; m++) {
-      if (m > 0) { const y = evek[Math.min(N - 1, Math.floor((m - 1) / 12))]; halmozott += (y.energia + y.fix + y.gj + y.ceg) / 12; }
-      const ertek = Number(a.eladasiAr) > 0 && N > 0 ? ar - (ar - eladas) * (m / (N * 12)) : ertekNEvMulva(ar, a.hajtas, m / 12, b.f);
-      havi.push(halmozott + ar - ertek);
+      if (m > 0) {
+        const y = evek[Math.min(N - 1, Math.floor((m - 1) / 12))];
+        // elmaradt hozam: a hónap eleji érték után, havi kamattal (ha megadtad a kamatot)
+        const h = ertekHo(m - 1) * r;
+        hozam += h;
+        halmozott += (y.energia + y.fix + y.gj + y.ceg) / 12 + h;
+      }
+      havi.push(halmozott + ar - ertekHo(m));
     }
     const ertekvesztes = ar - eladas;
     const energia = en.ft * N;
     const fixOssz = fix * N;
     const adok = ill + gjOssz + cegOssz;
-    const osszesen = ertekvesztes + energia + fixOssz + adok;
+    const osszesen = ertekvesztes + energia + fixOssz + adok + hozam;
     eredm.push({
-      nev, hajtas: a.hajtas, ar, eladas, ertekvesztes, energia, fixOssz, adok, ill, gjOssz, cegOssz, osszesen,
+      nev, hajtas: a.hajtas, ar, eladas, ertekvesztes, energia, fixOssz, adok, ill, gjOssz, cegOssz, hozam, osszesen,
       ftKm: osszesen / (km * N), havi, energiaHavi: en.ft / 12, kwhEv: en.kwh, literEv: en.liter, otthoniAr: en.otthoniAr,
       szaz: en.ft / km * 100,
       futoHavi: (en.ft + fix + (evek[0]?.gj || 0) + (evek[0]?.ceg || 0)) / 12,
@@ -441,7 +448,7 @@ export function osszehasonlitas(adat, b) {
     const vA = A.energia / (km * N), vB = B.energia / (km * N);
     const fA = A.osszesen - A.energia, fB = B.osszesen - B.energia;
     const hatarKm = vA !== vB ? (fB - fA) / ((vA - vB) * N) : null;
-    return { km, evek: N, autok: eredm, megterul, hatarKm: hatarKm > 0 ? hatarKm : null, olcsobb: A.osszesen <= B.osszesen ? 0 : 1, kulonbseg: Math.abs(A.osszesen - B.osszesen), f: b.f, sajatEladas: eredm.map((x, i) => Number(b.autok[i].eladasiAr) > 0) };
+    return { km, evek: N, hozamSzazalek: Number(b.hozam) > 0 ? Number(b.hozam) : 0, autok: eredm, megterul, hatarKm: hatarKm > 0 ? hatarKm : null, olcsobb: A.osszesen <= B.osszesen ? 0 : 1, kulonbseg: Math.abs(A.osszesen - B.osszesen), f: b.f, sajatEladas: eredm.map((x, i) => Number(b.autok[i].eladasiAr) > 0) };
   }
   return { km, evek: N, autok: eredm };
 }
@@ -468,6 +475,10 @@ export function fenntartas(adat, b) {
     ertekBecsles = true;
     ertekEvi = m.evi;
   }
+  // Elmaradt hozam: amit az autóban álló pénz hozna, ha betétben vagy állampapírban lenne.
+  // Csak akkor számolunk vele, ha megadod a kamatot; az év közbeni átlagos értékre vetítve.
+  const hozamSzazalek = Number(b.hozam) > 0 ? Number(b.hozam) : 0;
+  const hozam = hozamSzazalek && ertek > 0 ? (ertek - ertekvesztes / 2) * hozamSzazalek / 100 : 0;
   const tetelek = [
     { kulcs: 'energia', nev: b.hajtas === 'elektromos' ? 'Töltés' : 'Üzemanyag', ev: en.ft },
     { kulcs: 'ertekvesztes', nev: 'Értékvesztés', ev: ertekvesztes },
@@ -476,11 +487,12 @@ export function fenntartas(adat, b) {
     { kulcs: 'gumi', nev: 'Gumi', ev: Number(b.gumi) || 0 },
     { kulcs: 'gjado', nev: 'Gépjárműadó', ev: gj.hiba ? 0 : gj.fizetendo },
     { kulcs: 'egyeb', nev: 'Matrica, parkolás, egyéb', ev: Number(b.egyeb) || 0 },
+    { kulcs: 'hozam', nev: 'Elmaradt hozam', ev: hozam },
   ];
   const ev = tetelek.reduce((s, t) => s + t.ev, 0);
   const csoport = (k) => tetelek.filter((t) => k.includes(t.kulcs)).reduce((x, t) => x + t.ev, 0);
   const hasznalat = csoport(['energia', 'szerviz', 'gumi']), allo = csoport(['biztositas', 'gjado', 'egyeb']);
-  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, ertekvesztes, ertekBecsles, ertekEvi, hasznalat, allo, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
+  return { tetelek, ev, havi: ev / 12, ftKm: ev / km, km, gj, ertekvesztes, ertekBecsles, ertekEvi, hozam, hozamSzazalek, hasznalat, allo, plusKm: (en.ft + (Number(b.szerviz) || 0) + (Number(b.gumi) || 0)) / km };
 }
 
 /* ---------------- Összeg betűvel (szerződéshez) ---------------- */

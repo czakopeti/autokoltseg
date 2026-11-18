@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=f9430fb2';
+import * as S from './szamitas.js?v=e0294f5a';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -346,7 +346,7 @@ ${r.autok.some((a) => a.hajtas === 'elektromos' || a.hajtas === 'plugin') ? `<p 
   const sor = (nev, kulcs, cls = '', f = '') => `<tr class="${cls}"><td>${nev}${f ? ` ${jel(f)}` : ''}</td>${r.autok.map((a) => `<td>${ftx(a[kulcs])}</td>`).join('')}</tr>`;
   const eladasJel = r.sajatEladas?.every(Boolean) ? 'sajat' : 'becsles';
   h += sorfejek(`<section class="hosszu"><h3>${r.evek} év alatt tételesen</h3><table class="tabla kompakt"><thead><tr><th><span class="sr-csak">Tétel</span></th>${r.autok.map((a) => `<th>${esc(a.nev)}</th>`).join('')}</tr></thead><tbody>
-${sor('Vételár', 'ar', '', 'sajat')}${sor(`Eladási ár ${r.evek} év múlva`, 'eladas', '', eladasJel)}${sor('Értékvesztés', 'ertekvesztes', 'kiemelt-sor', eladasJel)}${sor('Üzemanyag, töltés', 'energia', '', 'sajat')}${sor('Illeték, gépjárműadó' + (r.autok.some((a) => a.cegOssz) ? ', cégautóadó' : ''), 'adok', '', 'hivatalos')}${sor('Szerviz, biztosítás', 'fixOssz', '', 'sajat')}
+${sor('Vételár', 'ar', '', 'sajat')}${sor(`Eladási ár ${r.evek} év múlva`, 'eladas', '', eladasJel)}${sor('Értékvesztés', 'ertekvesztes', 'kiemelt-sor', eladasJel)}${sor('Üzemanyag, töltés', 'energia', '', 'sajat')}${sor('Illeték, gépjárműadó' + (r.autok.some((a) => a.cegOssz) ? ', cégautóadó' : ''), 'adok', '', 'hivatalos')}${sor('Szerviz, biztosítás', 'fixOssz', '', 'sajat')}${r.hozamSzazalek ? sor(`Elmaradt hozam (évi ${tized(r.hozamSzazalek, 2)}%)`, 'hozam', '', 'sajat') : ''}
 <tr class="osszeg"><td>Összesen</td>${r.autok.map((a) => `<td>${ftx(a.osszesen)}</td>`).join('')}</tr>
 <tr><td>Kilométerenként</td>${r.autok.map((a) => `<td>${tized(a.ftKm, 1)} Ft</td>`).join('')}</tr>
 </tbody></table></section>`);
@@ -362,15 +362,17 @@ export function fenntartasPanel(adat, r, b = {}) {
   if (r.hiba) return hianyPanel(r.hiba);
   const max = Math.max(...r.tetelek.map((t) => t.ev)) || 1;
   const kiadas = r.ev - r.ertekvesztes;
-  let h = vegosszeg('Az autód havonta', r.havi, r.ertekvesztes > 0
-    ? `Ebből ${ftx(kiadas / 12)} a tényleges kiadás, ${ftx(r.ertekvesztes / 12)} az értékvesztés. Évente ${ftx(r.ev)}, kilométerenként ${tized(r.ftKm, 1)} Ft.`
+  const kiadasValodi = kiadas - (r.hozam || 0);
+  let h = vegosszeg('Az autód havonta', r.havi, r.ertekvesztes > 0 || r.hozam > 0
+    ? `Ebből ${ftx(kiadasValodi / 12)} a tényleges kiadás${r.ertekvesztes > 0 ? `, ${ftx(r.ertekvesztes / 12)} az értékvesztés` : ''}${r.hozam > 0 ? `, ${ftx(r.hozam / 12)} az elmaradt hozam` : ''}. Évente ${ftx(r.ev)}, kilométerenként ${tized(r.ftKm, 1)} Ft.`
     : `Évente ${ftx(r.ev)}, kilométerenként ${tized(r.ftKm, 1)} Ft.`);
   h += '<ul class="tetelek">';
   h += tetel('Használattól függ', ftx(r.hasznalat / 12), { al: 'üzemanyag vagy töltés, szerviz, gumi' });
   h += tetel('Akkor is fizeted, ha az autó áll', ftx(r.allo / 12), { al: 'biztosítás, gépjárműadó, egyéb' });
   if (r.ertekvesztes > 0) h += tetel('Értékvesztés', ftx(r.ertekvesztes / 12), { al: r.ertekBecsles ? `a mostani értékből, évi ${tized(r.ertekEvi, 1)}%-kal: ${nevelo(HAJTAS_NEV[b.hajtas || 'benzin'])} ${HAJTAS_NEV[b.hajtas || 'benzin']} autók átlaga (DAT, KSH), nem a te autód garantált értékvesztése` : 'a megadott eladási árból' });
+  if (r.hozam > 0) h += tetel('Elmaradt hozam', ftx(r.hozam / 12), { al: `amit az autóban álló pénz évi ${tized(r.hozamSzazalek, 2)}%-kal hozna` });
   h += '</ul>';
-  const forras = { energia: 'sajat', biztositas: 'sajat', szerviz: 'sajat', gumi: 'sajat', egyeb: 'sajat', gjado: 'hivatalos', ertekvesztes: r.ertekBecsles ? 'becsles' : 'sajat' };
+  const forras = { hozam: 'sajat', energia: 'sajat', biztositas: 'sajat', szerviz: 'sajat', gumi: 'sajat', egyeb: 'sajat', gjado: 'hivatalos', ertekvesztes: r.ertekBecsles ? 'becsles' : 'sajat' };
   h += `<div class="savok">${r.tetelek.filter((t) => t.ev > 0).sort((a, c) => c.ev - a.ev).map((t) => `<div class="sav-sor"><span class="sav-nev">${t.nev} ${jel(forras[t.kulcs], t.kulcs === 'gjado' ? adat.tetelek.gepjarmuado?.[r.gj?.ev]?.forras : '')}</span><span class="sav-sin"><span class="sav-toltes" style="--arany:${(t.ev / max).toFixed(3)}"></span></span><span class="sav-ertek">${ftx(t.ev / 12)}</span></div>`).join('')}</div>`;
   h += `<p class="igy">Minden további kilométer nagyjából <strong>${tized(r.plusKm, 1)} Ft-tal</strong> növeli a költséget (energia, szerviz, gumi). A többi tételt akkor is fizeted, ha az autó áll.</p>`;
   if (r.gj?.mentes) h += megjegyzes(r.gj.mentes);

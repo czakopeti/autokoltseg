@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import * as S from '../forras/js/szamitas.mjs';
 import * as M from '../forras/js/megjelenites.mjs';
 import { betoltAdat } from '../forras/adat.mjs';
+import { feltevesek } from '../forras/oldalak.mjs';
 
 const adat = betoltAdat();
 
@@ -87,4 +88,25 @@ test('adásvételi szerződés: hosszú név, különleges karakterek, üres űr
   assert.ok(!h.includes('<script>x'));
   assert.ok(h.includes('egymillió-kétszázharmincnégyezer-ötszázhatvanhét') || /1\s?234\s?567/.test(h));
   assert.ok(!/undefined|NaN/.test(M.szerzodes(adat, {})));
+});
+
+test('elmaradt hozam: csak ha megadod, és az autóban álló pénzre számolva', () => {
+  const alap = { ev: 2026, kw: 85, gyartasiEv: 2019, hajtas: 'benzin', fogyasztas: 6.5, km: 15000, ertek: 4_000_000, ertekVeg: 3_000_000, tartja: 4, f: { benzin: 639, maradvany: adat.szabalyok.maradvany } };
+  const nelkul = S.fenntartas(adat, alap);
+  assert.equal(nelkul.hozam, 0);
+  const vele = S.fenntartas(adat, { ...alap, hozam: 5 });
+  // évi 250 000 Ft értékvesztés, átlagosan 3 875 000 Ft áll az autóban, ennek 5%-a
+  assert.equal(vele.hozam, 3_875_000 * 0.05);
+  assert.equal(vele.ev - nelkul.ev, vele.hozam);
+  assert.match(M.fenntartasPanel(adat, vele, alap), /Elmaradt hozam/);
+  // összehasonlítás: a drágább autónál nagyobb az elmaradt hozam, és a végösszegben benne van
+  const ff = { ...feltevesek(adat), maradvany: adat.szabalyok.maradvany };
+  const b = { km: 15000, evek: 8, ev: 2026, f: ff, autok: [{ nev: 'A', hajtas: 'benzin', ar: 8_000_000, kw: 96, fogyasztas: 6.5 }, { nev: 'B', hajtas: 'elektromos', ar: 12_000_000, kw: 150, fogyasztas: 16 }] };
+  const o0 = S.osszehasonlitas(adat, b), o5 = S.osszehasonlitas(adat, { ...b, hozam: 5 });
+  assert.ok(!o0.hiba && !o5.hiba, o0.hiba || o5.hiba);
+  assert.equal(o0.autok[0].hozam, 0);
+  assert.ok(o5.autok[1].hozam > o5.autok[0].hozam);
+  for (const i of [0, 1]) assert.ok(Math.abs(o5.autok[i].osszesen - o0.autok[i].osszesen - o5.autok[i].hozam) < 1);
+  // a grafikon utolsó pontja is egyezik a végösszeggel (illeték + futó költség + értékvesztés + hozam)
+  for (const a of o5.autok) assert.ok(Math.abs(a.havi.at(-1) - a.osszesen) < 1, `${a.nev}: ${a.havi.at(-1)} vs ${a.osszesen}`);
 });
