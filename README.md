@@ -54,7 +54,7 @@ A kézi teendők a `data/karbantartas.json` fájlban vannak, dátummal. A napi f
 Minden oldal alján (a főoldal, az impresszum és az adatvédelem kivételével) ott a „Hasznos volt?” doboz. A kalkulátoroknál az eredmény alatt van. A Nem gomb után a látogató pár szót írhat, és ha akarja, a beírt számokat is elküldheti.
 
 - **Az Igen/Nem számláló** a Cloudflare KV-ban van. Oldalanként megnézheted: https://autozom.hu/api/visszajelzes
-- **A szöveges visszajelzés** egy `visszajelzes` címkéjű GitHub-jegy lesz, és a GitHub erről e-mailt küld. Ha megoldottad, zárd le. A havi Claude-futás ezeket is átnézi.
+- **A szöveges visszajelzés** egy `visszajelzes` címkéjű GitHub-jegy lesz a külön, privát `czakopeti/autozom-visszajelzes` tárolóban (hogy ez a tároló nyilvános lehessen), és a GitHub erről e-mailt küld. Ha megoldottad, zárd le. A havi Claude-futás ezeket is átnézi.
 - A fogadó kód a `functions/api/visszajelzes.js`, a Cloudflare ezt magától futtatja. Az e-mail-címeket, telefonszámokat és bankszámlaszámokat kitakarja. Naponta legfeljebb 30 jegyet nyit, így egy támadás sem tudja elárasztani a postafiókot.
 
 Egyszeri beállítás (kb. 5 perc):

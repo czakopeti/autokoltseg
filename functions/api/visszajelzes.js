@@ -9,7 +9,8 @@
 // Beállítás: README, „Visszajelzések” szakasz.
 
 const NAPI_KORLAT = 30;
-const ALAP_REPO = 'czakopeti/autokoltseg';
+// Külön privát tároló: az autokoltseg nyilvános lehet, a látogatók szövege nem.
+const ALAP_REPO = 'czakopeti/autozom-visszajelzes';
 const ENGEDETT = /^(autozom\.hu|www\.autozom\.hu|[a-z0-9-]+\.pages\.dev|localhost|127\.0\.0\.1)$/;
 
 const valasz = (adat, status = 200) =>
