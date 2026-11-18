@@ -625,7 +625,8 @@ const hetNapja = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay(); // 0 vasárn
 export function kovetkezoEvforduló(evforduloIso, ma) {
   const [, h, n] = evforduloIso.split('-').map(Number);
   let ev = Number(ma.slice(0, 4));
-  const d = (e) => `${e}-${String(h).padStart(2, '0')}-${String(n).padStart(2, '0')}`;
+  // Február 29-i évforduló nem szökőévben február 28-án van (Ptk.: ha a hónapban nincs megfelelő nap, a hónap utolsó napja)
+  const d = (e) => `${e}-${String(h).padStart(2, '0')}-${String(h === 2 && n === 29 && !szokoev(e) ? 28 : n).padStart(2, '0')}`;
   if (d(ev) <= ma) ev += 1;
   return d(ev);
 }
@@ -683,7 +684,8 @@ export function javitasVagyCsere(adat, b) {
   };
   const ertekJavitva = szam(a.ertekJavitva) > 0 ? szam(a.ertekJavitva) : szam(a.ertekMost) + szam(a.javitas);
   const ertekJavitvaBecsles = !(szam(a.ertekJavitva) > 0);
-  const regiVeg = ertekJavitva * arany(a.gyartasiEv, a.hajtas);
+  const regiArany = arany(a.gyartasiEv, a.hajtas);
+  const regiVeg = ertekJavitva * regiArany;
   const ujVeg = szam(c.ar) * arany(c.gyartasiEv, c.hajtas);
   let atirasFt = 0;
   if (szam(c.kw) > 0 && szam(c.gyartasiEv) > 1900) {
@@ -695,7 +697,10 @@ export function javitasVagyCsere(adat, b) {
   const csere = { kulonbozet: szam(c.ar) - szam(a.ertekMost), atiras: atirasFt, fenntartas: N * szam(c.fenntartas), vegErtek: ujVeg };
   csere.osszes = csere.kulonbozet + csere.atiras + csere.fenntartas - csere.vegErtek;
   const olcsobb = tart.osszes <= csere.osszes ? 'tart' : 'csere';
-  return { evek: N, tart, csere, olcsobb, kulonbseg: Math.abs(tart.osszes - csere.osszes), ertekJavitva, ertekJavitvaBecsles, ertekMost: szam(a.ertekMost), ar: szam(c.ar) };
+  // Fordulópont: mennyit kell érnie a megjavított autónak, hogy a két út ugyanannyiba kerüljön.
+  // A javítás utáni érték a legbizonytalanabb adat, ezért kiírjuk, honnan fordul át az eredmény.
+  const fordulo = regiArany > 0 ? (tart.javitas + tart.fenntartas - csere.osszes) / regiArany : null;
+  return { evek: N, tart, csere, olcsobb, kulonbseg: Math.abs(tart.osszes - csere.osszes), ertekJavitva, ertekJavitvaBecsles, ertekMost: szam(a.ertekMost), ar: szam(c.ar), fordulo };
 }
 
 /* ---------------- Vállalkozóknak: cégautóadó ---------------- */
@@ -1017,7 +1022,7 @@ export function hataridoNaptar(adat, b) {
     const md = b.evfordulo.slice(5);
     for (let i = 0; i < NAPTAR_EVEK + 1 && es.filter((x) => x.tipus === 'kgfb').length < NAPTAR_EVEK; i++) {
       const ev = Number(elso.slice(0, 4)) + i;
-      const kezdet = md === '02-29' && !szokoev(ev) ? `${ev}-03-01` : `${ev}-${md}`;
+      const kezdet = md === '02-29' && !szokoev(ev) ? `${ev}-02-28` : `${ev}-${md}`;
       const felmondas = napEltol(kezdet, -k.felmondas_nap);
       if (felmondas < b.ma) continue; // az idei határidő már lejárt: a következő évtől
       es.push({ tipus: 'kgfb', nap: felmondas, cim: `Kötelező biztosítás: eddig válthatsz${nevben}`, leiras: `Ha másik biztosítóhoz mennél, a felmondásnak eddig a napig meg kell érkeznie a mostani biztosítódhoz. Az új biztosítási időszak ${huNapon(kezdet)} kezdődik.`, riasztas: [14, 3] });

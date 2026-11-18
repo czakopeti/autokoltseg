@@ -31,9 +31,9 @@ test('naptár: a biztosítási váltás határideje 31 nappal az évforduló el�
   // ha az idei határidő már elmúlt, a következő évvel kezd
   const r2 = S.hataridoNaptar(adat, { ...alap, evfordulo: '2020-12-10' });
   assert.equal(r2.esemenyek.find((x) => x.tipus === 'kgfb').nap, '2027-11-09');
-  // február 29-i évforduló: nem szökőévben március 1.
+  // február 29-i évforduló: nem szökőévben február 28. (a felmondás január 28.), szökőévben február 29. (január 29.)
   const r3 = S.hataridoNaptar(adat, { ...alap, evfordulo: '2024-02-29' });
-  assert.ok(r3.esemenyek.filter((x) => x.tipus === 'kgfb').every((x) => /^\d{4}-01-(29|30)$/.test(x.nap)));
+  assert.deepEqual(r3.esemenyek.filter((x) => x.tipus === 'kgfb').map((x) => x.nap), ['2027-01-28', '2028-01-29', '2029-01-28', '2030-01-28', '2031-01-28']);
   assert.match(kibont(r.ics), /Az új biztosítási időszak 2027\. január 1-jén kezdődik/);
 });
 

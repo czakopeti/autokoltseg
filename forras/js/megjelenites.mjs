@@ -453,7 +453,7 @@ export function matricaPanel(adat, r) {
 export function hitelPanel(adat, r) {
   if (r.hiba) return hianyPanel(r.hiba);
   const h0 = adat.szabalyok.hitel;
-  let h = vegosszeg('Havi törlesztőrészlet', r.havi, `${tized(r.evek, 1)} évig, ${tized(r.thm, 2)}% THM-mel. Összesen ${ftx(r.visszafizet)}-ot fizetsz vissza.`);
+  let h = vegosszeg('Becsült havi törlesztő', r.havi, `${tized(r.evek, 1)} évig, ${tized(r.thm, 2)}% THM-mel számolva. Összesen nagyjából ${ftx(r.visszafizet)}-ot fizetsz vissza. A bank a törlesztőt az ügyleti kamatból számolja. A THM a díjakat is tartalmazza, ezért ez a becslés általában kicsit magasabb a szerződésben szereplő részletnél.`);
   h += '<ul class="tetelek">';
   h += tetel('Vételár', ftx(r.ar), { forras: 'sajat' });
   h += tetel('Önerő', `−${ftx(r.onero)}`, { cls: 'levonas', forras: 'sajat', al: `a vételár ${tized(100 - r.hfm, 0)}%-a` });
@@ -522,6 +522,13 @@ export function javitasPanel(adat, r) {
   h += tetel('Összesen', ftx(r.csere.osszes), { cls: 'vegso' });
   h += '</ul>';
   h = jelekkel(h);
+  if (r.fordulo != null) {
+    const f = Math.round(r.fordulo / 10000) * 10000;
+    const mondat = f <= 0
+      ? 'A javítás akkor is olcsóbb, ha a megjavított autó szinte semmit sem ér.'
+      : `A javítás akkor olcsóbb, ha megjavítva legalább ${ftx(f)}-ot ér. Most ${ftx(r.ertekJavitva)}-tal számoltunk${r.ertekJavitvaBecsles ? ', ami a mostani érték és a javítás összege: ez inkább felső becslés, mert a javítás ritkán növeli teljes összegével az eladási árat. Írd be a hasonló hirdetések alapján, mennyit érne megjavítva' : ''}.`;
+    h += `<p class="igy"><strong>A döntő szám a megjavított autó értéke.</strong> ${mondat}</p>`;
+  }
   h += megjegyzes('Nem számol a kockázattal: egy régi autónál a következő nagy javítás bármikor jöhet, egy másik használt autónál pedig rejtett hiba lehet. Ha bizonytalan vagy, a régi autó éves fenntartását számold bőkezűbben.');
   return h;
 }

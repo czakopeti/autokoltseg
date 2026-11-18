@@ -1595,6 +1595,7 @@ export function utnyOldal(k) {
     { k: 'Melyik hónap NAV-árával számol a lap?', v: ['Minden utat annak a hónapnak az árával, amikor volt. Ha az utak több hónapra esnek, a lap hónaponként külön összesít, és a végén összeadja.'] },
     { k: 'Kell útnyilvántartás, ha egyéni vállalkozó vagyok?', v: ['Ha tételesen számolsz el, igen. Az egyéni vállalkozó és a mezőgazdasági őstermelő útnyilvántartás nélkül is elszámolhat havi 500 kilométert. Ilyenkor nem kell útnyilvántartás, de többet sem számolhatsz el.'] },
     { k: 'Több autóm van, eltérő meghajtással. Ugyanúgy kell számolni mindegyiknél?', v: ['Nem kell. 2026-tól ha a saját autóid különböző meghajtásúak, autónként más költségelszámolási módot is választhatsz. Az útnyilvántartást mindenképp autónként külön vezesd.'] },
+    { k: 'Milyen autóval működik?', v: [`Benzines, dízeles, LPG-s, CNG-s, plug-in hibrid és elektromos autóval is. A norma a hengerűrtartalomból jön, az LPG a benzines norma ${M.tized(km.lpg_szorzo)}-szerese, a plug-in hibrid a belső égésű motor normájának ${Math.round(km.plugin_szorzo * 100)}%-a, az elektromos autó 100 km-enként ${M.tized(km.elektromos_benzin_l_100km)} liter benzinnel számol, a benzin NAV-árán.`] },
     { k: 'Többnapos utat hogyan írjak be?', v: ['Egy sorba, az indulás napjával, és az út céljához írd oda az időtartamot, például: „tárgyalás, november 3–5.”. A kilométer az egész út, oda-vissza.'] },
     { k: 'Hová kerülnek a beírt adatok?', v: ['Sehová. A név, az adóazonosító jel és az utak csak a böngésződben vannak, nem mentjük el és nem küldjük el őket. Ha később folytatnád, töltsd le az utakat CSV-ben, és legközelebb másold vissza.'] },
   ];
@@ -1618,6 +1619,7 @@ ${sor('A', '<label for="rendszam">Rendszám</label><div class="beir szeles"><inp
 ${sor('P.3', valaszto('uzemanyag', 'Üzemanyag', [['', 'Válaszd ki'], ['benzin', 'Benzin'], ['dizel', 'Dízel'], ['lpg', 'LPG'], ['cng', 'CNG'], ['plugin', 'Plug-in hibrid'], ['elektromos', 'Elektromos']], ''))}
 ${sor('', negyzetek('motor', 'A belső égésű motor', [['benzin', 'Benzines'], ['dizel', 'Dízeles']], 'benzin'), ' data-mutat="uzemanyag=plugin"')}
 ${sor('P.1', szamMezo({ id: 'cm3', cim: 'Hengerűrtartalom', me: 'cm³', placeholder: 'pl. 1598', min: 50, sugo: 'Ebből jön a fogyasztási norma.' }), ' data-mutat="uzemanyag=benzin|uzemanyag=dizel|uzemanyag=lpg|uzemanyag=cng|uzemanyag=plugin"')}
+<p class="fieldset-megj" data-mutat="uzemanyag=elektromos" hidden>Villanyautónál nincs hengerűrtartalom: a jogszabály szerint 100 kilométerenként ${M.tized(km.elektromos_benzin_l_100km)} liter benzin a norma, a benzin NAV-árán.</p>
 <div class="ket" data-mutat="tipus=utnyilvantartas">${sor('', szamMezo({ id: 'kmEleje', cim: 'Km-óra az időszak elején', me: 'km', min: 0 }))}${sor('', szamMezo({ id: 'kmVege', cim: 'Km-óra az időszak végén', me: 'km', min: 0 }))}</div>
 </fieldset>
 <fieldset><legend>Az utak</legend>
