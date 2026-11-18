@@ -152,6 +152,13 @@ const MINTAK = {
   fenntartas: { adat: { ...ALAP, fogyasztas: '6,5', km: '15000', biztositas: '150000', szerviz: '120000', gumi: '40000', ertek: '4500000' }, leiras: 'egy 2019-es, 85 kW-os benzines autó, 4,5 millió forintot ér, évi 15 000 km' },
   phev: { adat: { kw: '135', gyartasiEv: '2022', regi: true, zold: true, parkolasHavi: '15000' }, leiras: 'egy 2022-es, 135 kW-os, zöld rendszámos plug-in hibrid, amellyel havonta 15 000 forint parkolást spórolsz Budapesten' },
   matrica: { adat: { napi: '3', tiznapos: '1', varmegyek: '1' }, leiras: 'évente három egynapos és egy tíznapos út, és rendszeres autópályázás egy vármegyében', kerd: 'Írd be a saját útjaidat, és a minta helyett azzal számolunk.' },
+  muszaki: { adat: { elsoEv: String(new Date().getFullYear() - 4) }, leiras: `egy ${new Date().getFullYear() - 4}-ben először forgalomba helyezett személyautó, mai vizsgával`, kerd: 'Írd be a saját autódat, és a minta helyett azzal számolunk.' },
+  fedezetlen: (adat) => {
+    const evek = Object.keys(adat.szabalyok.fedezetlensegi.evek).map(Number).sort((x, y) => x - y);
+    const ev = evek.at(-1), elozo = evek.includes(ev - 1);
+    return { adat: { kw: '85', tol: elozo ? `${ev - 1}-12-20` : `${ev}-03-01`, ig: elozo ? `${ev}-01-10` : `${ev}-03-22`, szuletesiEv: '1985' }, leiras: `egy 85 kW-os személyautó, ${elozo ? `${ev - 1}. december 20. és ${ev}. január 10.` : `${ev}. március 1. és 22.`} között biztosítás nélkül, 1985-ben született szerződővel`, kerd: 'Írd be a saját időszakodat, és a minta helyett azzal számolunk.' };
+  },
+  gyorshajtas: { adat: { korlat: '50', mert: '72' }, leiras: '72 km/h egy 50-es táblánál', kerd: 'Írd be a saját mérésedet, és a minta helyett azzal számolunk.' },
   kgfb: { adat: { evfordulo: `${new Date().getFullYear() + 1}-01-01`, osztaly: 'B10', karok: '0' }, leiras: 'január 1-jei évforduló, B10-es besorolás, kármentes év', kerd: 'Írd be a saját évfordulódat, és a minta helyett azzal számolunk.' },
   javitas: { adat: { a_gyartasiEv: '2003', a_hajtas: 'benzin', a_ertekMost: '1500000', a_javitas: '1000000', a_ertekJavitva: '2300000', a_fenntartas: '450000', c_ar: '3300000', c_gyartasiEv: '2016', c_hajtas: 'benzin', c_kw: '110', c_fenntartas: '300000', evek: '3' }, leiras: 'egy 2003-as autó egymilliós motorjavítás előtt, és egy 3,3 millió forintos, 2016-os másik autó, 3 évre', kerd: 'Írd be a saját számaidat, és a minta helyett azzal számolunk.' },
   cegautoado: { adat: { kw: '110', osztaly: 'euro56', gyartasiEv: '2021' }, leiras: 'egy 2021-es, 110 kW-os, Euro 6-os („15”) céges autó, egész évre', kerd: 'Írd be a saját autódat, és a minta helyett azzal számolunk.' },
@@ -161,7 +168,7 @@ const MINTAK = {
 let mintaMutat = false;
 function mintaval(tipus, adat, e, form) {
   const kulcs = tipus === 'km' && e.mod === 'munka' ? 'munka' : tipus;
-  const m = tipus === 'osszevet' ? { adat: mintaOsszevet(adat), leiras: `${adat.pelda.a.nev} és ${adat.pelda.b.nev}, évi ${M.fmt(adat.pelda.km)} km, ${adat.pelda.evek} év` } : MINTAK[kulcs];
+  const m = tipus === 'osszevet' ? { adat: mintaOsszevet(adat), leiras: `${adat.pelda.a.nev} és ${adat.pelda.b.nev}, évi ${M.fmt(adat.pelda.km)} km, ${adat.pelda.evek} év` } : typeof MINTAK[kulcs] === 'function' ? MINTAK[kulcs](adat) : MINTAK[kulcs];
   if (!m) return M.uresPanel('Töltsd ki az űrlapot.');
   const be = { ...e };
   for (const [k, v] of Object.entries(m.adat)) if (be[k] === '' || be[k] == null || be[k] === false) be[k] = v;
@@ -268,6 +275,22 @@ const KALK = {
     if (!utak.length) return M.utnyLap(adat, fej, null);
     const r = S.utnyilvantartas(adat, { uzemanyag: e.uzemanyag, motor: e.motor, cm3: e.cm3, utak });
     return r.hiba ? M.utnyLap(adat, fej, null, r.hiba) : M.utnyLap(adat, fej, r);
+  },
+  muszaki: (adat, e) => {
+    if (ures(e, ['elsoEv', 'lejarat', 'vizsga']) && e.uj !== true) return mintaval('muszaki', adat, e);
+    const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
+    const r = S.muszakiVizsga(adat, { kategoria: e.kategoria || 'szemely', elektromos: e.elektromos === true, osszkerek: e.osszkerek === true, uj: e.uj === true, elsoHasznalat: e.elsoEv, lejarat: e.lejarat, vizsga: e.vizsga, ma });
+    return M.muszakiPanel(adat, r, { minta: !!e.__minta });
+  },
+  fedezetlen: (adat, e) => {
+    if (ures(e, ['kw', 'tol', 'ig'])) return mintaval('fedezetlen', adat, e);
+    const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
+    const r = S.fedezetlensegiDij(adat, { kategoria: e.kategoria || 'szemely', kw: szam(e.kw), termeszetes: e.szerzodo !== 'ceg', szuletesiEv: szam(e.szuletesiEv), szerzodesEv: szam(e.szerzodesEv), tol: e.tol, ig: e.ig, ma });
+    return M.fedezetlensegiPanel(adat, r);
+  },
+  gyorshajtas: (adat, e) => {
+    if (ures(e, ['korlat', 'mert'])) return mintaval('gyorshajtas', adat, e);
+    return M.gyorshajtasPanel(adat, S.gyorshajtas(adat, { korlat: szam(e.korlat), mert: szam(e.mert) }));
   },
   kgfb: (adat, e) => {
     if (document.getElementById('evfordulo')?.validity?.badInput) return M.hianyPanel('Add meg az évforduló teljes dátumát: évet, hónapot és napot is.');
@@ -496,6 +519,26 @@ function utnyBekotes(form, szamol) {
 }
 
 /* ---------- Az autóm: határidők naptárfájlban ---------- */
+// A műszaki-vizsga eredményében lévő gomb: csak a műszaki lejáratáról kér emlékeztetőt
+function muszakiNaptar(panel, adat) {
+  panel.addEventListener('click', (ev) => {
+    const g = ev.target.closest('[data-muszaki-ics]');
+    if (!g) return;
+    const uz = $('[data-muszaki-uzenet]', panel);
+    const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
+    const url = $('link[rel="canonical"]')?.href || 'https://autozom.hu/muszaki-vizsga-kalkulator/';
+    const r = S.hataridoNaptar(adat, { muszaki: g.dataset.muszakiIcs, gjado: false, ma, url, naptarNev: 'Műszaki vizsga' });
+    if (uz) uz.hidden = false;
+    if (r.hiba) { if (uz) uz.textContent = r.hiba; return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([r.ics], { type: 'text/calendar;charset=utf-8' }));
+    a.download = 'muszaki-vizsga.ics';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    if (uz) uz.textContent = 'Letöltöttük a naptárfájlt. Nyisd meg, és a naptárad felveszi a lejáratot két emlékeztetővel.';
+    meres('naptar');
+  });
+}
 function naptarBekotes(form, adat) {
   const gomb = $('[data-naptar]', form), uz = $('[data-naptar-uzenet]', form);
   if (!gomb) return;
@@ -628,6 +671,7 @@ function indit() {
   }
   automBekotes(form, szamol);
   naptarBekotes(form, adat);
+  if (tipus === 'muszaki' && panel) muszakiNaptar(panel, adat);
   utnyBekotes(form, szamol);
   szamol(false);
 

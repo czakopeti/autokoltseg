@@ -47,8 +47,11 @@ export const FOOLDAL_KARTYAK = {
   'gepjarmuado-kalkulator/': [(c) => `Mennyit fizetsz ${c.jovo ? `${M.rag(c.aktualis, 'ban', 'ben')} és ${M.rag(c.jovo, 'ban', 'ben')}` : M.rag(c.aktualis, 'ban', 'ben')}, és mikor vagy mentes.`, 'Kiszámolom'],
   'autofenntartas-kalkulator/': [() => 'Mennyibe kerül havonta a saját autód, ha mindent beleszámolsz: üzemanyag, értékvesztés, biztosítás, szerviz, adó.', 'Kiszámolom'],
   'kotelezo-biztositas-valtas/': [() => 'Meddig mondhatod fel a kötelezőt, mikor jön a díjértesítő, és melyik bonus-malus osztályba kerülsz jövőre.', 'Kiszámolom'],
+  'fedezetlensegi-dij-kalkulator/': [() => 'Mennyit kell fizetned, ha egy ideig nem volt kötelező biztosításod. Évenként szétbontva, a teljes díjtáblával.', 'Kiszámolom'],
+  'muszaki-vizsga-kalkulator/': [() => 'Mennyi a hatósági díj, és meddig lesz érvényes az új műszaki. Emlékeztetőt is kérhetsz a naptáradba.', 'Kiszámolom'],
   'autopalya-matrica-kalkulator/': [() => 'Éves, vármegyei vagy alkalmi: melyik a legolcsóbb annak, ahogy te autózol.', 'Kiszámolom'],
   'utikoltseg-kalkulator/': [(c) => `Mennyibe kerül egy út benzinnel, dízellel vagy árammal a NAV ${M.honapBan(c.lf.honap).replace(/ban$|ben$/, 'i')} árával, és mennyi jut egy utasra.`, 'Kiszámolom'],
+  'gyorshajtas-birsag-kalkulator/': [() => 'Mennyi a bírság és hány pont jár a túllépésért, és hol kezdődik a következő, drágább sáv.', 'Kiszámolom'],
   'plug-in-hibrid-2027/': [() => 'Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.', 'Kiszámolom'],
   'vetlen-baleset/': [() => 'Mi jár a károkozó biztosítójától: javítás, csereautó, határidők, és mit tehetsz, ha nem fizet.', 'Elolvasom'],
   'autom/': [() => 'Mentsd el az autódat, és egy lapon látod az adót idén és jövőre, a havi költséget, az értékvesztést és a határidőket.', 'Megnyitom'],
@@ -1941,5 +1944,182 @@ ${tovabb(L, ut)}
       dataset('E-matrica díjak, személyautó (D1)', 'Az országos, vármegyei és M1 regionális e-matrica díjai évenként.', 'e-matrica-dijak-d1.csv', mEvek[0], mEvek.at(-1), 'https://nemzetiutdij.hu/', 'e-matrica.json'),
       gyikLd(kerdesek), morzsaLd(cfg, [{ nev: 'Adatok és idősorok', ut }]),
     ],
+  });
+}
+
+/* ======================= MŰSZAKI VIZSGA ======================= */
+export const MUSZAKI_UT = 'muszaki-vizsga-kalkulator/';
+export function muszakiOldal(k) {
+  const { adat } = k;
+  const ut = MUSZAKI_UT;
+  const m = adat.szabalyok.muszaki;
+  const sz = m.dijak.szemely;
+  const kerdesek = [
+    { k: 'Mennyibe kerül a műszaki vizsga?', v: [`A hatósági díj személyautónál ${fmt(sz.alap + sz.kornyezeti)} forint: ${fmt(sz.alap)} forint a műszaki vizsgálat és ${fmt(sz.kornyezeti)} forint a környezetvédelmi felülvizsgálat. Tisztán elektromos autónál nincs környezetvédelmi felülvizsgálat, ott ${fmt(sz.alap)} forint. Összkerékhajtásnál ${fmt(m.osszkerek_potdij)} forint pótdíj jár. A vizsgaállomás ezen felül felszámolja az előkészítés és az átvizsgálás munkadíját, ezt az állomás maga szabja meg, ezért érdemes több helyen megkérdezni.`] },
+    { k: 'Hány évre szól a műszaki vizsga?', v: [`Új személyautónál és motornál ${m.ervenyesseg.uj_ev} évre. Utána, ha a vizsga az első forgalomba helyezés évét követő három naptári éven belül van, ${m.ervenyesseg.fiatal_ev} évre, később ${m.ervenyesseg.utana_ev} évre. Ez a 3,5 tonnáig terjedő autókra, a motorokra és a pótkocsijaikra vonatkozik.`] },
+    { k: 'Elveszítem a hátralévő napokat, ha korábban megyek?', v: [`Nem, ha a lejárat előtti ${m.ervenyesseg.korabban_nap} napban mész: ilyenkor az új időszak a régi lejárattól számít. Ha ennél korábban vizsgáztatod, az új időszak a vizsga napjától indul, és a maradék napok elvesznek.`] },
+    { k: 'Melyik napot nézzem a forgalmi engedélyben?', v: ['Az első forgalomba helyezés dátuma a B. sorban áll. Külföldről behozott autónál ez az első külföldi forgalomba helyezés napja. A műszaki érvényesség a forgalmi engedélyben és a rendszámtáblán lévő matricán is látszik.'] },
+    { k: 'Mi történik, ha lejárt a műszakim?', v: ['Lejárt műszaki vizsgával az autó nem vehet részt a forgalomban, ha mégis vele jársz, bírságot kaphatsz. Az új időszak ilyenkor a vizsga napjától indul.'] },
+  ];
+  const leiras = `Mennyibe kerül a műszaki vizsga ${k.ev}-ben, és meddig lesz érvényes az új? A hatósági díj kategóriánként, a 4, 3 és 2 éves szabály, és emlékeztető a naptáradba.`;
+  const katok = Object.entries(m.dijak).map(([v, x]) => [v, x.nev]);
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Műszaki vizsga'], cim: 'Mennyibe kerül a műszaki vizsga, és meddig lesz érvényes?', valasz: `Személyautónál a hatósági díj ${fmt(sz.alap + sz.kornyezeti)} forint, ehhez jön a vizsgaállomás munkadíja. Az új műszaki első forgalomba helyezés után ${m.ervenyesseg.uj_ev}, az azt követő három naptári éven belül ${m.ervenyesseg.fiatal_ev}, utána ${m.ervenyesseg.utana_ev} évre szól.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'muszaki', cim: 'Az autód', tartalom: `
+${sor('J', valaszto('kategoria', 'Jármű', katok, 'szemely'))}
+${sor('V.9', jelolo('elektromos', 'Tisztán elektromos', 'Az „5E” vagy „5Z” jelű autónak nincs környezetvédelmi felülvizsgálata.'))}
+${sor('', jelolo('osszkerek', 'Összkerékhajtású', 'Személyautónál és kisteherautónál pótdíj jár.'))}
+<fieldset><legend>Meddig lesz érvényes?</legend>
+${sor('B', szamMezo({ id: 'elsoEv', cim: 'Első forgalomba helyezés éve', placeholder: `pl. ${k.ev - 6}`, min: 1950, max: k.ev + 1, sugo: 'A forgalmi engedély B. sorában.' }))}
+${sor('', `<label for="lejarat">A mostani műszaki lejárata</label><input id="lejarat" name="lejarat" type="date"><span class="sugo">A forgalmi engedélyben és a rendszámon lévő matricán látod.</span>`)}
+${sor('', `<label for="vizsga">Mikor vizsgáztatnád?</label><input id="vizsga" name="vizsga" type="date"><span class="sugo">Ha üresen hagyod, a lejárat előtti 30 napos ablakkal számolunk.</span>`)}
+${sor('', jelolo('uj', 'Új autó, most helyezik először forgalomba'))}
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Válaszd ki a járművet, és add meg az első forgalomba helyezés évét.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>A hatósági díjak</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Jármű</th><th>Műszaki vizsgálat</th><th>Környezetvédelmi</th><th>Összesen</th></tr></thead><tbody>
+${Object.values(m.dijak).map((x) => `<tr><td>${x.nev}</td><td>${M.ftx(x.alap)}</td><td>${x.kornyezeti ? M.ftx(x.kornyezeti) : 'nincs'}</td><td>${M.ftx(x.alap + x.kornyezeti)}</td></tr>`).join('')}
+</tbody><caption>A 46/2024. (XII. 30.) ÉKM rendelet szerint, ${datumHu(m.hatalyos)} óta. Összkerékhajtásnál további ${M.ftx(m.osszkerek_potdij)}. Tisztán elektromos autónál nincs környezetvédelmi felülvizsgálat. A vizsgaállomás munkadíja ezen felül van.</caption></table></div>
+<h2>Meddig érvényes az új műszaki?</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Mikor vizsgázik</th><th>Érvényesség</th></tr></thead><tbody>
+<tr><td>Új autó, első forgalomba helyezéskor</td><td>${m.ervenyesseg.uj_ev} év</td></tr>
+<tr><td>Az első forgalomba helyezés évét követő három naptári éven belül</td><td>${m.ervenyesseg.fiatal_ev} év</td></tr>
+<tr><td>Később</td><td>${m.ervenyesseg.utana_ev} év</td></tr>
+</tbody><caption>Személyautó, 3,5 tonnáig terjedő teherautó, motorkerékpár és ezek pótkocsija (5/1990. KöHÉM rendelet 11. §). Ha a lejárat előtti ${m.ervenyesseg.korabban_nap} napban vizsgázol, az új időszak a régi lejárattól indul.</caption></table></div>
+<p>Példa: a 2022-ben először forgalomba helyezett autó 2025-ös vizsgája 3 évre szól, mert 2025 még a 2022-t követő három naptári éven belül van. A 2026-os vizsga már csak 2 évre.</p>
+<h2>Mire figyelj a vizsga előtt?</h2>
+<ul>
+<li><strong>Kérj árat több vizsgaállomástól.</strong> A hatósági díj mindenhol ugyanannyi, a munkadíj viszont állomásonként eltér.</li>
+<li><strong>Nézd át, amit magad is látsz.</strong> Izzók, ablaktörlő, gumik mintázata, a műszerfal hibajelzései, mert ezeken bukik el a legtöbb autó.</li>
+<li><strong>Időben kérj időpontot.</strong> A lejárat előtti 30 napban egy napot sem veszítesz, így nem kell az utolsó pillanatra hagyni.</li>
+</ul>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(m.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `Műszaki vizsga díja ${k.ev}: ${fmt(sz.alap + sz.kornyezeti)} Ft, és meddig érvényes`,
+    leiras, ut, tartalom,
+    adatJson: { szabalyok: { muszaki: m, kgfb: adat.szabalyok.kgfb, hataridok: adat.szabalyok.hataridok }, ma: k.ma },
+    jsonld: [alkalmazasLd(k.cfg, 'Műszaki vizsga kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Műszaki vizsga', ut }])],
+  });
+}
+
+/* ======================= FEDEZETLENSÉGI DÍJ ======================= */
+export const FEDEZETLEN_UT = 'fedezetlensegi-dij-kalkulator/';
+export function fedezetlenOldal(k) {
+  const { adat } = k;
+  const ut = FEDEZETLEN_UT;
+  const f = adat.szabalyok.fedezetlensegi;
+  const evek = Object.keys(f.evek).map(Number).sort((a, b) => b - a);
+  const ev = evek.includes(k.ev) ? k.ev : evek[0];
+  const t = f.evek[ev];
+  const tol = (sorok, i) => (i === 0 ? 0 : sorok[i - 1][0] + 1);
+  const savNev = (sorok, i, me) => (sorok[i][0] == null ? `${tol(sorok, i)} ${me} felett` : `${tol(sorok, i)}–${sorok[i][0]} ${me}`).replace(/^(\d+) kW felett$/, (x, n) => `${Number(n) - 1} kW felett`);
+  const tablaSorok = (ev2) => {
+    const tt = f.evek[ev2];
+    return [
+      ...tt.szemely.map((s, i) => [`Személyautó, ${savNev(tt.szemely, i, 'kW')}`, s[1], s[2]]),
+      ...tt.motor.map((s, i) => [`Motorkerékpár, ${savNev(tt.motor, i, 'kW')}`, s[1], s[2]]),
+      ...Object.entries(tt.egyeb).map(([kk, v]) => [f.egyeb_nevek[kk], v[0], v[1]]),
+    ];
+  };
+  const auto = t.szemely[3];
+  const kerdesek = [
+    { k: 'Mi a fedezetlenségi díj?', v: [`Ha az autódnak egy ideig nem volt kötelező biztosítása, ezekre a napokra fedezetlenségi díjat kell fizetned. ${ev}-ben egy 71–100 kW-os személyautónál ez napi ${fmt(auto[1])} forint, 21 év alatti szerződőnél napi ${fmt(auto[2])} forint. A díjat az a biztosító számolja ki és szedi be, amelyiknél a fedezetlenség után először kötsz kötelezőt.`] },
+    { k: 'Melyik év díjával számolnak?', v: ['A díj naptári évenként más. Ha a fedezetlenség két évre esik, mindkét év napjait a saját évi díjával kell számolni. A kalkulátor ezt magától szétbontja.'] },
+    { k: 'Hogyan számolják az életkort?', v: ['A fedezetlenséggel érintett szerződés kockázatviselésének kezdő évéből vonják le a születési évet. Ha ez 21-nél kevesebb, a magasabb díj jár. Cégnél és más szervezetnél mindig az általános díj.'] },
+    { k: 'Visszamenőleg meddig követelhetik?', v: [`A biztosító legfeljebb az utolsó ${f.visszamenoleg_ev} év fedezetlen napjait veheti figyelembe. ${f.reszlet_nap} napnál hosszabb fedezetlenségnél részletfizetést kérhetsz.`] },
+    { k: 'Kell fizetni, ha a biztosítóm csődbe ment?', v: ['Ha a biztosítód felszámolás alá került, a felszámolás kezdetétől 60 napig nem kell fedezetlenségi díjat fizetned. Ennyi időd van arra, hogy új kötelezőt köss.'] },
+    { k: 'Mikor jelennek meg a jövő évi díjak?', v: ['A MABISZ legkésőbb 45 nappal az év vége előtt közzéteszi, általában november közepén. Amint megjelennek, a kalkulátorba is bekerülnek.'] },
+  ];
+  const leiras = `Mennyi fedezetlenségi díjat kell fizetned, ha nem volt kötelező biztosításod? A ${evek.slice().reverse().join(' és ')}. évi napi díjak, évenként szétbontva, a 21 év alattiak díjával.`;
+  const katok = [['szemely', 'Személyautó'], ['motor', 'Motorkerékpár'], ...Object.entries(f.egyeb_nevek)];
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Fedezetlenségi díj'], cim: 'Mennyi a fedezetlenségi díj?', valasz: `Ha nem volt kötelező biztosításod, minden napra fizetned kell. ${ev}-ben egy 71–100 kW-os személyautónál ez napi ${fmt(auto[1])} forint, 21 év alatti szerződőnél ${fmt(auto[2])} forint.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'fedezetlen', cim: 'A biztosítás nélküli időszak', tartalom: `
+${sor('J', valaszto('kategoria', 'Jármű', katok, 'szemely'))}
+${sor('P.2', szamMezo({ id: 'kw', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 85', min: 1, sugo: 'Személyautónál és motornál kell.' }))}
+<div class="ket">${sor('', `<label for="tol">Az első nap biztosítás nélkül</label><input id="tol" name="tol" type="date">`)}${sor('', `<label for="ig">Az utolsó nap</label><input id="ig" name="ig" type="date">`)}</div>
+<fieldset><legend>A szerződő</legend>
+${sor('', negyzetek('szerzodo', 'Ki a szerződő?', [['magan', 'Magánszemély'], ['ceg', 'Cég vagy más szervezet']], 'magan'))}
+<div class="ket">${sor('', szamMezo({ id: 'szuletesiEv', cim: 'Születési év', placeholder: 'pl. 1985', min: 1900, max: k.ev }))}${sor('', szamMezo({ id: 'szerzodesEv', cim: 'A szerződés kezdetének éve', placeholder: `pl. ${k.ev}`, min: 1990, max: k.ev + 1, sugo: 'Ha nem tudod, a fedezetlenség utolsó évével számolunk.' }))}</div>
+</fieldset>` })}
+${elszamolas(k, M.uresPanel('Add meg a biztosítás nélküli időszakot és a teljesítményt.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>A ${ev}. évi napi díjak</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Jármű</th><th>Napi díj</th><th>21 év alatt</th>${f.evek[ev - 1] ? `<th class="csak-szeles">${ev - 1}-ben</th>` : ''}</tr></thead><tbody>
+${tablaSorok(ev).map((s, i) => `<tr><td>${s[0]}</td><td>${M.ftx(s[1])}</td><td>${M.ftx(s[2])}</td>${f.evek[ev - 1] ? `<td class="csak-szeles">${M.ftx(tablaSorok(ev - 1)[i][1])}</td>` : ''}</tr>`).join('')}
+</tbody><caption>A MABISZ által közzétett, az MNB oldalán is elérhető díjak (forint naponta). A „21 év alatt” oszlop a természetes személy szerződőre vonatkozik. Busz és trolibusz díja a forrásban.</caption></table></div>
+<p>Példa: ha egy 85 kW-os személyautónak ${ev - 1}. december 20. és ${ev}. január 10. között nem volt kötelezője, a ${ev - 1}-re eső 12 napot napi ${fmt(f.evek[ev - 1] ? f.evek[ev - 1].szemely[3][1] : auto[1])}, a ${ev}-re eső 10 napot napi ${fmt(auto[1])} forinttal számolják.</p>
+<h2>Hogyan kerüld el?</h2>
+<ul>
+<li><strong>Váltásnál kösd meg az újat az évfordulóig.</strong> Így a fedezet megszakítás nélkül folytatódik. A határidőket a <a href="${L.l('kotelezo-biztositas-valtas/')}">kötelező biztosítás oldalon</a> számolhatod ki.</li>
+<li><strong>Ne a díj be nem fizetésével válts.</strong> Ha a szerződés díjnemfizetés miatt szűnik meg, a megszűnéstől fedezetlen vagy.</li>
+<li><strong>Vételkor azonnal köss kötelezőt.</strong> Az új tulajdonos szerződése a tulajdonszerzés napjától kell.</li>
+</ul>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(f.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `Fedezetlenségi díj ${ev}: kalkulátor és napi díjak`,
+    leiras, ut, tartalom,
+    adatJson: { szabalyok: { fedezetlensegi: f }, ma: k.ma },
+    jsonld: [alkalmazasLd(k.cfg, 'Fedezetlenségi díj kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Fedezetlenségi díj', ut }])],
+  });
+}
+
+/* ======================= GYORSHAJTÁS ======================= */
+export const GYORS_UT = 'gyorshajtas-birsag-kalkulator/';
+export function gyorshajtasOldal(k) {
+  const { adat } = k;
+  const ut = GYORS_UT;
+  const g = adat.szabalyok.gyorshajtas;
+  const csNev = ['Lakott területen és 50 km/h-s korlátnál', '51–100 km/h-s korlátnál (országút, autóút)', '100 km/h feletti korlátnál (autópálya)'];
+  const savSzoveg = ([tol, ig]) => (ig == null ? `${tol} km/h felett` : `${tol} felett ${ig} km/h-ig`);
+  const pelda = S.gyorshajtas(adat, { korlat: 50, mert: 70 });
+  const kerdesek = [
+    { k: 'Mennyi a bírság, ha 20-szal megyek többel lakott területen?', v: [`50 km/h-s korlátnál 70 km/h-val ${pelda.tullepes} km/h a túllépés, ez a ${savSzoveg(g.csoportok[0].savok[0])} sáv: ${fmt(pelda.birsag)} forint és ${pelda.pont} pont, ha a járművezetőt azonosítják.`] },
+    { k: 'Mennyi túllépésért nem jár bírság?', v: [`A bírságtábla lakott területen és országúton 15 km/h, autópályán 20 km/h túllépésig nem bírságol. Ez nem tűréshatár: ha a rendőr a helyszínen megállít, kisebb túllépésért is eljárhat.`] },
+    { k: 'Kapok pontot a traffipax után?', v: ['A kamerás mérésnél a bírságot az autó üzemben tartója kapja, akkor is, ha nem ő vezetett. Pontot csak akkor jegyeznek be, ha a járművezetőt is azonosítják, például ha a rendőr a helyszínen megállít.'] },
+    { k: 'Hány pontnál veszik el a jogosítványt?', v: [`${g.pont_hatarok.visszavonas} pontnál a vezetői engedélyt visszavonják. A pontok általában a határozat jogerőre emelkedésétől, helyszíni bírságnál annak elfogadásától számított három év után törlődnek.`] },
+    { k: 'Mi az átlagsebesség-mérés?', v: ['Egy szakasz elején és végén is lefényképezik az autót, és az eltelt időből számolják az átlagsebességet. Ha ugyanazon az úton pontszerű mérés is volt, ugyanazért a túllépésért nem bírságolnak kétszer.'] },
+  ];
+  const leiras = 'Mennyi a gyorshajtási bírság, és hány pontot kapsz? A sebességkorlátból és a mért sebességből kiszámoljuk a bírságot, a pontot és a következő sáv határát.';
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Gyorshajtási bírság'], cim: 'Mennyi a gyorshajtási bírság?', valasz: `A bírság ${fmt(g.csoportok[0].savok[0][2])} és ${fmt(g.csoportok[0].savok.at(-1)[2])} forint között van, a túllépéstől és a sebességkorláttól függően. Ha a járművezetőt azonosítják, ${g.pontok[0]}–${g.pontok.at(-1)} pontot is kap.` })}
+<div class="keret asztal">
+${forgalmi({ kalk: 'gyorshajtas', cim: 'A mérés', tartalom: `
+<div class="ket">${sor('', szamMezo({ id: 'korlat', cim: 'Megengedett sebesség', me: 'km/h', placeholder: 'pl. 50', min: 5, max: 130 }))}${sor('', szamMezo({ id: 'mert', cim: 'Mért sebesség', me: 'km/h', placeholder: 'pl. 72', min: 1, max: 400 }))}</div>` })}
+${elszamolas(k, M.uresPanel('Add meg a megengedett és a mért sebességet.'))}
+</div>
+<div class="keret"><article class="cikk">
+<h2>A bírságtábla</h2>
+${g.csoportok.map((cs, ci) => `<h3>${csNev[ci]}</h3>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Túllépés</th><th>Bírság</th><th>Pont</th></tr></thead><tbody>
+${cs.savok.map((s, si) => `<tr><td>${savSzoveg(s)}</td><td>${M.ftx(s[2])}</td><td>${g.pontok[si]}</td></tr>`).join('')}
+</tbody></table></div>`).join('\n')}
+<p class="megj">A 410/2007. Korm. rendelet 1. melléklete és a 236/2000. Korm. rendelet 1/A. melléklete szerint. Pontot csak a járművezető azonosításakor jegyeznek be.</p>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista(forrasbol(g.forrasok))}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Gyorshajtási bírság kalkulátor: bírság és pont',
+    leiras, ut, tartalom,
+    adatJson: { szabalyok: { gyorshajtas: g } },
+    jsonld: [alkalmazasLd(k.cfg, 'Gyorshajtási bírság kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Gyorshajtási bírság', ut }])],
   });
 }

@@ -1040,7 +1040,7 @@ export function hataridoNaptar(adat, b) {
       es.push({ tipus: 'kgfb', nap: felmondas, cim: `Kötelező biztosítás: eddig válthatsz${nevben}`, leiras: `Ha másik biztosítóhoz mennél, a felmondásnak eddig a napig meg kell érkeznie a mostani biztosítódhoz. Az új biztosítási időszak ${huNapon(kezdet)} kezdődik.`, riasztas: [14, 3] });
     }
   }
-  if (b.hajtas !== 'elektromos') {
+  if (b.hajtas !== 'elektromos' && b.gjado !== false) {
     const [hNev, nNap] = String(adat.szabalyok.hataridok.gepjarmuado_befizetes).replace(/\.$/, '').split(' ');
     const ho = String(HONAPOK.indexOf(hNev) + 1).padStart(2, '0'), nap = String(Number(nNap)).padStart(2, '0');
     let ev = Number(b.ma.slice(0, 4));
@@ -1052,7 +1052,7 @@ export function hataridoNaptar(adat, b) {
   if (!es.length) return { hiba: 'Add meg a műszaki vizsga lejáratát vagy a biztosítási évfordulót.' };
   es.sort((x, y) => x.nap.localeCompare(y.nap));
   const dtstamp = new Date(b.most || Date.now()).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
-  const sorok = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//autozom.hu//Az autóm//HU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Az autóm határidői'];
+  const sorok = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//autozom.hu//Az autóm//HU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', `X-WR-CALNAME:${icsEsc(b.naptarNev || 'Az autóm határidői')}`];
   for (const x of es) {
     sorok.push('BEGIN:VEVENT',
       // Állandó azonosító: ha újra letölti és importálja, a naptár frissíti az eseményt, nem duplázza
@@ -1138,4 +1138,109 @@ export function utnyilvantartas(adat, b) {
   }
   const ossz = (k) => honapok.reduce((s, h) => s + h[k], 0);
   return { utak: rendezett, honapok, norma: n.norma, egyseg: n.egyseg, normaLeiras: n.leiras, arKulcs: n.arKulcs, ft15, km: kerek(ossz('km'), 1), uzemanyagFt: ossz('uzemanyagFt'), normakoltseg: ossz('normakoltseg'), osszesen: ossz('osszesen') };
+}
+
+/* ---------------- Műszaki vizsga: díj és a következő lejárat ---------------- */
+const evEltol = (iso, n) => {
+  const [e, h, d] = iso.split('-').map(Number);
+  // február 29-ről nem szökőévbe: február 28. (a hónap utolsó napja)
+  const ev = e + n, nap = h === 2 && d === 29 && !szokoev(ev) ? 28 : d;
+  return `${ev}-${String(h).padStart(2, '0')}-${String(nap).padStart(2, '0')}`;
+};
+/**
+ * b: { kategoria: 'szemely'|'kisteher'|'motor'|'segedmotor'|'potkocsi750'|'potkocsi3500', elektromos: bool, osszkerek: bool,
+ *      uj: bool (most helyezik forgalomba), elsoHasznalat: 'YYYY-MM-DD' vagy év, lejarat: 'YYYY-MM-DD' (a mostani műszaki érvényesség), vizsga: 'YYYY-MM-DD' }
+ */
+export function muszakiVizsga(adat, b) {
+  const m = adat.szabalyok.muszaki;
+  const kat = m.dijak[b.kategoria];
+  if (!kat) return { hiba: 'Válaszd ki a jármű fajtáját.' };
+  const datumOk = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x || '') && new Date(`${x}T12:00:00Z`).toISOString().slice(0, 10) === x;
+  // Díj: a tisztán elektromos személyautó és kisteherautó nem jár környezetvédelmi felülvizsgálatra
+  const kornyezeti = b.elektromos ? 0 : kat.kornyezeti;
+  const osszkerek = b.osszkerek && ['szemely', 'kisteher'].includes(b.kategoria) ? m.osszkerek_potdij : 0;
+  const dij = { alap: kat.alap, kornyezeti, osszkerek, osszesen: kat.alap + kornyezeti + osszkerek };
+  // Érvényesség: új jármű 4 év; használtnál, ha a vizsga az első használatba vétel évét követő három naptári éven belül van, 3 év, utána 2 év
+  const r = { kategoria: b.kategoria, nev: kat.nev, dij, elektromos: !!b.elektromos };
+  // Ha nem adta meg, mikor menne: a lejárat előtti 30 napos ablakkal számolunk (ott a legjobb), ha az még előtte van, különben a mai nappal
+  let vizsga = b.vizsga, feltetelezett = '';
+  if (!vizsga) {
+    if (!b.ma) return r;
+    if (datumOk(b.lejarat) && b.lejarat >= b.ma) { vizsga = b.lejarat; feltetelezett = 'ablak'; } else { vizsga = b.ma; feltetelezett = 'ma'; }
+  }
+  r.feltetelezett = feltetelezett;
+  if (!datumOk(vizsga)) return { ...r, hiba: 'A vizsga napját dátumként add meg.' };
+  const e = m.ervenyesseg;
+  if (b.uj) return { ...r, ev: e.uj_ev, kezdet: vizsga, lejaratUj: evEltol(vizsga, e.uj_ev), szabaly: 'uj' };
+  const elsoEv = Number(String(b.elsoHasznalat || '').slice(0, 4));
+  if (!(elsoEv > 1900)) return { ...r, hiba: 'Add meg, mikor helyezték először forgalomba (forgalmi engedély B. sor).' };
+  const vizsgaEv = Number(vizsga.slice(0, 4));
+  if (vizsgaEv < elsoEv) return { ...r, hiba: 'A vizsga nem lehet korábban, mint az első forgalomba helyezés.' };
+  const fiatal = vizsgaEv - elsoEv <= e.fiatal_naptari_ev;
+  const ev = fiatal ? e.fiatal_ev : e.utana_ev;
+  // Ha a lejárat előtt legfeljebb 30 nappal vizsgáztatod, az új időszak a régi lejárattól indul, így nem veszítesz napot
+  let kezdet = vizsga, korai = false, korabbanNap = null;
+  if (datumOk(b.lejarat)) {
+    const elotte = napKulonbseg(vizsga, b.lejarat);
+    if (elotte >= 0 && elotte <= e.korabban_nap) { kezdet = b.lejarat; korai = true; }
+    korabbanNap = elotte;
+  }
+  return { ...r, ev, kezdet, korai, korabbanNap, lejaratUj: evEltol(kezdet, ev), szabaly: fiatal ? 'fiatal' : 'utana', legkorabban: datumOk(b.lejarat) ? napEltol(b.lejarat, -e.korabban_nap) : null };
+}
+
+/* ---------------- Fedezetlenségi díj ---------------- */
+/** A sávos táblából a napi díj: sorok [[felső határ kW-ban vagy null, 21 felett, 21 alatt], …] */
+const sav = (sorok, kw) => sorok.find(([ig]) => ig == null || kw <= ig);
+/**
+ * b: { kategoria: 'szemely'|'motor'|<egyeb kulcs>, kw, termeszetes: bool, szuletesiEv, szerzodesEv, tol: 'YYYY-MM-DD', ig: 'YYYY-MM-DD', ma }
+ * A díj naptári évenként más: a fedezetlen időszakot évekre bontjuk.
+ */
+export function fedezetlensegiDij(adat, b) {
+  const f = adat.szabalyok.fedezetlensegi;
+  const datumOk = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x || '') && new Date(`${x}T12:00:00Z`).toISOString().slice(0, 10) === x;
+  if (!datumOk(b.tol) || !datumOk(b.ig)) return { hiba: 'Add meg a biztosítás nélküli időszak első és utolsó napját.' };
+  if (b.ig < b.tol) return { hiba: 'Az utolsó nap nem lehet korábban, mint az első.' };
+  const kw = Number(b.kw);
+  if (['szemely', 'motor'].includes(b.kategoria) && !(kw > 0)) return { hiba: 'Add meg a teljesítményt (forgalmi engedély P.2).' };
+  if (!['szemely', 'motor'].includes(b.kategoria) && !f.egyeb_nevek[b.kategoria]) return { hiba: 'Válaszd ki a jármű fajtáját.' };
+  // Életkor: a szerződés kockázatviselési kezdetének éve mínusz a születési év (nem a fedezetlenség éve)
+  let fiatal = false, eletkor = null;
+  if (b.termeszetes) {
+    const sz = Number(b.szuletesiEv), ke = Number(b.szerzodesEv) || Number(b.ig.slice(0, 4));
+    if (!(sz > 1900)) return { hiba: 'Add meg a szerződő születési évét.' };
+    eletkor = ke - sz;
+    fiatal = eletkor < f.korhatar;
+  }
+  const evek = [];
+  for (let ev = Number(b.tol.slice(0, 4)); ev <= Number(b.ig.slice(0, 4)); ev++) {
+    const t = f.evek[ev];
+    const tol = b.tol > `${ev}-01-01` ? b.tol : `${ev}-01-01`, ig = b.ig < `${ev}-12-31` ? b.ig : `${ev}-12-31`;
+    const napok = napKulonbseg(tol, ig) + 1;
+    if (!t) { evek.push({ ev, napok, tol, ig, napi: null }); continue; }
+    const sor = b.kategoria === 'szemely' ? sav(t.szemely, kw) : b.kategoria === 'motor' ? sav(t.motor, kw) : [null, ...t.egyeb[b.kategoria]];
+    const napi = sor[fiatal ? 2 : 1];
+    evek.push({ ev, napok, tol, ig, napi, osszeg: napi * napok, forras: t.forras });
+  }
+  const hianyzo = evek.filter((x) => x.napi == null).map((x) => x.ev);
+  const napok = evek.reduce((s, x) => s + x.napok, 0);
+  const osszeg = evek.reduce((s, x) => s + (x.osszeg || 0), 0);
+  const regi = b.ma ? Number(b.ma.slice(0, 4)) - Number(b.tol.slice(0, 4)) > f.visszamenoleg_ev : false;
+  return { evek, napok, osszeg, fiatal, eletkor, hianyzo, reszlet: napok > f.reszlet_nap, regi, kategoria: b.kategoria };
+}
+
+/* ---------------- Gyorshajtás: bírság és pont ---------------- */
+/** b: { korlat: km/h, mert: km/h } — a mért sebesség a hatósági mérés szerinti érték */
+export function gyorshajtas(adat, b) {
+  const g = adat.szabalyok.gyorshajtas;
+  const korlat = Math.round(Number(b.korlat)), mert = Math.round(Number(b.mert));
+  if (!(korlat > 0)) return { hiba: 'Add meg a megengedett sebességet.' };
+  if (!(mert > 0)) return { hiba: 'Add meg a mért sebességet.' };
+  const ci = g.csoportok.findIndex((cs) => cs.ig == null || korlat <= cs.ig);
+  const cs = g.csoportok[ci];
+  const tullepes = mert - korlat;
+  // a sáv alsó határa nem tartozik bele, a felső igen: 15 felett 25-ig
+  const si = cs.savok.findIndex(([tol, ig]) => tullepes > tol && (ig == null || tullepes <= ig));
+  const kovetkezo = si === -1 ? (tullepes <= cs.savok[0][0] ? { tullepes: cs.savok[0][0] + 1, birsag: cs.savok[0][2] } : null) : si < cs.savok.length - 1 ? { tullepes: cs.savok[si][1] + 1, birsag: cs.savok[si + 1][2] } : null;
+  if (si === -1) return { korlat, mert, tullepes, csoport: ci, birsag: 0, pont: 0, sav: null, kovetkezo, minimum: cs.savok[0][0] };
+  return { korlat, mert, tullepes, csoport: ci, birsag: cs.savok[si][2], pont: g.pontok[si], sav: si, savTol: cs.savok[si][0], savIg: cs.savok[si][1], kovetkezo, minimum: cs.savok[0][0] };
 }

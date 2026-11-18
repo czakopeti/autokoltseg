@@ -145,6 +145,30 @@
       "mit": "Új katás szabályok 2027-től (Vállalkozóknak oldal táblázata)",
       "hol": "forras/oldalak.mjs → vallalkozoknakOldal, „Melyik szabály vonatkozik rád?” táblázat",
       "hogyan": "Az őszi adócsomag 2027-től átalakítaná a katát (nem főfoglalkozásúaknak is, új tételes adó és bevételi keret). Ha elfogadták, nézd meg a NAV-on, változik-e, hogy a katás nem fizet cégautóadót, és frissítsd a sort forrással."
+    },
+    {
+      "id": "fedezetlensegi-dij",
+      "mikor": "--11-20",
+      "mit": "A következő évi fedezetlenségi díjak",
+      "hol": "data/szabalyok.json → fedezetlensegi.evek (évenként szemely, motor, egyeb, forras, kozzeteve)",
+      "forras": "https://www.mnb.hu/",
+      "hogyan": "A MABISZ legkésőbb 45 nappal az év vége előtt közzéteszi, az MNB oldalán PDF-ben is megjelenik („A fedezetlenségi díj 20XX. évre érvényes mértékei”). Vedd fel új évként; a kalkulátor az évenkénti napokat magától a megfelelő évi díjjal számolja."
+    },
+    {
+      "id": "muszaki-dij",
+      "mikor": "--01-10",
+      "mit": "A műszaki vizsga hatósági díjai és érvényességi szabálya",
+      "hol": "data/szabalyok.json → muszaki (dijak, osszkerek_potdij, ervenyesseg, hatalyos)",
+      "forras": "https://njt.jog.gov.hu/jogszabaly/2024-46-20-8X",
+      "hogyan": "Nézd meg a 46/2024. ÉKM rendelet 1. és 2. mellékletének hatályos szövegét és az 5/1990. KöHÉM rendelet 11. §-át. Ha változott, írd át a díjakat és a hatalyos dátumot."
+    },
+    {
+      "id": "gyorshajtas-birsag",
+      "mikor": "--01-10",
+      "mit": "A gyorshajtási bírság összegei és a pontok",
+      "hol": "data/szabalyok.json → gyorshajtas (csoportok, pontok)",
+      "forras": "https://njt.jog.gov.hu/jogszabaly/2007-410-20-22",
+      "hogyan": "Nézd meg a 410/2007. Korm. rendelet 1. mellékletét és a 236/2000. Korm. rendelet 1/A. mellékletét. Ha változott, írd át a sávokat és a forrás dátumát."
     }
   ]
 }

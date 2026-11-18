@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=e0294f5a';
+import * as S from './szamitas.js?v=1fbb54d2';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -674,4 +674,70 @@ ${rendelveny ? '<p>A rendelvény két példányban készült: az eredeti a kifiz
 <p class="kelt">Kelt: ${p(d.keltHely, 14)}, ${d.keltDatum ? datumHu(d.keltDatum) : p('', 18)}</p>
 <div class="alairasok">${rendelveny ? '<div><span></span>kifizető</div><div><span></span>magánszemély</div>' : '<div><span></span>aláírás</div>'}</div>
 </article>`;
+}
+
+/* ---------- Műszaki vizsga ---------- */
+export function muszakiPanel(adat, r, { minta = false } = {}) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const m = adat.szabalyok.muszaki, f = m.forrasok[0].url;
+  let h = vegosszeg('A műszaki vizsga hatósági díja', r.dij.osszesen, `${r.nev}${r.elektromos ? ', tisztán elektromos' : ''}. Ezt a vizsgaállomáson fizeted. Az előkészítés és az átvizsgálás munkadíja ezen felül van, ezt a vizsgaállomás szabja meg.`);
+  h += '<ul class="tetelek">';
+  h += tetel('Műszaki és közlekedésbiztonsági vizsgálat', ftx(r.dij.alap), { forras: 'hivatalos', forrasUrl: f });
+  if (r.dij.kornyezeti) h += tetel('Környezetvédelmi felülvizsgálat', ftx(r.dij.kornyezeti), { forras: 'hivatalos', forrasUrl: f, al: 'a kipufogógáz-mérés' });
+  else if (r.elektromos) h += tetel('Környezetvédelmi felülvizsgálat', ftx(0), { forras: 'hivatalos', forrasUrl: f, al: 'a tisztán elektromos autónak nem kell' });
+  if (r.dij.osszkerek) h += tetel('Összkerékhajtás', ftx(r.dij.osszkerek), { forras: 'hivatalos', forrasUrl: f, al: 'pótdíj' });
+  h += tetel('Összesen', ftx(r.dij.osszesen), { cls: 'vegso' });
+  h += '</ul>';
+  if (r.lejaratUj) {
+    const miert = r.szabaly === 'uj' ? `Új autó első vizsgája: ${r.ev} évre szól.`
+      : r.szabaly === 'fiatal' ? `Az első forgalomba helyezés évét követő három naptári éven belül vagy, ezért ${r.ev} évre szól.`
+        : `Az első forgalomba helyezés évét követő három naptári év már eltelt, ezért ${r.ev} évre szól.`;
+    h += `<h3 class="panel-cim">Meddig lesz érvényes?</h3><ul class="tetelek">`;
+    h += tetel('Az új műszaki érvényesség', datumHu(r.lejaratUj), { forras: 'hivatalos', forrasUrl: m.forrasok[1].url, al: miert, cls: 'kiemelt-sor' });
+    h += '</ul>';
+    if (r.feltetelezett === 'ablak') h += `<p class="igy">Ezzel akkor számolhatsz, ha a lejárat előtti 30 napban, ${datumHu(r.legkorabban)} és ${datumHu(r.kezdet)} között vizsgáztatod. Ilyenkor az új időszak a régi lejárattól indul, így egy napot sem veszítesz.</p>`;
+    else if (r.feltetelezett === 'ma') h += `<p class="igy">A mai vizsgával számoltunk. Ha más napon mennél, írd be a vizsga napját.</p>`;
+    else if (r.korai) h += `<p class="igy">Mivel a lejárat előtt ${r.korabbanNap} nappal vizsgázol, az új időszak a régi lejárattól (${datumHu(r.kezdet)}) indul, így egy napot sem veszítesz.</p>`;
+    else if (r.korabbanNap != null && r.korabbanNap > m.ervenyesseg.korabban_nap) h += `<p class="igy"><strong>Ha ${datumHu(r.legkorabban)} után mész, egy napot sem veszítesz.</strong> A lejárat előtti 30 napban letett vizsga a régi lejárattól számít, ennél korábban a vizsga napjától.</p>`;
+    else if (r.korabbanNap != null && r.korabbanNap < 0) h += `<p class="igy">A műszaki már ${-r.korabbanNap} napja lejárt. Lejárt műszakival az autó nem vehet részt a forgalomban. Az új időszak a vizsga napjától indul.</p>`;
+    if (!minta) h += `<p class="naptar-sor"><button type="button" class="szoveg-gomb" data-muszaki-ics="${r.lejaratUj}">Emlékeztető a naptáradba</button> <span class="sugo">30 és 7 nappal a lejárat előtt szól. Google, Apple és Outlook naptárral is működik.</span></p><p class="igy" data-muszaki-uzenet hidden></p>`;
+  }
+  return jelekkel(h);
+}
+
+/* ---------- Fedezetlenségi díj ---------- */
+export function fedezetlensegiPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const f = adat.szabalyok.fedezetlensegi;
+  if (r.hianyzo.length && r.hianyzo.length === r.evek.length) return hianyPanel(`A ${r.hianyzo.join(', ')}. évi díjakat a MABISZ még nem tette közzé (általában november közepén jelennek meg).`);
+  let h = vegosszeg('Fedezetlenségi díj', r.osszeg, `${fmt(r.napok)} nap biztosítás nélkül. A díjat az a biztosító számolja ki és szedi be, amelyiknél a fedezetlenség után először kötsz kötelezőt.`);
+  h += '<ul class="tetelek">';
+  for (const x of r.evek) {
+    if (x.napi == null) { h += tetel(`${x.ev}: ${fmt(x.napok)} nap`, 'még nincs díj', { al: 'a MABISZ még nem tette közzé' }); continue; }
+    h += tetel(`${x.ev}: ${fmt(x.napok)} nap × ${ftx(x.napi)}`, ftx(x.osszeg), { forras: 'hivatalos', forrasUrl: x.forras, al: `${datumHu(x.tol)} – ${datumHu(x.ig)}` });
+  }
+  h += tetel('Összesen', ftx(r.osszeg), { cls: 'vegso' });
+  h += '</ul>';
+  if (r.eletkor != null) h += `<p class="igy">${r.fiatal ? `A szerződő a szerződés kezdetének évében ${r.eletkor} éves volt, ezért a 21 év alattiak magasabb díjával számoltunk.` : `A szerződő a szerződés kezdetének évében ${r.eletkor} éves volt, ezért az általános díjjal számoltunk.`} Az életkort a szerződés kockázatviselésének kezdő évéből számolják, nem a fedezetlenség évéből.</p>`;
+  if (r.evek.length > 1) h += megjegyzes('A díj naptári évenként más, ezért a két évre eső napokat külön, az adott évi díjjal számoltuk.');
+  if (r.reszlet) h += megjegyzes(`Mivel a fedezetlenség ${f.reszlet_nap} napnál hosszabb, a biztosító kérésedre részletfizetést adhat. Elengedni nem lehet.`);
+  if (r.regi) h += megjegyzes(`A biztosító legfeljebb az utolsó ${f.visszamenoleg_ev} év fedezetlen napjait veheti figyelembe.`);
+  if (r.hianyzo.length) h += megjegyzes(`A ${r.hianyzo.join(', ')}. évi díj még nem jelent meg, ezért azt a részt nem tudtuk kiszámolni.`);
+  return jelekkel(h);
+}
+
+/* ---------- Gyorshajtás ---------- */
+export function gyorshajtasPanel(adat, r) {
+  if (r.hiba) return hianyPanel(r.hiba);
+  const g = adat.szabalyok.gyorshajtas;
+  if (r.tullepes <= 0) return `<div class="vegosszeg"><span class="mi">Nem lépted túl a megengedett sebességet</span></div>`;
+  if (!r.birsag) return `${vegosszeg('Közigazgatási bírság', 0, `${r.tullepes} km/h túllépés. A táblázat ${r.minimum} km/h-ig nem bírságol, ${r.kovetkezo ? `${r.kovetkezo.tullepes} km/h túllépéstől ${ftx(r.kovetkezo.birsag)} a bírság` : ''}.`)}${megjegyzes('Ha a rendőr a helyszínen megállít, ennél kisebb túllépésért is eljárhat.')}`;
+  let h = vegosszeg('Közigazgatási bírság', r.birsag, `${r.korlat} km/h helyett ${r.mert} km/h: ${r.tullepes} km/h túllépés (${r.savIg ? `${r.savTol} felett ${r.savIg} km/h-ig` : `${r.savTol} km/h felett`}).`);
+  h += '<ul class="tetelek">';
+  h += tetel('Bírság', ftx(r.birsag), { forras: 'hivatalos', forrasUrl: g.forrasok[0].url });
+  h += tetel('Pont a járművezetőnek', `${r.pont} pont`, { forras: 'hivatalos', forrasUrl: g.forrasok[1].url, al: `${g.pont_hatarok.visszavonas} pontnál a vezetői engedélyt visszavonják` });
+  h += '</ul>';
+  if (r.kovetkezo) h += `<p class="igy">${r.kovetkezo.tullepes} km/h túllépéstől már ${ftx(r.kovetkezo.birsag)} lenne.</p>`;
+  h += megjegyzes('A kamerás mérésnél a bírságot az autó üzemben tartója kapja (objektív felelősség). Pontot csak akkor jegyeznek be, ha a járművezetőt is azonosítják, például ha a rendőr a helyszínen megállít.');
+  return jelekkel(h);
 }

@@ -19,8 +19,11 @@ Amit évente, havonta vagy egy-egy útnál fizetsz, és a határidők, amelyekre
 - [Gépjárműadó](https://autozom.hu/gepjarmuado-kalkulator/): a 2026. és 2027. évi NAV-tételekkel, a teljesítmény (kW) és a gyártási év alapján; az elektromos és a plug-in hibrid mentessége
 - [Fenntartás](https://autozom.hu/autofenntartas-kalkulator/): havi és kilométerenkénti költség üzemanyaggal, értékvesztéssel, biztosítással, szervizzel és adóval
 - [Kötelező biztosítás](https://autozom.hu/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
+- [Fedezetlenségi díj](https://autozom.hu/fedezetlensegi-dij-kalkulator/): napi díj a biztosítás nélküli napokra a 2025. és 2026. évi MABISZ-tábla szerint, évenként szétbontva, a 21 év alatti szerződők magasabb díjával
+- [Műszaki vizsga](https://autozom.hu/muszaki-vizsga-kalkulator/): a hatósági díj járművenként (személyautónál 26 700 Ft), az új műszaki lejárata a 4, 3 és 2 éves szabállyal és a 30 napos előrehozással, emlékeztető naptárfájlban
 - [Autópálya-matrica](https://autozom.hu/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb, a 2026. és 2027. évi díjakkal
 - [Útiköltség](https://autozom.hu/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: 2026. november); fejenkénti, havi és éves költség
+- [Gyorshajtási bírság](https://autozom.hu/gyorshajtas-birsag-kalkulator/): közigazgatási bírság (50 000–468 000 Ft) és pont a sebességkorlátból és a mért sebességből, a teljes bírságtábla
 - [Plug-in hibrid 2027](https://autozom.hu/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
 - [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon, és a határidők (műszaki, kötelező biztosítás, gépjárműadó) naptárfájlban
