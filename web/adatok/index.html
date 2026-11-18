@@ -21,7 +21,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/overpass-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/style.css?v=dd7712e6">
+<link rel="stylesheet" href="/assets/style.css?v=651dde42">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Adatok és idősorok: NAV-üzemanyagár, gépjárműadó, matrica","description":"A NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként. Grafikon, táblázat, CSV és JSON, szabadon felhasználható.","url":"https://autozom.hu/adatok/","inLanguage":"hu","dateModified":"2026-11-18","isPartOf":{"@type":"WebSite","name":"autózom","url":"https://autozom.hu/"},"publisher":{"@type":"Organization","name":"autózom","url":"https://autozom.hu/","logo":"https://autozom.hu/apple-touch-icon.png","slogan":"Az autód. A költségeid. A döntéseid."}}</script>
 <script type="application/ld+json">{"@type":"Dataset","name":"NAV havi üzemanyagárak (benzin, dízel, keverék, LPG, CNG)","description":"A NAV által havonta közzétett, a fogyasztási norma szerinti költségelszámolásban alkalmazható üzemanyagárak, 2023-01–2026-11.","url":"https://autozom.hu/adatok/","license":"https://creativecommons.org/licenses/by/4.0/deed.hu","isAccessibleForFree":true,"inLanguage":"hu","creator":{"@type":"Organization","name":"autózom","url":"https://autozom.hu"},"spatialCoverage":"Magyarország","temporalCoverage":"2023-01/2026-11","isBasedOn":"https://nav.gov.hu/ugyfeliranytu/uzemanyag","distribution":[{"@type":"DataDownload","encodingFormat":"text/csv","contentUrl":"https://autozom.hu/adatok/nav-uzemanyagar-havi.csv"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://autozom.hu/adatok/v1/nav-uzemanyagar.json"}]}</script>
 <script type="application/ld+json">{"@type":"Dataset","name":"Gépjárműadó tételei Magyarországon","description":"A személyautók gépjárműadójának Ft/kW tételei koronként, évenként.","url":"https://autozom.hu/adatok/","license":"https://creativecommons.org/licenses/by/4.0/deed.hu","isAccessibleForFree":true,"inLanguage":"hu","creator":{"@type":"Organization","name":"autózom","url":"https://autozom.hu"},"spatialCoverage":"Magyarország","temporalCoverage":"2026/2027","isBasedOn":"https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek","distribution":[{"@type":"DataDownload","encodingFormat":"text/csv","contentUrl":"https://autozom.hu/adatok/gepjarmuado-tetelek.csv"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://autozom.hu/adatok/v1/gepjarmuado.json"}]}</script>
@@ -71,6 +71,28 @@
 <h2 id="matrica">E-matrica, személyautó (D1)</h2>
 <div class="tabla-tarto"><table class="tabla"><thead><tr><th>Matrica</th><th>2026</th><th>2027</th></tr></thead><tbody><tr><th scope="row">Napi</th><td>5 550&nbsp;Ft</td><td>5 630&nbsp;Ft</td></tr><tr><th scope="row">Tíznapos</th><td>6 900&nbsp;Ft</td><td>6 990&nbsp;Ft</td></tr><tr><th scope="row">Havi</th><td>11 170&nbsp;Ft</td><td>11 320&nbsp;Ft</td></tr><tr><th scope="row">Éves országos</th><td>61 760&nbsp;Ft</td><td>62 560&nbsp;Ft</td></tr><tr><th scope="row">Éves vármegyei</th><td>7 190&nbsp;Ft</td><td>7 280&nbsp;Ft</td></tr><tr><th scope="row">M1 regionális</th><td>15 000&nbsp;Ft</td><td>15 000&nbsp;Ft</td></tr></tbody><caption>Bruttó díjak. Forrás: Magyar Közút / Nemzeti Útdíjfizetési Szolgáltató.</caption></table></div>
 <p><a class="letoltes" href="e-matrica-dijak-d1.csv" download>Az e-matrica díjai letöltése (CSV)</a></p>
+
+<h2 id="excel">Excelben és Google Táblázatban</h2>
+<p>A NAV-árat a saját táblázatodba is behúzhatod úgy, hogy magától frissüljön, és ne kelljen havonta kézzel átírni. Két fájl közül választhatsz:</p>
+<ul>
+<li><code>https://autozom.hu/adatok/nav-uzemanyagar-legfrissebb.csv</code>: csak a legfrissebb hónap, egy sorban. Ez kell, ha egy cellában akarod látni az e havi árat.</li>
+<li><code>https://autozom.hu/adatok/nav-uzemanyagar-havi.csv</code>: az összes hónap 2023. januártól.</li>
+</ul>
+<p>Mindkettőben az oszlopok sorrendje: hónap, benzin, dízel, keverék, LPG, CNG, majd a védett benzin- és dízelár (ha volt). A mezőket pontosvessző választja el.</p>
+<h3>Google Táblázat</h3>
+<p>Írd egy üres cellába, és a táblázat magától kitölti a sorokat:</p>
+<pre class="keplet"><code>=IMPORTDATA("https://autozom.hu/adatok/nav-uzemanyagar-legfrissebb.csv";";")</code></pre>
+<p>Csak az e havi benzinár, egyetlen cellában:</p>
+<pre class="keplet"><code>=INDEX(IMPORTDATA("https://autozom.hu/adatok/nav-uzemanyagar-legfrissebb.csv";";");2;2)</code></pre>
+<p>A dízelhez a végén a 2 helyett 3 kell, a keverékhez 4, az LPG-hez 5, a CNG-hez 6. Ha angol nyelvű a táblázatod, a pontosvesszők helyére vessző kerül a képletben, a <code>";"</code> marad. A Google Táblázat időnként magától újra lekéri a fájlt.</p>
+<h3>Excel</h3>
+<ol>
+<li>Az Adatok lapon válaszd a Weblapról lehetőséget (angol Excelben: Data, From Web).</li>
+<li>Másold be a fenti címek egyikét, és kattints az OK gombra. Az Excel felismeri a pontosvesszőt, és oszlopokra bontja az adatokat.</li>
+<li>Kattints a Betöltés gombra. Az adatok egy új táblázatba kerülnek.</li>
+<li>Frissíteni az Adatok lapon az Összes frissítése gombbal tudsz. Ha azt szeretnéd, hogy megnyitáskor magától frissüljön, a lekérdezés tulajdonságainál kapcsold be a fájl megnyitásakor történő frissítést.</li>
+</ol>
+<p>Ha egy másik cellában erre a táblázatra hivatkozol, például a kilométertérítés képletében, az új hónap ára frissítés után magától bekerül a számításba.</p>
 
 <h2 id="fejlesztoknek">Fejlesztőknek: JSON</h2>
 <p>Ha egy program magától venné át az adatokat, például egy útnyilvántartó vagy egy könyvelőprogram a havi NAV-árat, ugyanezek az adatok JSON-ban is elérhetők. Nem kell hozzá regisztráció vagy kulcs, és bármelyik oldalról lekérhetők, böngészőből is (CORS).</p>
@@ -134,6 +156,6 @@
 </ul></div>
 </div></footer>
 
-<script type="module" src="/assets/js/app.js?v=dd7712e6"></script>
+<script type="module" src="/assets/js/app.js?v=651dde42"></script>
 </body>
 </html>

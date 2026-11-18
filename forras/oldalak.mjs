@@ -1604,6 +1604,7 @@ ${sorok.map((x) => `<tr><th scope="row">${x.nev}</th><td><strong>${ar(x)}</stron
 <p>A NAV havonta közzéteszi, milyen áron lehet elszámolni az üzemanyagot a fogyasztási norma szerinti költségelszámolásban. Ezt használja a kilométertérítés a saját autós hivatali útnál, és ezt használhatja a vállalkozó is, ha a kilométerek alapján számol el.</p>
 ${peldaMondat ? `<p>${peldaMondat}</p>` : ''}
 <p>A saját utadat a <a href="${L.l('kilometerterites-kalkulator/')}">kilométertérítés-kalkulátor</a> számolja ki, egy út teljes költségét pedig az <a href="${L.l('utikoltseg-kalkulator/')}">útiköltség-kalkulátor</a>.</p>
+<p>Ha Excelben vagy Google Táblázatban számolsz, a havi árat be is húzhatod a táblázatodba, és magától frissül. <a href="${L.l(ADAT_UT)}#excel">Így csináld</a>.</p>
 
 <h2 id="idosor">Így változott ${u[0].ev} óta</h2>
 ${idosorGrafikon(u)}
@@ -1636,6 +1637,8 @@ export function adatCsvk(adat) {
   const evekBol = (o) => Object.keys(o).filter((k) => /^\d{4}$/.test(k)).sort();
   return {
     'nav-uzemanyagar-havi.csv': csv(['honap', ...UZEMANYAG_OSZLOPOK.map((x) => x[1])], u.map((r) => [r.kulcs, ...UZEMANYAG_OSZLOPOK.map(([k]) => r[k])])),
+    // Egyetlen sor, a legfrissebb hónap: egy cellába húzható be (Excel, Google Táblázat)
+    'nav-uzemanyagar-legfrissebb.csv': csv(['honap', ...UZEMANYAG_OSZLOPOK.map((x) => x[1])], [u.at(-1)].map((r) => [r.kulcs, ...UZEMANYAG_OSZLOPOK.map(([k]) => r[k])])),
     'gepjarmuado-tetelek.csv': csv(['ev', 'kor_sav', 'ft_per_kw'], evekBol(t.gepjarmuado).flatMap((ev) => t.gepjarmuado[ev].savok.map((v, i) => [ev, S.GJADO_SAV_ROVID[i], v]))),
     'cegautoado-tetelek.csv': csv(['ev', 'teljesitmeny', 'kornyezetvedelmi_osztaly', 'ft_per_honap'], evekBol(t.cegautoado).flatMap((ev) => t.cegautoado[ev].tabla.flatMap((sor, i) => sor.map((v, j) => [ev, S.CEG_SAVOK[i], t.cegautoado[ev].oszlopok[j].replace(/[„”]/g, ''), v])))),
     'atirasi-illetek-tetelek.csv': csv(['ev', 'teljesitmeny', 'kor', 'ft_per_kw'], evekBol(t.illetek).flatMap((ev) => t.illetek[ev].tabla.flatMap((sor, i) => sor.map((v, j) => [ev, ILLETEK_SOROK[i], ILLETEK_OSZLOPOK[j], v])))),
@@ -1752,6 +1755,28 @@ ${letolt('atirasi-illetek-tetelek.csv', 'Az átírási illeték tételei')}
 <h2 id="matrica">E-matrica, személyautó (D1)</h2>
 ${tablaTarto(['Matrica', ...mEvek], MATRICA_SOROK.map(([kulcs, nev]) => [nev, ...mEvek.map((e) => M.ftx(m.evek[e].d1[kulcs]))]), 'Bruttó díjak. Forrás: Magyar Közút / Nemzeti Útdíjfizetési Szolgáltató.')}
 ${letolt('e-matrica-dijak-d1.csv', 'Az e-matrica díjai')}
+
+<h2 id="excel">Excelben és Google Táblázatban</h2>
+<p>A NAV-árat a saját táblázatodba is behúzhatod úgy, hogy magától frissüljön, és ne kelljen havonta kézzel átírni. Két fájl közül választhatsz:</p>
+<ul>
+<li><code>${cfg.domain}/${ut}nav-uzemanyagar-legfrissebb.csv</code>: csak a legfrissebb hónap, egy sorban. Ez kell, ha egy cellában akarod látni az e havi árat.</li>
+<li><code>${cfg.domain}/${ut}nav-uzemanyagar-havi.csv</code>: az összes hónap ${elso.ev}. januártól.</li>
+</ul>
+<p>Mindkettőben az oszlopok sorrendje: hónap, benzin, dízel, keverék, LPG, CNG, majd a védett benzin- és dízelár (ha volt). A mezőket pontosvessző választja el.</p>
+<h3>Google Táblázat</h3>
+<p>Írd egy üres cellába, és a táblázat magától kitölti a sorokat:</p>
+<pre class="keplet"><code>=IMPORTDATA("${cfg.domain}/${ut}nav-uzemanyagar-legfrissebb.csv";";")</code></pre>
+<p>Csak az e havi benzinár, egyetlen cellában:</p>
+<pre class="keplet"><code>=INDEX(IMPORTDATA("${cfg.domain}/${ut}nav-uzemanyagar-legfrissebb.csv";";");2;2)</code></pre>
+<p>A dízelhez a végén a 2 helyett 3 kell, a keverékhez 4, az LPG-hez 5, a CNG-hez 6. Ha angol nyelvű a táblázatod, a pontosvesszők helyére vessző kerül a képletben, a <code>";"</code> marad. A Google Táblázat időnként magától újra lekéri a fájlt.</p>
+<h3>Excel</h3>
+<ol>
+<li>Az Adatok lapon válaszd a Weblapról lehetőséget (angol Excelben: Data, From Web).</li>
+<li>Másold be a fenti címek egyikét, és kattints az OK gombra. Az Excel felismeri a pontosvesszőt, és oszlopokra bontja az adatokat.</li>
+<li>Kattints a Betöltés gombra. Az adatok egy új táblázatba kerülnek.</li>
+<li>Frissíteni az Adatok lapon az Összes frissítése gombbal tudsz. Ha azt szeretnéd, hogy megnyitáskor magától frissüljön, a lekérdezés tulajdonságainál kapcsold be a fájl megnyitásakor történő frissítést.</li>
+</ol>
+<p>Ha egy másik cellában erre a táblázatra hivatkozol, például a kilométertérítés képletében, az új hónap ára frissítés után magától bekerül a számításba.</p>
 
 <h2 id="fejlesztoknek">Fejlesztőknek: JSON</h2>
 <p>Ha egy program magától venné át az adatokat, például egy útnyilvántartó vagy egy könyvelőprogram a havi NAV-árat, ugyanezek az adatok JSON-ban is elérhetők. Nem kell hozzá regisztráció vagy kulcs, és bármelyik oldalról lekérhetők, böngészőből is (CORS).</p>
