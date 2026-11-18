@@ -314,7 +314,7 @@ export function kmOldal(k) {
     { k: 'Melyik hónap NAV-árával kell számolni?', v: ['Azzal, amelyikben az út volt. A NAV minden hónap vége felé közzéteszi a következő hónap árát. A számla szerinti árral is el lehet számolni.'] },
     { k: 'Hogyan számol a hibrid és az elektromos autó?', v: [`A plug-in hibrid a belső égésű motor alapnormájának ${Math.round(km.plugin_szorzo * 100)}%-ával, az elektromos autó 100 km-enként ${km.elektromos_benzin_l_100km} liter benzinnel számol, a benzin NAV-árán. A nem tölthető hibridre a benzines vagy dízeles alapnorma vonatkozik.`, `Az LPG-s autó normája a benzines ${M.tized(km.lpg_szorzo)}-szerese, a CNG-sé literenként ${M.tized(km.cng_kg_per_l, 2)} kg.`] },
     { k: 'Mennyi jár a munkába járásért saját autóval?', v: [`Kilométerenként ${km.munkaba_jaras_ft_km} forint adható adómentesen a lakóhely és a munkahely közötti út oda-vissza távolságára. A munkáltatónak ez nem kötelező.`] },
-    { k: 'Kell számla az elszámoláshoz?', v: ['Nem, ha a norma és a NAV-ár szerint számolsz: elég a kiküldetési rendelvény. Legyen rajta az út célja, a távolság és az autó adatai.'] },
+    { k: 'Kell számla az elszámoláshoz?', v: [`Nem, ha a norma és a NAV-ár szerint számolsz: elég a kiküldetési rendelvény. Legyen rajta az út célja, a távolság és az autó adatai. Több útnál az oldalon lévő kitölthető kiküldetési rendelvény hónaponként összesít.`] },
   ];
   const leiras = `Kilométertérítés ${lf.ev}: kiküldetési rendelvény a fogyasztási normával és a NAV ${honapi} árával (benzin ${ar.benzin} Ft/l), plusz ${km.normakoltseg_ft_km} Ft/km normaköltség. Munkába járás ${km.munkaba_jaras_ft_km} Ft/km.`;
 
@@ -1355,6 +1355,8 @@ ${oldalfej(L, { morzsa: ['Vállalkozóknak'], cim: 'Autó a vállalkozásban: me
 <li><a href="${L.l('cegautoado-kalkulator/')}"><h3>Cégautóadó</h3><p>Mennyi a havi és az éves cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}, a gépjárműadó levonásával, negyedéves határidőkkel.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('cegauto-vagy-sajat-auto/')}"><h3>Cégautó vagy saját autó?</h3><p>A cég vegye meg az autót, vagy a sajátodat számold el km-térítéssel? A két út a te zsebedből nézve, és hány km üzleti út felett fordul.</p><span class="ugrik">Összehasonlítom</span></a></li>
 <li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet adómentesen a cég egy üzleti útra a saját autódért: a NAV havi üzemanyagára, az alapnorma és a 15 Ft/km.</p><span class="ugrik">Kiszámolom</span></a></li>
+<li><a href="${L.l(UTNY_UT)}"><h3>Útnyilvántartás és kiküldetési rendelvény</h3><p>Kitölthető, nyomtatható, a kötelező adatokkal. Az utakat Excelből is bemásolhatod, a havi elszámolást a NAV-árral kiszámolja.</p><span class="ugrik">Kitöltöm</span></a></li>
+<li><a href="${L.l(NAVAR_UT)}"><h3>NAV-üzemanyagár</h3><p>Az e havi elszámolási ár, az előző hónappal összevetve. Excelbe és Google Táblázatba is behúzható.</p><span class="ugrik">Megnézem</span></a></li>
 </ul>
 </div></section>
 <div class="keret"><article class="cikk">
@@ -1536,6 +1538,99 @@ export function uzemanyagSorok(adat) {
   return s.sort((a, b) => a.kulcs.localeCompare(b.kulcs));
 }
 
+/* ======================= ÚTNYILVÁNTARTÁS ======================= */
+export const UTNY_UT = 'utnyilvantartas-kikuldetesi-rendelveny/';
+export const UTNY_SOROK = 3;
+export const utSorUrlap = (i) => `<div class="ut-sor" data-ut-sor><span class="ut-szam">${i + 1}.</span>
+<label>Dátum<input name="u${i}_datum" type="date"></label>
+<label>Honnan<input name="u${i}_honnan" type="text" autocomplete="off"></label>
+<label>Hová<input name="u${i}_hova" type="text" autocomplete="off"></label>
+<label>Partner, cél<input name="u${i}_partner" type="text" autocomplete="off"></label>
+<label>Km<input name="u${i}_km" type="text" inputmode="decimal" autocomplete="off"></label>
+<button type="button" class="szoveg-gomb ut-torol" data-ut-torol aria-label="A(z) ${i + 1}. út törlése">Törlés</button></div>`;
+
+export function utnyOldal(k) {
+  const { adat, cfg } = k;
+  const ut = UTNY_UT;
+  const km = adat.szabalyok.km;
+  const lf = S.legfrissebbHonap(adat);
+  const pelda = S.utnyilvantartas(adat, { uzemanyag: 'benzin', cm3: 1598, utak: [{ datum: `${lf.ev}-${String(lf.honap).padStart(2, '0')}-05`, honnan: 'Budapest', hova: 'Győr', partner: 'ügyféllátogatás', km: 250 }] });
+  const kerdesek = [
+    { k: 'Mi kell az útnyilvántartásba?', v: ['Autónként külön kell vezetni. Benne van az utazás napja, honnan hová mentél, kit kerestél fel, és hány kilométert tettél meg közúton. Kell a kilométeróra állása is az év első és utolsó napján, és ha havonta számolsz el, akkor havonta.', 'A NAV ellenőrzései szerint a leggyakoribb hiba éppen az, hogy ezek közül valami hiányzik, főleg a kilométeróra-állás és a felkeresett partner.'] },
+    { k: 'Mi kell a kiküldetési rendelvénybe?', v: ['A magánszemély neve és adóazonosító jele, az autó gyártmánya, típusa és rendszáma, az utak célja, időtartama és útvonala, a megtett kilométer, a fogyasztási norma és a NAV által közzétett üzemanyagár, végül a kiszámolt költségtérítés.'] },
+    { k: 'Útnyilvántartás vagy kiküldetési rendelvény kell?', v: ['Ha munkavállalóként vagy tagként a saját autódat használod a cég ügyeiben, és a cég kilométer alapján téríti meg, akkor kiküldetési rendelvény. Ez ilyenkor az útnyilvántartást is kiváltja, ha az autóval kapcsolatban más költséget nem számolsz el.', 'Ha egyéni vállalkozóként a saját vállalkozásodban számolod el az autó költségét, akkor útnyilvántartás vagy menetlevél kell.'] },
+    { k: 'Kell hozzá nyomtatványboltban vett, sorszámozott nyomtatvány?', v: ['Nem. A kiküldetési rendelvény formájára nincs kötelező előírás, programmal vagy ezen az oldalon készítve is megfelel, ha minden kötelező adat rajta van.'] },
+    { k: 'Hány példányban kell, és meddig kell megőrizni?', v: ['A kiküldetési rendelvényt két példányban kell kiállítani: az eredeti a kifizetőnél, a másolat a magánszemélynél marad, és mindkettőt az elévülésig meg kell őrizni. Az útnyilvántartást is az elévülésig őrizd meg a hozzá tartozó bizonylatokkal együtt.'] },
+    { k: 'Mennyi jár kilométerenként?', v: [`Az üzemanyag a fogyasztási norma és a NAV havi ára szerint, plusz ${km.normakoltseg_ft_km} Ft/km általános normaköltség. ${pelda.hiba ? '' : `Egy 250 km-es hivatali út egy 1,6 literes benzines autóval ${lf.ev}. ${M.honapBan(lf.honap)} ${M.ftx(pelda.osszesen)}.`}`] },
+    { k: 'Melyik hónap NAV-árával számol a lap?', v: ['Minden utat annak a hónapnak az árával, amikor volt. Ha az utak több hónapra esnek, a lap hónaponként külön összesít, és a végén összeadja.'] },
+    { k: 'Kell útnyilvántartás, ha egyéni vállalkozó vagyok?', v: ['Ha tételesen számolsz el, igen. Az egyéni vállalkozó és a mezőgazdasági őstermelő útnyilvántartás nélkül is elszámolhat havi 500 kilométert. Ilyenkor nem kell útnyilvántartás, de többet sem számolhatsz el.'] },
+    { k: 'Több autóm van, eltérő meghajtással. Ugyanúgy kell számolni mindegyiknél?', v: ['Nem kell. 2026-tól ha a saját autóid különböző meghajtásúak, autónként más költségelszámolási módot is választhatsz. Az útnyilvántartást mindenképp autónként külön vezesd.'] },
+    { k: 'Többnapos utat hogyan írjak be?', v: ['Egy sorba, az indulás napjával, és az út céljához írd oda az időtartamot, például: „tárgyalás, november 3–5.”. A kilométer az egész út, oda-vissza.'] },
+    { k: 'Hová kerülnek a beírt adatok?', v: ['Sehová. A név, az adóazonosító jel és az utak csak a böngésződben vannak, nem mentjük el és nem küldjük el őket. Ha később folytatnád, töltsd le az utakat CSV-ben, és legközelebb másold vissza.'] },
+  ];
+  const leiras = `Kitölthető útnyilvántartás és kiküldetési rendelvény saját autóhoz: a kötelező adatokkal, havi elszámolással a NAV üzemanyagárával és ${km.normakoltseg_ft_km} Ft/km normaköltséggel. Excelből is bemásolható, nyomtatható.`;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['Útnyilvántartás'], cim: 'Útnyilvántartás és kiküldetési rendelvény: kitölthető minta', valasz: `Írd be az utakat, vagy másold be őket Excelből. A lap hónaponként kiszámolja a térítést a NAV üzemanyagárával és a ${km.normakoltseg_ft_km} Ft/km normaköltséggel, és rajta van minden, amit a törvény kér. Nyomtatható, PDF-be menthető.` })}
+<div class="keret szerzodes-tarto">
+<form class="forgalmi csak-kepernyo" data-kalk="utny" novalidate>
+<div class="forgalmi-fej"><h2>A nyomtatvány adatai</h2></div>
+${sor('', negyzetek('tipus', 'Mit készítesz?', [['utnyilvantartas', 'Útnyilvántartás'], ['rendelveny', 'Kiküldetési rendelvény']], 'utnyilvantartas'))}
+<p class="fieldset-megj" data-mutat="tipus=utnyilvantartas">Ha egyéni vállalkozóként a saját vállalkozásodban számolod el az autót, vagy a cég útnyilvántartás alapján térít.</p>
+<p class="fieldset-megj" data-mutat="tipus=rendelveny" hidden>Ha munkavállalóként vagy tagként a saját autódat használod a cég ügyeiben, és a cég kilométer alapján téríti meg.</p>
+<fieldset><legend>Ki utazik?</legend>
+${sor('', '<label for="nev">Név</label><div class="beir szeles"><input id="nev" name="nev" type="text" autocomplete="off"></div>')}
+${sor('', '<label for="adoazonosito">Adóazonosító jel</label><div class="beir szeles"><input id="adoazonosito" name="adoazonosito" type="text" inputmode="numeric" maxlength="10" autocomplete="off"></div>', ' data-mutat="tipus=rendelveny"')}
+${sor('', '<label for="kifizeto"><span data-mutat="tipus=utnyilvantartas">Vállalkozás neve</span><span data-mutat="tipus=rendelveny" hidden>A cég, amely kifizeti</span></label><div class="beir szeles"><input id="kifizeto" name="kifizeto" type="text" autocomplete="off"></div>')}
+</fieldset>
+<fieldset><legend>Az autó</legend>
+${sor('D.1', '<label for="auto">Gyártmány és típus</label><div class="beir szeles"><input id="auto" name="auto" type="text" autocomplete="off" placeholder="pl. Toyota Corolla"></div>')}
+${sor('A', '<label for="rendszam">Rendszám</label><div class="beir szeles"><input id="rendszam" name="rendszam" type="text" autocomplete="off" maxlength="10" style="text-transform:uppercase"></div>')}
+${sor('P.3', valaszto('uzemanyag', 'Üzemanyag', [['', 'Válaszd ki'], ['benzin', 'Benzin'], ['dizel', 'Dízel'], ['lpg', 'LPG'], ['cng', 'CNG'], ['plugin', 'Plug-in hibrid'], ['elektromos', 'Elektromos']], ''))}
+${sor('', negyzetek('motor', 'A belső égésű motor', [['benzin', 'Benzines'], ['dizel', 'Dízeles']], 'benzin'), ' data-mutat="uzemanyag=plugin"')}
+${sor('P.1', szamMezo({ id: 'cm3', cim: 'Hengerűrtartalom', me: 'cm³', placeholder: 'pl. 1598', min: 50, sugo: 'Ebből jön a fogyasztási norma.' }), ' data-mutat="uzemanyag=benzin|uzemanyag=dizel|uzemanyag=lpg|uzemanyag=cng|uzemanyag=plugin"')}
+<div class="ket" data-mutat="tipus=utnyilvantartas">${sor('', szamMezo({ id: 'kmEleje', cim: 'Km-óra az időszak elején', me: 'km', min: 0 }))}${sor('', szamMezo({ id: 'kmVege', cim: 'Km-óra az időszak végén', me: 'km', min: 0 }))}</div>
+</fieldset>
+<fieldset><legend>Az utak</legend>
+<p class="fieldset-megj">Egy sor egy út. A kilométer a közúton megtett távolság, oda-vissza együtt, ha visszajöttél.</p>
+<div class="ut-sorok" data-ut-sorok>${Array.from({ length: UTNY_SOROK }, (_, i) => utSorUrlap(i)).join('')}</div>
+<div class="urlap-gombok"><button class="gomb masodlagos" type="button" data-ut-uj>Új út</button></div>
+<details class="ut-bemasol"><summary>Bemásolom Excelből</summary>
+<p class="kicsi">Jelöld ki az Excelben a sorokat ebben az oszlopsorrendben: dátum, honnan, hová, partner vagy cél, km. Másold ide, és nyomd meg a gombot. A fejlécsort nem kell kihagynod.</p>
+<textarea data-ut-szoveg rows="5" aria-label="Bemásolt sorok"></textarea>
+<div class="urlap-gombok"><button class="gomb masodlagos" type="button" data-ut-beolvas>Beolvasom</button></div>
+<p class="kicsi" data-ut-uzenet aria-live="polite" hidden></p>
+</details>
+</fieldset>
+<fieldset><legend>Kelt</legend>
+<div class="ket">${sor('', '<label for="keltHely">Hely</label><div class="beir szeles"><input id="keltHely" name="keltHely" type="text"></div>')}${sor('', '<label for="keltDatum">Dátum</label><input id="keltDatum" name="keltDatum" type="date">')}</div>
+</fieldset>
+<div class="urlap-gombok"><button class="gomb" type="button" data-nyomtat>Nyomtatás vagy mentés PDF-be</button><button class="gomb masodlagos" type="button" data-ut-csv>Utak letöltése CSV-ben</button><button class="gomb masodlagos" type="button" data-urit>Űrlap törlése</button></div>
+<p class="kicsi">Az adatok csak ebben a böngészőben vannak, nem mentjük el és nem küldjük el őket.</p>
+</form>
+<div class="szerzodes-elonezet" aria-live="polite">${M.utnyLap(adat, { tipus: 'utnyilvantartas' }, null)}</div>
+</div>
+<div class="keret"><article class="cikk">
+<h2>Mire figyelj?</h2>
+<ul>
+<li>Az utakat a valóságnak megfelelően, utanként írd be. A NAV ellenőrzései szerint a hiányos útnyilvántartás a leggyakoribb hiba, és ilyenkor a költség utólag már nem igazolható más módon.</li>
+<li>Az útnyilvántartást autónként külön vezesd. Ha több autód van, mindegyikhez külön lapot készíts.</li>
+<li>A NAV-árat a lap magától veszi az út hónapjából. Ha az adott hónap ára még nem jelent meg, arra a hónapra még nem lehet elszámolni.</li>
+<li>A védett áras hónapokban a lap a piaci NAV-árral számol. Ha jogosult voltál a védett árra, azt a <a href="${L.l('kilometerterites-kalkulator/')}">kilométertérítés-kalkulátorban</a> választhatod.</li>
+</ul>
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([{ nev: 'Szja tv. 3. § 83. pont (kiküldetési rendelvény), 82. § (2) (NAV-üzemanyagár)', url: 'https://njt.hu/jogszabaly/1995-117-00-00' }, { nev: 'NAV 08. információs füzet: a gépjárművek üzemeltetésével kapcsolatos költségek elszámolása', url: 'https://nav.gov.hu/ugyfeliranytu/nezzen-utana/inf_fuz' }, { nev: '60/1992. (IV. 1.) Korm. rendelet: üzemanyag-fogyasztási normák', url: null }, { nev: 'NAV havi üzemanyagárak', url: adat.uzemanyag.forras }])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: 'Útnyilvántartás és kiküldetési rendelvény: kitölthető minta',
+    leiras, ut, tartalom,
+    adatJson: { uzemanyag: { evek: adat.uzemanyag.evek }, szabalyok: { km } },
+    jsonld: [gyikLd(kerdesek), alkalmazasLd(cfg, 'Útnyilvántartás és kiküldetési rendelvény', ut, leiras), morzsaLd(cfg, [{ nev: 'Útnyilvántartás', ut }])],
+  });
+}
+
 /* ======================= NAV-ÜZEMANYAGÁR ======================= */
 export const NAVAR_UT = 'nav-uzemanyagar/';
 const NAVAR_SOROK = [['benzin', 'Benzin', 'l'], ['dizel', 'Dízel', 'l'], ['keverek', 'Keverék', 'l'], ['lpg', 'LPG', 'l'], ['cng', 'CNG', 'kg']];
@@ -1604,6 +1699,7 @@ ${sorok.map((x) => `<tr><th scope="row">${x.nev}</th><td><strong>${ar(x)}</stron
 <p>A NAV havonta közzéteszi, milyen áron lehet elszámolni az üzemanyagot a fogyasztási norma szerinti költségelszámolásban. Ezt használja a kilométertérítés a saját autós hivatali útnál, és ezt használhatja a vállalkozó is, ha a kilométerek alapján számol el.</p>
 ${peldaMondat ? `<p>${peldaMondat}</p>` : ''}
 <p>A saját utadat a <a href="${L.l('kilometerterites-kalkulator/')}">kilométertérítés-kalkulátor</a> számolja ki, egy út teljes költségét pedig az <a href="${L.l('utikoltseg-kalkulator/')}">útiköltség-kalkulátor</a>.</p>
+<p>Több útnál a <a href="${L.l(UTNY_UT)}">kitölthető útnyilvántartás és kiküldetési rendelvény</a> hónaponként, a megfelelő hónap árával számol.</p>
 <p>Ha Excelben vagy Google Táblázatban számolsz, a havi árat be is húzhatod a táblázatodba, és magától frissül. <a href="${L.l(ADAT_UT)}#excel">Így csináld</a>.</p>
 
 <h2 id="idosor">Így változott ${u[0].ev} óta</h2>

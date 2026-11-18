@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=0b3aaf44';
+import * as S from './szamitas.js?v=52711598';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -618,4 +618,51 @@ export function kovetkezoBlokk(lepesek, utak) {
   const l = (lepesek || []).filter((x) => utak?.[x.cel]);
   if (!l.length) return '';
   return `<div class="kovetkezo"><p class="kovetkezo-cim">Következő lépés</p><ul>${l.map((x) => `<li><a href="${esc(utak[x.cel] + S.kovetkezoQuery(x.q))}" data-kovetkezo>${esc(x.cim)}</a><span>${esc(x.szoveg)}</span></li>`).join('')}</ul></div>`;
+}
+
+/* ---------- Útnyilvántartás és kiküldetési rendelvény: a nyomtatható lap ---------- */
+const UZ_SZO = { benzin: 'benzin', dizel: 'dízel', lpg: 'LPG', cng: 'CNG', plugin: 'plug-in hibrid', elektromos: 'elektromos' };
+/** d: az űrlap fejléce, r: S.utnyilvantartas eredménye vagy null (még nincs út), hiba: a számolás hibaüzenete */
+export function utnyLap(adat, d, r, hiba = '') {
+  const rendelveny = d.tipus === 'rendelveny';
+  const p = (v, h = 24) => pont(v, h);
+  const nap = (iso) => { const [e, h, n] = iso.split('-'); return `${e}. ${h}. ${n}.`; };
+  const honapNev = (h) => `${h.ev}. ${S.HONAPOK[h.ho - 1]}`;
+  const uz = UZ_SZO[d.uzemanyag] ? `${UZ_SZO[d.uzemanyag]}${d.uzemanyag === 'plugin' ? ` (${d.motor === 'dizel' ? 'dízeles' : 'benzines'} motor)` : ''}` : '';
+  const idoszak = r?.honapok.length ? (r.honapok.length === 1 ? honapNev(r.honapok[0]) : `${honapNev(r.honapok[0])} – ${honapNev(r.honapok.at(-1))}`) : '';
+  const fejSor = (cim, ertek) => `<tr><th scope="row">${cim}</th><td>${ertek}</td></tr>`;
+  const fej = [
+    fejSor(rendelveny ? 'A magánszemély neve' : 'Név', p(d.nev)),
+    rendelveny ? fejSor('Adóazonosító jele', p(d.adoazonosito, 14)) : '',
+    fejSor(rendelveny ? 'Kifizető (aki elrendeli és megtéríti)' : 'Vállalkozás', p(d.kifizeto)),
+    fejSor('A gépjármű gyártmánya, típusa', p(d.auto)),
+    fejSor('Forgalmi rendszám', p(d.rendszam ? String(d.rendszam).toUpperCase() : '', 10)),
+    fejSor('Hengerűrtartalom, üzemanyag', `${d.cm3 && d.uzemanyag !== 'elektromos' ? `${fmt(d.cm3)} cm³, ` : ''}${uz || p('', 14)}`),
+    fejSor('Fogyasztási norma', r ? `${tized(r.norma, 2)} ${r.egyseg}/100 km (${esc(r.normaLeiras)}, 60/1992. Korm. rendelet)` : p('', 14)),
+    rendelveny ? '' : fejSor('Kilométeróra-állás az időszak elején és végén', `${d.kmEleje ? `${fmt(d.kmEleje)} km` : p('', 10)} – ${d.kmVege ? `${fmt(d.kmVege)} km` : p('', 10)}`),
+  ].join('');
+  let utSorok = '';
+  if (r) {
+    for (const h of r.honapok) {
+      for (const u of r.utak.filter((x) => x.datum.startsWith(h.honap))) utSorok += `<tr><td class="nap">${nap(u.datum)}</td><td>${esc([u.honnan, u.hova].filter(Boolean).join(' – '))}</td><td>${esc(u.partner)}</td><td class="sz">${tized(u.km)}</td></tr>`;
+      if (r.honapok.length > 1) utSorok += `<tr class="reszossz"><td colspan="3">${honapNev(h)} összesen</td><td class="sz">${tized(h.km)}</td></tr>`;
+    }
+  } else utSorok = Array.from({ length: 6 }, () => '<tr class="ures"><td></td><td></td><td></td><td></td></tr>').join('');
+  const elsz = r ? `<table class="utny-tabla"><thead><tr><th>Hónap</th><th class="sz">Km</th><th class="sz">NAV-ár</th><th class="sz">Üzemanyag</th><th class="sz">Normaköltség</th><th class="sz">Összesen</th></tr></thead><tbody>
+${r.honapok.map((h) => `<tr><td>${honapNev(h)}</td><td class="sz">${tized(h.km)}</td><td class="sz">${h.ar} Ft/${r.egyseg}</td><td class="sz">${fmt(h.uzemanyagFt)} Ft</td><td class="sz">${fmt(h.normakoltseg)} Ft</td><td class="sz">${fmt(h.osszesen)} Ft</td></tr>`).join('')}
+${r.honapok.length > 1 ? `<tr class="reszossz"><td>Összesen</td><td class="sz">${tized(r.km)}</td><td></td><td class="sz">${fmt(r.uzemanyagFt)} Ft</td><td class="sz">${fmt(r.normakoltseg)} Ft</td><td class="sz">${fmt(r.osszesen)} Ft</td></tr>` : ''}
+</tbody></table>
+<p class="utny-megj">Üzemanyag: a megtett kilométer × a norma ÷ 100 × a NAV adott havi ára (Szja tv. 82. § (2)). Normaköltség: ${r.ft15} Ft/km általános személygépkocsi-normaköltség.${rendelveny ? ' A költségtérítés összege' : ' Elszámolható költség összesen'}: <b data-osszeg>${fmt(r.osszesen)}&nbsp;Ft</b>.</p>` : `<p class="utny-megj">Az utak beírása után itt jelenik meg a havi elszámolás a NAV-árral és a normaköltséggel.</p>`;
+  return `${hiba ? `<p class="utny-hiba csak-kepernyo" role="status">${esc(hiba)}</p>` : ''}<article class="szerzodes-lap utny-lap" tabindex="0" aria-label="A kész nyomtatvány előnézete">
+<h2>${rendelveny ? 'Kiküldetési rendelvény' : 'Útnyilvántartás'}</h2>
+<p class="kozep">${rendelveny ? 'saját személygépkocsi hivatali, üzleti célú használatáról' : 'a gépjármű üzleti célú használatáról'}${idoszak ? `<br>${idoszak}` : ''}</p>
+<table class="utny-fej"><tbody>${fej}</tbody></table>
+<h3>${rendelveny ? 'A hivatali, üzleti utak' : 'Az utak'}</h3>
+<table class="utny-tabla"><thead><tr><th>Dátum</th><th>Útvonal (honnan – hová)</th><th>${rendelveny ? 'Az út célja' : 'Felkeresett partner, az út célja'}</th><th class="sz">Km</th></tr></thead><tbody>${utSorok}</tbody></table>
+<h3>Elszámolás</h3>
+${elsz}
+${rendelveny ? '<p>A rendelvény két példányban készült: az eredeti a kifizetőnél, a másolat a magánszemélynél marad, mindkettő az elévülésig megőrzendő.</p>' : ''}
+<p class="kelt">Kelt: ${p(d.keltHely, 14)}, ${d.keltDatum ? datumHu(d.keltDatum) : p('', 18)}</p>
+<div class="alairasok">${rendelveny ? '<div><span></span>kifizető</div><div><span></span>magánszemély</div>' : '<div><span></span>aláírás</div>'}</div>
+</article>`;
 }

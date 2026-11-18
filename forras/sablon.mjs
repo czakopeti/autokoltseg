@@ -36,6 +36,7 @@ export const FIOK = [
     ['vallalkozoknak/', 'Autó a vállalkozásban', 'Mi vonatkozik a kft.-re és az egyéni vállalkozóra'],
     ['cegautoado-kalkulator/', 'Cégautóadó', 'Havonta és évente, a gépjárműadó levonásával'],
     ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó', 'Cégautóadó vagy adómentes km-térítés'],
+    ['utnyilvantartas-kikuldetesi-rendelveny/', 'Útnyilvántartás', 'És kiküldetési rendelvény, nyomtatható'],
   ] },
   { cim: 'Eszközök', elemek: [
     ['autom/', 'Az autóm', 'A mentett autód minden költsége egy lapon'],
@@ -48,7 +49,7 @@ export const FIOK = [
     ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
   ] },
 ];
-const VALL_UTAK = ['vallalkozoknak/', 'cegautoado-kalkulator/', 'cegauto-vagy-sajat-auto/'];
+const VALL_UTAK = ['vallalkozoknak/', 'cegautoado-kalkulator/', 'cegauto-vagy-sajat-auto/', 'utnyilvantartas-kikuldetesi-rendelveny/'];
 const TASKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 7.5h16a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1ZM3 12.5h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 const HAMBURGER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
@@ -71,6 +72,7 @@ export const TOBB_KALK = [
 ];
 export const TOVABBI = [
   { ut: 'nav-uzemanyagar/', nev: 'NAV-üzemanyagár' },
+  { ut: 'utnyilvantartas-kikuldetesi-rendelveny/', nev: 'Útnyilvántartás' },
   { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
   { ut: 'forrasok/', nev: 'Források' },
   { ut: 'valtozasok/', nev: 'Változások' },
@@ -359,7 +361,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['nav-uzemanyagar/', 'NAV-üzemanyagár'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['nav-uzemanyagar/', 'NAV-üzemanyagár'], ['utnyilvantartas-kikuldetesi-rendelveny/', 'Útnyilvántartás'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

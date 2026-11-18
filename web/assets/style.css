@@ -715,3 +715,28 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
   .peldatabla { font-size: 13px; }
   .peldatabla th, .peldatabla td { padding: 8px 4px; }
 }
+
+/* ---------- Útnyilvántartás ---------- */
+.ut-sorok { display: grid; gap: 12px; margin: 10px 0 4px; }
+.ut-sor { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) minmax(0, 1fr); gap: 6px 12px; padding: 12px 0; border-top: 1px dashed var(--vonal); align-items: end; }
+.ut-sor:first-child { border-top: 0; }
+.ut-sor .ut-szam { grid-row: span 3; align-self: start; font-weight: 700; padding-top: 22px; }
+.ut-sor label { display: grid; gap: 2px; font-size: 13.5px; font-weight: 600; color: var(--tinta2); }
+.ut-sor input { font: inherit; font-size: 16px; color: var(--tinta); background: transparent; border: 0; border-bottom: 2px solid var(--tinta); padding: 6px 2px; min-width: 0; width: 100%; }
+.ut-sor input:focus { outline: none; background: var(--kiemel); }
+.ut-sor .ut-torol { justify-self: start; font-size: 13.5px; }
+.ut-bemasol { margin-top: 14px; }
+.ut-bemasol summary { cursor: pointer; font-weight: 700; }
+.ut-bemasol textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 8px 10px; border: 1.5px solid var(--tinta); border-radius: 4px; background: var(--lap); color: var(--tinta); margin-top: 8px; }
+.utny-hiba { background: var(--kiemel); border-left: 3px solid var(--tinta); padding: 10px 14px; margin: 0 0 14px; font-weight: 600; }
+.utny-lap table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.4; margin: 4px 0 12px; }
+.utny-lap th, .utny-lap td { border: 1px solid #9a9a9a; padding: 4px 6px; text-align: left; vertical-align: top; color: #1a1a1a; }
+.utny-lap thead th { background: #f1f1f1; font-weight: 700; }
+.utny-lap .sz { text-align: right; white-space: nowrap; }
+.utny-lap .utny-fej th { width: 42%; font-weight: 600; background: #f7f7f7; }
+.utny-lap tr.reszossz td { background: #f1f1f1; font-weight: 700; }
+.utny-lap tr.ures td { height: 1.7em; }
+.utny-lap .utny-megj { font-size: 12.5px; color: #333; }
+.utny-lap .alairasok:has(> div:only-child) { grid-template-columns: minmax(0, 18em); justify-content: end; }
+@media print { .utny-lap table { font-size: 10pt; } .utny-lap thead { display: table-header-group; } .utny-lap tr { break-inside: avoid; } }
+.utny-lap td.nap { white-space: nowrap; }

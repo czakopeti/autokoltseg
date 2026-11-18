@@ -77,6 +77,7 @@ const oldalak = [
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
   ['vallalkozoknak/', O.vallalkozoknakOldal(k)],
   [O.NAVAR_UT, O.navArOldal(k)],
+  [O.UTNY_UT, O.utnyOldal(k)],
   ['adatok/', O.adatokOldal(k)],
   ['cegautoado-kalkulator/', O.cegautoadoOldal(k)],
   ['cegauto-vagy-sajat-auto/', O.cegautoOldal(k)],
@@ -173,6 +174,7 @@ https://:version.:project.pages.dev/*
 - [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
+- [Útnyilvántartás és kiküldetési rendelvény](${cfg.domain}/utnyilvantartas-kikuldetesi-rendelveny/): kitölthető, nyomtatható, a kötelező adatokkal; havi elszámolás a NAV-árral és a 15 Ft/km normaköltséggel, Excelből bemásolható utak
 - [NAV-üzemanyagár](${cfg.domain}/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
 
 ## Adatok

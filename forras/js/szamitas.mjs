@@ -1049,3 +1049,76 @@ export function hataridoNaptar(adat, b) {
   sorok.push('END:VCALENDAR');
   return { ics: `${sorok.map(icsHajt).join('\r\n')}\r\n`, esemenyek: es.map(({ tipus, nap, cim }) => ({ tipus, nap, cim })) };
 }
+
+/* ---------------- Útnyilvántartás és kiküldetési rendelvény ---------------- */
+/** „2026.11.03.”, „2026. 11. 3.”, „2026-11-03” → '2026-11-03'; ha nem dátum: null. */
+export function datumBe(x) {
+  const m = String(x ?? '').trim().match(/^(\d{4})\s*[.\-/]\s*(\d{1,2})\s*[.\-/]\s*(\d{1,2})\.?$/);
+  if (!m) return null;
+  const iso = `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  const d = new Date(`${iso}T12:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === iso ? iso : null;
+}
+const kmBe = (x) => { const v = Number(String(x ?? '').replace(/\s| /g, '').replace(',', '.')); return Number.isFinite(v) ? v : NaN; };
+
+/**
+ * Excelből vagy táblázatból bemásolt sorok: tabulátorral vagy pontosvesszővel elválasztva.
+ * Oszlopok: dátum; honnan; hová; partner vagy cél; km. Négy oszlopnál: dátum; útvonal; partner; km. Háromnál: dátum; útvonal; km.
+ * A fejlécsort és az üres sorokat kihagyja. Visszaad: { sorok, hibasak: [sorszám] }.
+ */
+export function utSorokBeolvas(szoveg) {
+  const sorok = [], hibasak = [];
+  String(szoveg || '').split(/\r?\n/).forEach((nyers, i) => {
+    if (!nyers.trim()) return;
+    const c = nyers.split(nyers.includes('\t') ? '\t' : ';').map((x) => x.trim());
+    const datum = datumBe(c[0]);
+    const km = kmBe(c.at(-1));
+    if (!datum || !(km > 0)) { if (i > 0 || datumBe(c[0])) hibasak.push(i + 1); return; }
+    if (c.length >= 5) sorok.push({ datum, honnan: c[1], hova: c[2], partner: c[3], km });
+    else if (c.length === 4) sorok.push({ datum, honnan: c[1], hova: '', partner: c[2], km });
+    else sorok.push({ datum, honnan: c[1] || '', hova: '', partner: '', km });
+  });
+  return { sorok, hibasak };
+}
+
+/**
+ * Havi elszámolás az utakból: hónaponként a km, a NAV-ár, az üzemanyag (norma × ár) és a normaköltség.
+ * b: { uzemanyag, motor, cm3, utak: [{ datum, honnan, hova, partner, km }] }
+ */
+export function utnyilvantartas(adat, b) {
+  const utak = (b.utak || []).filter((u) => u && (u.datum || u.km || u.honnan || u.hova || u.partner));
+  if (!utak.length) return { hiba: 'Add meg legalább egy utat: a dátumát és a megtett kilométert.' };
+  for (const [i, u] of utak.entries()) {
+    if (!datumBe(u.datum)) return { hiba: `A(z) ${i + 1}. útnál add meg a dátumot.` };
+    if (!(kmBe(u.km) > 0)) return { hiba: `A(z) ${i + 1}. útnál add meg a megtett kilométert.` };
+    if (!String(u.honnan || '').trim() && !String(u.hova || '').trim()) return { hiba: `A(z) ${i + 1}. útnál írd be, honnan hová utaztál.` };
+  }
+  if (!b.uzemanyag) return { hiba: 'Válaszd ki az autó üzemanyagát.' };
+  if (!(Number(b.cm3) > 0) && b.uzemanyag !== 'elektromos') return { hiba: 'Add meg a hengerűrtartalmat (forgalmi engedély P.1).' };
+  const n = kmNorma(adat, b);
+  const ft15 = adat.szabalyok.km.normakoltseg_ft_km;
+  const rendezett = utak.map((u) => ({ datum: datumBe(u.datum), honnan: String(u.honnan || '').trim(), hova: String(u.hova || '').trim(), partner: String(u.partner || '').trim(), km: kmBe(u.km) }))
+    .sort((x, y) => x.datum.localeCompare(y.datum));
+  const honapok = [];
+  for (const u of rendezett) {
+    const kulcs = u.datum.slice(0, 7);
+    let h = honapok.find((x) => x.honap === kulcs);
+    if (!h) {
+      const [ev, ho] = kulcs.split('-').map(Number);
+      const na = navAr(adat, ev, ho, n.arKulcs);
+      if (!na) return { hiba: `A ${ev}. ${HONAPOK[ho - 1]}i NAV-ár még nem jelent meg, ezért erre a hónapra még nem lehet elszámolni.` };
+      h = { honap: kulcs, ev, ho, km: 0, ar: na.ar, utak: 0 };
+      honapok.push(h);
+    }
+    h.km += u.km; h.utak += 1;
+  }
+  for (const h of honapok) {
+    h.km = kerek(h.km, 1);
+    h.mennyiseg = kerek(h.km * n.norma / 100, 2);
+    h.uzemanyagFt = ft(h.km * n.norma / 100 * h.ar);
+    h.normakoltseg = ft(h.km * ft15);
+    h.osszesen = h.uzemanyagFt + h.normakoltseg;
+  }
+  const ossz = (k) => honapok.reduce((s, h) => s + h[k], 0);
+  return { utak: rendezett, honapok, norma: n.norma, egyseg: n.egyseg, normaLeiras: n.leiras, arKulcs: n.arKulcs, ft15, km: kerek(ossz('km'), 1), uzemanyagFt: ossz('uzemanyagFt'), normakoltseg: ossz('normakoltseg'), osszesen: ossz('osszesen') };
+}

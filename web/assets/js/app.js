@@ -1,7 +1,7 @@
 // Böngészős réteg: menü, űrlapok, élő elszámolás, mentett autó (csak kérésre), megosztható link, grafikon.
 // Szerverre csak az megy, amit a látogató a visszajelzés-dobozban maga elküld.
-import * as S from './szamitas.js?v=0b3aaf44';
-import * as M from './megjelenites.js?v=0b3aaf44';
+import * as S from './szamitas.js?v=52711598';
+import * as M from './megjelenites.js?v=52711598';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -262,6 +262,13 @@ const KALK = {
     return r.hiba ? M.hianyPanel(r.hiba) : M.fenntartasPanel(adat, r, e);
   },
   szerzodes: (adat, e) => M.szerzodes(adat, e),
+  utny: (adat, e) => {
+    const utak = utnyUtak(e);
+    const fej = { tipus: e.tipus, nev: e.nev, adoazonosito: e.adoazonosito, kifizeto: e.kifizeto, auto: e.auto, rendszam: e.rendszam, uzemanyag: e.uzemanyag, motor: e.motor, cm3: szam(e.cm3), kmEleje: szam(e.kmEleje), kmVege: szam(e.kmVege), keltHely: e.keltHely, keltDatum: e.keltDatum };
+    if (!utak.length) return M.utnyLap(adat, fej, null);
+    const r = S.utnyilvantartas(adat, { uzemanyag: e.uzemanyag, motor: e.motor, cm3: e.cm3, utak });
+    return r.hiba ? M.utnyLap(adat, fej, null, r.hiba) : M.utnyLap(adat, fej, r);
+  },
   kgfb: (adat, e) => {
     if (document.getElementById('evfordulo')?.validity?.badInput) return M.hianyPanel('Add meg az évforduló teljes dátumát: évet, hónapot és napot is.');
     if (ures(e, ['evfordulo'])) return mintaval('kgfb', adat, e);
@@ -339,7 +346,7 @@ $('[data-hibajelzes]')?.addEventListener('click', (ev) => {
 
 /* ---------- Visszajelzés: Igen / Nem, és Nem után pár szó ---------- */
 // A szavazatot ebben a böngészőben megjegyezzük, hogy kétszer ne számoljuk. Név, IP-cím nem megy.
-const NEM_KULDHETO = ['szerzodes', 'autom', 'gyors'];
+const NEM_KULDHETO = ['szerzodes', 'autom', 'gyors', 'utny'];
 function visszajelzes() {
   const d = $('[data-visszajelzes]');
   if (!d) return;
@@ -437,6 +444,57 @@ function automBekotes(form, szamol) {
   });
 }
 
+/* ---------- Útnyilvántartás: az utak sorai ---------- */
+const UT_MEZOK = ['datum', 'honnan', 'hova', 'partner', 'km'];
+function utnyUtak(e) {
+  const idx = [...new Set(Object.keys(e).map((k) => k.match(/^u(\d+)_/)?.[1]).filter(Boolean))].map(Number).sort((a, b) => a - b);
+  return idx.map((i) => Object.fromEntries(UT_MEZOK.map((m) => [m, String(e[`u${i}_${m}`] ?? '').trim()]))).filter((u) => UT_MEZOK.some((m) => u[m]));
+}
+function utnyBekotes(form, szamol) {
+  const tarto = $('[data-ut-sorok]', form);
+  if (!tarto) return;
+  const sablon = tarto.querySelector('[data-ut-sor]').outerHTML;
+  const ujSor = () => {
+    const i = Math.max(-1, ...[...tarto.querySelectorAll('input[name^="u"]')].map((x) => Number(x.name.match(/^u(\d+)_/)?.[1] ?? -1))) + 1;
+    tarto.insertAdjacentHTML('beforeend', sablon.replace(/u0_/g, `u${i}_`).replace(/>1\.</, `>${tarto.children.length + 1}.<`).replace(/A\(z\) 1\. út/, `A(z) ${tarto.children.length + 1}. út`));
+    return tarto.lastElementChild;
+  };
+  const szamoz = () => [...tarto.children].forEach((sor, j) => { const sz = $('.ut-szam', sor); if (sz) sz.textContent = `${j + 1}.`; });
+  $('[data-ut-uj]', form)?.addEventListener('click', () => { const s = ujSor(); s.querySelector('input')?.focus(); });
+  tarto.addEventListener('click', (ev) => {
+    const g = ev.target.closest('[data-ut-torol]'); if (!g) return;
+    const sor = g.closest('[data-ut-sor]');
+    if (tarto.children.length > 1) sor.remove(); else sor.querySelectorAll('input').forEach((x) => (x.value = ''));
+    szamoz(); szamol(true);
+  });
+  const uz = $('[data-ut-uzenet]', form);
+  $('[data-ut-beolvas]', form)?.addEventListener('click', () => {
+    const { sorok, hibasak } = S.utSorokBeolvas($('[data-ut-szoveg]', form).value);
+    uz.hidden = false;
+    if (!sorok.length) { uz.textContent = 'Nem találtam beolvasható sort. Az első oszlop a dátum legyen (például 2026.11.03.), az utolsó a kilométer.'; return; }
+    // először az üres sorokat töltjük ki, utána újakat veszünk fel
+    const uresek = [...tarto.children].filter((sor) => [...sor.querySelectorAll('input')].every((x) => !x.value));
+    for (const u of sorok) {
+      const sor = uresek.shift() || ujSor();
+      for (const m of UT_MEZOK) { const el = sor.querySelector(`input[name$="_${m}"]`); if (el) el.value = m === 'km' ? String(u.km).replace('.', ',') : u[m]; }
+    }
+    szamoz();
+    $('[data-ut-szoveg]', form).value = '';
+    uz.textContent = `Beolvastam ${sorok.length} utat.${hibasak.length ? ` Ezeket a sorokat kihagytam, mert nem találtam bennük dátumot vagy kilométert: ${hibasak.join(', ')}.` : ''}`;
+    szamol(true);
+  });
+  $('[data-ut-csv]', form)?.addEventListener('click', () => {
+    const utak = utnyUtak(ertekek(form));
+    const cella = (x) => (/[;"\n]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x);
+    const csv = `\ufeff${[['Dátum', 'Honnan', 'Hová', 'Partner, cél', 'Km'], ...utak.map((u) => [((d) => (d ? `${d.replace(/-/g, '.')}.` : u.datum))(S.datumBe(u.datum)), u.honnan, u.hova, u.partner, u.km])].map((s) => s.map((x) => cella(String(x ?? ''))).join(';')).join('\r\n')}\r\n`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'utak.csv';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  });
+}
+
 /* ---------- Az autóm: határidők naptárfájlban ---------- */
 function naptarBekotes(form, adat) {
   const gomb = $('[data-naptar]', form), uz = $('[data-naptar-uzenet]', form);
@@ -525,7 +583,7 @@ function indit() {
   if (tipus === 'lekw') return lekw(form);
   const adat = JSON.parse($('#adat').textContent);
   const panel = $('.elsz-tartalom') || $('.szerzodes-elonezet');
-  const u = tipus === 'gyors' || tipus === 'autom' ? null : urlbol();
+  const u = ['gyors', 'autom', 'utny'].includes(tipus) ? null : urlbol();
   if (u) {
     if (u.evkozben === true && !u.valtozas) u.valtozas = 'uj'; // régi megosztott linkek
     beallit(form, u);
@@ -549,8 +607,8 @@ function indit() {
       const html = KALK.osszevet(adat, ertekek(form));
       frissit(panel, html + kovetkezo(html), valtozott);
       if (osszevetR && panel.querySelector('.grafikon')) { panel._r = osszevetR; grafikonSugo(panel, adat); }
-    } else if (tipus === 'szerzodes') {
-      panel.innerHTML = KALK.szerzodes(adat, ertekek(form));
+    } else if (tipus === 'szerzodes' || tipus === 'utny') {
+      panel.innerHTML = KALK[tipus](adat, ertekek(form));
     } else {
       const html = KALK[tipus](adat, ertekek(form), form);
       frissit(panel, html + kovetkezo(html), valtozott);
@@ -558,7 +616,7 @@ function indit() {
     // Eredményig jutott: valódi (nem minta) összeg látszik, és előtte maga írt be valamit
     if (valtozott && elkuldve.has('indit') && !mintaMutat && panel.querySelector('[data-osszeg]')) meres('kesz');
     // Az „Az autóm” lap adatai (név, biztosítás) nem kerülnek a linkbe és a böngészési előzményekbe
-    if (valtozott && !['gyors', 'szerzodes', 'autom'].includes(tipus)) urlbe(form);
+    if (valtozott && !['gyors', 'szerzodes', 'autom', 'utny'].includes(tipus)) urlbe(form);
   };
   form.addEventListener('input', (ev) => { if (ev.isTrusted) meres('indit'); szamol(true); });
   form.addEventListener('change', (ev) => { if (ev.isTrusted) meres('indit'); szamol(true); });
@@ -570,6 +628,7 @@ function indit() {
   }
   automBekotes(form, szamol);
   naptarBekotes(form, adat);
+  utnyBekotes(form, szamol);
   szamol(false);
 
   // Példa (csak gombnyomásra)
