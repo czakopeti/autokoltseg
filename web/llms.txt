@@ -18,6 +18,7 @@
 - [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](https://autozom.hu/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon
+- [NAV-üzemanyagár](https://autozom.hu/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
 
 ## Adatok
 

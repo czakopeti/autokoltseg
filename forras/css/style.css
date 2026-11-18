@@ -134,6 +134,9 @@ p { margin: 0; }
 .negyzet input:focus-visible + .n { outline: 2px solid var(--tinta); outline-offset: 3px; }
 .negyzet:hover .n { background: var(--kiemel); }
 .negyzet:hover input:checked + .n { background: var(--tinta); }
+/* Egyválasztós mező: kerek jel ponttal, hogy ne tűnjön többválasztósnak (a jelölőnégyzet marad négyzet) */
+.negyzet input[type="radio"] + .n { border-radius: 50%; }
+.negyzet input[type="radio"] + .n::after { width: 8px; height: 8px; border: 0; border-radius: 50%; background: var(--lap); transform: none; }
 .negyzet.hosszu { align-items: flex-start; }
 .negyzet.hosszu .n { margin-top: 3px; }
 .negyzet.hosszu input { top: 13px; }
@@ -365,6 +368,25 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
   .szakasz { padding-top: 72px; }
   .lablec .keret { grid-template-columns: 1fr; }
 }
+
+/* Érintőképernyőn legalább kb. 40 képpont magas kattintható felület. Ahol a szöveg közé esik,
+   a negatív margó miatt a betűkép nem tolódik el, csak a koppintható terület nő. */
+@media (pointer: coarse) {
+  .negyzet { padding: 10px 0; }
+  .negyzetek { gap: 0 22px; }
+  .negyzet.hosszu input { top: 19px; }
+  .lablec ul { gap: 0; }
+  .lablec a, .tovabb a { display: inline-block; padding: 9px 0; }
+  .tovabb { gap: 0 28px; }
+  .szoveg-gomb, .morzsa a, .jegy, .hol-talalom summary { padding-block: 9px; margin-block: -9px; }
+  .szoveg-gomb, .morzsa a { display: inline-block; }
+  .feltevesek summary { padding-block: 8px; }
+  .forrasok li > a { display: inline-block; padding-block: 8px; }
+  .fejlec .menu a.menu-autom { padding-block: 9px; }
+}
+
+/* Keskeny képernyőn a kiegészítő oszlop elmarad (az adat a lenti, hosszabb táblában is megvan) */
+@media (max-width: 600px) { .tabla .csak-szeles { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

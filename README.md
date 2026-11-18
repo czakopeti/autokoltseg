@@ -82,7 +82,7 @@ Amíg ez nincs kész, a gombok működnek, de a szöveg elküldésekor a látoga
 
 Hogy lássuk, melyik kalkulátor működik, oldalanként és havonta néhány darabszámot gyűjtünk. Süti, azonosító, IP-cím és a beírt adatok nélkül: csak egy számláló nő eggyel. Az Adatvédelem oldal ezt leírja.
 
-- **Események:** `indit` (elkezdett beírni), `kesz` (valódi eredményig jutott), `mentes` (elmentette az autóját), `megosztas`, `nyomtat`, `kovetkezo` (a „Következő lépés” linkre kattintott), `tovabb` (az oldal alján egy másik kalkulátorra kattintott). Oldalbetöltésenként mindegyik legfeljebb egyszer.
+- **Események:** `indit` (elkezdett beírni), `kesz` (valódi eredményig jutott), `mentes` (elmentette az autóját), `megosztas`, `nyomtat`, `kovetkezo` (a „Következő lépés” linkre kattintott), `tovabb` (az oldal alján egy másik kalkulátorra kattintott), `naptar` (letöltötte Az autóm határidőit naptárfájlban). Oldalbetöltésenként mindegyik legfeljebb egyszer.
 - **Kiolvasás:** https://autozom.hu/api/meres (a folyó hónap), vagy például https://autozom.hu/api/meres?honap=2026-11. A `befejezesi_arany` a `kesz` és az `indit` aránya százalékban.
 - **Tárolás:** ugyanaz a `SZAVAZAT` KV-tároló, `m:ÉÉÉÉ-HH:<oldal>:<esemény>` kulcsokkal, lejárat nélkül, hogy idősor legyen belőle. A végpont csak a `kozos/utak.js`-ben felsorolt oldalakra számol (az `epit.mjs` írja).
 - **Korlát:** a Cloudflare ingyenes csomagjában a KV naponta 1000 írást enged, a szavazatokkal együtt. Napi néhány száz számításig ez bőven elég. Ha egyszer a havi összesítőben az `indit` napi átlaga 300 fölé megy, érdemes a mérést a Cloudflare Analytics Engine-re költöztetni.
@@ -97,7 +97,7 @@ Ami egyszer bekerült, az megmarad. Az évenkénti adótételek (`data/tetelek.j
 
 ## IndexNow (Bing, ChatGPT-kereső, Copilot)
 
-Minden élesítés után a `.github/workflows/indexnow.yml` szól a Bingnek, mely oldalak változtak. Ez a kézi mentésekre és a napi NAV-frissítésre is igaz. A kulcs a `config.json` `indexnow_kulcs` mezőjében van, az építés kiteszi `web/<kulcs>.txt` néven. A kulcs nyilvános, ez így rendben van. Ha minden oldalt újra be akarsz küldeni: Actions → IndexNow → Run workflow, és pipáld be a „mind” lehetőséget. A Google ezt nem használja, ott a sitemap.xml és a Search Console számít.
+Minden élesítés után a `.github/workflows/indexnow.yml` szól a Bingnek, mely oldalak változtak. Azt veszi változottnak, aminek a `sitemap.xml`-ben új lett a dátuma. Az építés (`epit.mjs`) oldalanként csak akkor ad mai dátumot, ha az oldal tartalma tényleg változott: a minden oldalon szereplő ellenőrzési dátum és a CSS/JS verziószám cseréje nem számít. Az Az autóm lap nem kerül a sitemapbe, és noindex, mert személyes eszköz. Ez a kézi mentésekre és a napi NAV-frissítésre is igaz. A kulcs a `config.json` `indexnow_kulcs` mezőjében van, az építés kiteszi `web/<kulcs>.txt` néven. A kulcs nyilvános, ez így rendben van. Ha minden oldalt újra be akarsz küldeni: Actions → IndexNow → Run workflow, és pipáld be a „mind” lehetőséget. A Google ezt nem használja, ott a sitemap.xml és a Search Console számít.
 
 ## Claude nélkül is
 

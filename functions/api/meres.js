@@ -8,7 +8,7 @@
 // Csak ismert oldalra és ismert eseményre számolunk, hogy idegen kulcsokkal ne lehessen teleírni a tárolót.
 import { UTAK } from '../../kozos/utak.js';
 
-export const ESEMENYEK = ['indit', 'kesz', 'mentes', 'megosztas', 'nyomtat', 'kovetkezo', 'tovabb'];
+export const ESEMENYEK = ['indit', 'kesz', 'mentes', 'megosztas', 'nyomtat', 'kovetkezo', 'tovabb', 'naptar'];
 const ENGEDETT = /^(autozom\.hu|www\.autozom\.hu|[a-z0-9-]+\.pages\.dev|localhost|127\.0\.0\.1)$/;
 const ISMERT = new Set(UTAK.map((u) => `/${u}`));
 

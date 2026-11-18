@@ -16,9 +16,7 @@ export function datumHu(iso) {
 /** „2026. október 19-én” */
 export function datumNapon(iso) {
   const [e, h, n] = iso.slice(0, 10).split('-').map(Number);
-  const d = n % 10;
-  const rg = n === 1 || n === 21 || n === 31 ? 'jén' : [20, 30].includes(n) ? 'án' : [3, 6, 8].includes(d) ? 'án' : 'én';
-  return `${e}. ${S.HONAPOK[h - 1]} ${n}-${rg}`;
+  return `${e}. ${S.HONAPOK[h - 1]} ${n}-${S.napRag(n)}`;
 }
 /** „2026. november 30-ig” */
 export const datumIg = (iso) => datumHu(iso).replace(/\.$/, '-ig');

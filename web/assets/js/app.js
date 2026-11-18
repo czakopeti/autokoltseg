@@ -1,7 +1,7 @@
 // Böngészős réteg: menü, űrlapok, élő elszámolás, mentett autó (csak kérésre), megosztható link, grafikon.
 // Szerverre csak az megy, amit a látogató a visszajelzés-dobozban maga elküld.
-import * as S from './szamitas.js?v=44907556';
-import * as M from './megjelenites.js?v=44907556';
+import * as S from './szamitas.js?v=0b3aaf44';
+import * as M from './megjelenites.js?v=0b3aaf44';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -437,6 +437,27 @@ function automBekotes(form, szamol) {
   });
 }
 
+/* ---------- Az autóm: határidők naptárfájlban ---------- */
+function naptarBekotes(form, adat) {
+  const gomb = $('[data-naptar]', form), uz = $('[data-naptar-uzenet]', form);
+  if (!gomb) return;
+  gomb.addEventListener('click', () => {
+    const e = ertekek(form);
+    const ma = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date());
+    const url = $('link[rel="canonical"]')?.href || 'https://autozom.hu/autom/';
+    const r = S.hataridoNaptar(adat, { nev: e.nev, hajtas: e.hajtas, muszaki: e.muszaki, evfordulo: e.evfordulo, ma, url });
+    uz.hidden = false;
+    if (r.hiba) { uz.textContent = r.hiba; return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([r.ics], { type: 'text/calendar;charset=utf-8' }));
+    a.download = 'autom-hataridok.ics';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    uz.textContent = `Letöltöttük a naptárfájlt ${r.esemenyek.length} határidővel. Nyisd meg, és a naptárad felveszi őket az emlékeztetőkkel együtt.`;
+    meres('naptar');
+  });
+}
+
 /* ---------- Grafikon: célkereszt és súgó ---------- */
 function grafikonSugo(panel, adat) {
   const svg = $('.grafikon svg', panel), tipp = $('.g-tipp', panel);
@@ -548,6 +569,7 @@ function indit() {
     addEventListener('resize', () => { const most = grafikonSzeles(); if (Math.abs(most - utolso) > 40) { utolso = most; szamol(false); } });
   }
   automBekotes(form, szamol);
+  naptarBekotes(form, adat);
   szamol(false);
 
   // Példa (csak gombnyomásra)

@@ -343,7 +343,7 @@ ${elszamolas(k, M.uresPanel('Add meg a távolságot, az üzemanyagot és a henge
 
 <div class="keret"><article class="cikk">
 <h2 id="nav-arak">A NAV üzemanyagárai</h2>
-<p>A NAV minden hónapra közzéteszi, milyen áron lehet elszámolni az üzemanyagot. Ez nem a kúti ár, hanem három nagy forgalmazó előző hónap eleji árának átlaga. A táblázat magától frissül, amint megjelenik a következő hónap.</p>
+<p>A NAV minden hónapra közzéteszi, milyen áron lehet elszámolni az üzemanyagot. Ez nem a kúti ár, hanem három nagy forgalmazó előző hónap eleji árának átlaga. A táblázat magától frissül, amint megjelenik a következő hónap. Az e havi árat az előző hónappal összevetve a <a href="${L.l(NAVAR_UT)}">NAV-üzemanyagár</a> oldalon látod.</p>
 <div class="tabla-tarto"><table class="tabla"><thead><tr><th>Hónap</th><th>Benzin</th><th>Dízel</th><th>Keverék</th><th>LPG</th><th>CNG</th></tr></thead><tbody>
 ${honapLista.map(([e, h]) => { const x = adat.uzemanyag.evek[e][h]; const v = (kk) => `${x[kk] ?? '–'}${x[kk + '_vedett'] ? ` <span class="vedett">(védett: ${x[kk + '_vedett']})</span>` : ''}`; return `<tr data-arhonap="${e}-${h}"${e === lf.ev && h === lf.honap ? ' class="kiemelt"' : ''}><td>${honapHu(e, h)}</td><td>${v('benzin')}</td><td>${v('dizel')}</td><td>${x.keverek ?? '–'}</td><td>${x.lpg ?? '–'}</td><td>${x.cng ?? '–'}</td></tr>`; }).join('')}
 </tbody><caption>Forint literenként, a CNG forint kilogrammonként. Forrás: <a href="${adat.uzemanyag.forras}" rel="noopener" target="_blank">NAV</a>${arDatum(adat, lf.ev, lf.honap) ? `, a legfrissebb hónap ${arDatum(adat, lf.ev, lf.honap).replace(/\.$/, '')}` : ''}.</caption></table></div>
@@ -501,6 +501,13 @@ ${sor('', szamMezo({ id: 'szerviz', cim: 'Szerviz és javítás', me: 'Ft', plac
 ${sor('', szamMezo({ id: 'gumi', cim: 'Gumi és gumiszerelés', me: 'Ft', placeholder: 'pl. 40 000', min: 0 }))}
 ${sor('', szamMezo({ id: 'egyeb', cim: 'Matrica, parkolás, egyéb', me: 'Ft', placeholder: 'pl. 60 000', min: 0 }))}
 ${sor('', szamMezo({ id: 'ertek', cim: 'Mennyit ér most az autó?', me: 'Ft', placeholder: 'pl. 4 000 000', min: 0, sugo: 'Ebből becsüljük az értékvesztést.' }))}
+</fieldset>
+<fieldset><legend>Határidők</legend>
+<p class="fieldset-megj">A letöltött naptárfájl emlékeztet a műszaki lejárata előtt 30 és 7 nappal, a biztosítás felmondási határideje előtt 14 és 3 nappal. A gépjárműadó befizetési határideje is bekerül, villanyautónál nem.</p>
+${sor('', `<label for="muszaki">Meddig érvényes a műszaki vizsga?</label><input id="muszaki" name="muszaki" type="date"><span class="sugo">Nem kötelező.</span>`)}
+${sor('', `<label for="evfordulo">Kötelező biztosítás évfordulója</label><input id="evfordulo" name="evfordulo" type="date"><span class="sugo">A kötvényen szerepel. Ha 2010 előtt kötötted, és azóta nem váltottál, január 1.</span>`)}
+<div class="urlap-gombok"><button class="gomb masodlagos" type="button" data-naptar>Határidők a naptáramba</button></div>
+<p class="kicsi" data-naptar-uzenet aria-live="polite" hidden></p>
 </fieldset>` })}
 ${elszamolas(k, M.uresPanel('Add meg az autód adatait.'), { cim: 'Az autóm' })}
 </div>
@@ -516,8 +523,10 @@ ${elszamolas(k, M.uresPanel('Add meg az autód adatait.'), { cim: 'Az autóm' })
     cim: 'Az autóm: adó, havi költség és értékvesztés egy helyen',
     leiras: 'Egy lapon az autód gépjárműadója idén és jövőre, a havi és a kilométerenkénti költség, az értékvesztés és az átírás díja.',
     ut, tartalom,
-    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, f: { ...f, lf: undefined }, ev: aktualis, ma: k.ma },
+    adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok, maradvany: adat.szabalyok.maradvany, kgfb: adat.szabalyok.kgfb }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, f: { ...f, lf: undefined }, ev: aktualis, ma: k.ma },
     jsonld: [morzsaLd(k.cfg, [{ nev: 'Az autóm', ut }])],
+    // Személyes eszköz, kitöltés előtt nincs rajta keresni való: a kereső ne listázza, a linkjeit kövesse
+    indexelheto: false,
   });
 }
 
@@ -1527,6 +1536,98 @@ export function uzemanyagSorok(adat) {
   return s.sort((a, b) => a.kulcs.localeCompare(b.kulcs));
 }
 
+/* ======================= NAV-ÜZEMANYAGÁR ======================= */
+export const NAVAR_UT = 'nav-uzemanyagar/';
+const NAVAR_SOROK = [['benzin', 'Benzin', 'l'], ['dizel', 'Dízel', 'l'], ['keverek', 'Keverék', 'l'], ['lpg', 'LPG', 'l'], ['cng', 'CNG', 'kg']];
+
+/** A legfrissebb NAV-hónap, az előző hónap és az egy évvel korábbi ugyanazon hónap, üzemanyagonként a változással. */
+export function navArAdatok(adat) {
+  const u = uzemanyagSorok(adat);
+  const most = u.at(-1), elozo = u.at(-2) || null;
+  const egyEve = u.find((r) => r.ev === most.ev - 1 && r.h === most.h) || null;
+  const sorok = NAVAR_SOROK.filter(([kk]) => most[kk] != null).map(([kk, nev, egyseg]) => ({
+    kulcs: kk, nev, egyseg, ar: most[kk], vedett: most[`${kk}_vedett`] ?? null,
+    elozo: elozo?.[kk] ?? null, valtozas: elozo?.[kk] != null ? most[kk] - elozo[kk] : null,
+    egyEve: egyEve?.[kk] ?? null,
+  }));
+  return { u, most, elozo, egyEve, sorok };
+}
+const valtozasSzoveg = (v) => (v == null ? '–' : v === 0 ? 'nem változott' : `${v > 0 ? '+' : '−'}${Math.abs(v)} Ft`);
+
+export function navArOldal(k) {
+  const { adat, cfg } = k;
+  const ut = NAVAR_UT;
+  const { u, most, elozo, egyEve, sorok } = navArAdatok(adat);
+  const hn = M.honapHu(most.ev, most.h);
+  const ban = `${most.ev}. ${M.honapBan(most.h)}`;
+  const s = Object.fromEntries(sorok.map((x) => [x.kulcs, x]));
+  const elozoNev = elozo ? S.HONAPOK[elozo.h - 1] : '';
+  const kozzeteve = arDatum(adat, most.ev, most.h).replace(/\.$/, '');
+  const kozzeteveIso = adat.uzemanyag.kozzeteve?.[`${most.ev}-${most.h}`];
+  const cap = (x) => x[0].toUpperCase() + x.slice(1);
+  const vedettHonapok = u.filter((r) => r.benzin_vedett || r.dizel_vedett).map((r) => M.honapHu(r.ev, r.h));
+  // Mennyivel drágább vagy olcsóbb az előző hónaphoz képest, egy mondatban
+  const irany = (v) => (v > 0 ? 'drágább' : v < 0 ? 'olcsóbb' : 'ugyanannyi');
+  const kepest = elozo ? `${cap(elozoNev)}${/(szeptember|október|november|december)$/.test(elozoNev) ? 'hez' : 'hoz'} képest` : '';
+  let elozoMondat = '';
+  if (elozo && s.benzin.valtozas != null && s.dizel.valtozas != null) {
+    const b = s.benzin.valtozas, d = s.dizel.valtozas;
+    if (!b && !d) elozoMondat = ` Mindkettő ugyanannyi, mint ${M.honapBan(elozo.h)}.`;
+    else if (Math.sign(b) === Math.sign(d)) elozoMondat = ` ${kepest} a benzin ${Math.abs(b)}, a dízel ${Math.abs(d)} forinttal ${irany(b)}.`;
+    else elozoMondat = ` ${kepest} a benzin ${b ? `${Math.abs(b)} forinttal ${irany(b)}` : 'ugyanannyi'}, a dízel ${d ? `${Math.abs(d)} forinttal ${irany(d)}` : 'ugyanannyi'}.`;
+  }
+  // Példa: 100 km-es hivatali út egy 1400 cm³-es benzines autóval, a kilométertérítés motorjával
+  const pelda = S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', cm3: 1400, ev: most.ev, honap: most.h });
+  const peldaMondat = pelda.hiba ? '' : `Egy 100 km-es hivatali út egy 1400 cm³-es benzines autóval ${ban}: ${M.tized(pelda.norma)}&nbsp;liter × ${pelda.ar}&nbsp;Ft = ${M.ftx(pelda.uzemanyagFt)} üzemanyag, és 100&nbsp;km × ${adat.szabalyok.km.normakoltseg_ft_km}&nbsp;Ft = ${M.ftx(pelda.normakoltseg)} normaköltség. A cég összesen ${M.ftx(pelda.osszesen)} fizethet érte adómentesen.`;
+  const ar = (x) => `${x.ar}${x.vedett ? ` <span class="halk">(védett: ${x.vedett})</span>` : ''}`;
+  const utolso12 = u.slice(-12).reverse();
+  const kerdesek = [
+    { k: `Mennyi a NAV üzemanyagár ${ban}?`, v: [`${ban} a NAV szerint ${sorok.map((x) => `${x.nev.replace(/^(Benzin|Dízel|Keverék)$/, (m) => m.toLowerCase())}: ${x.ar} Ft/${x.egyseg}`).join(', ')}.${s.benzin.vedett || s.dizel.vedett ? ' Védett árat is közzétett, ezt a táblázatban zárójelben látod.' : ''}`] },
+    { k: 'Mi a különbség a NAV-ár és a kúti ár között?', v: ['A NAV-ár három nagy hazai üzemanyag-forgalmazó árának átlaga, az előző hónap első napján érvényes árakból számolva. Ezért egy hónapig nem változik, és a kúton aznap fizetett ártól néhány forinttal eltérhet mindkét irányba.'] },
+    { k: 'Kell számla, ha a NAV-árral számolok?', v: ['Nem. Ha a fogyasztási norma szerinti elszámolásban a NAV által közzétett árat használod, az üzemanyagról nem kell számla. Ha a saját számládon szereplő árral számolsz, akkor a számla kell.'] },
+    { k: 'Melyik hónap árát kell használni?', v: ['Annak a hónapnak az árát, amikor az út volt. Egy októberi útnál az októberi ár számít, akkor is, ha az elszámolást novemberben készíted el.'] },
+    { k: 'Mi a keverékár?', v: ['A kétütemű motorokba való benzin és olaj keverékének elszámolási ára. Ma főleg régebbi motorkerékpároknál és kisgépeknél fordul elő.'] },
+    ...(vedettHonapok.length ? [{ k: 'Mi a védett ár?', v: [`Azokban a hónapokban, amikor a benzinnek és a dízelnek hatósági, úgynevezett védett ára is volt, a NAV mindkét árat közzétette. Az adataink közül ez ${vedettHonapok.length === 1 ? vedettHonapok[0] : `${vedettHonapok[0]} és ${vedettHonapok.at(-1)} között`} volt így. A táblázatokban zárójelben látod.`] }] : []),
+    { k: 'Mikor jelenik meg a következő hónap ára?', v: [`A NAV a hónap végén teszi közzé a következő hónap árait.${kozzeteveIso ? ` A ${hn}i árak ${M.datumNapon(kozzeteveIso)} jelentek meg.` : ''} Ilyenkor minden reggel összevetjük az adatainkat a NAV oldalával, így az új hónap ára a megjelenése utáni reggel itt van.`] },
+  ];
+  const leiras = `NAV üzemanyagár ${hn}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft literenként, a keverék, az LPG és a CNG ára, az előző hónaphoz képest. Ezzel számolhatsz számla nélkül a kilométertérítésnél.`;
+  const tartalom = (L) => `
+${oldalfej(L, { morzsa: ['NAV-üzemanyagár'], cim: `NAV üzemanyagár, ${hn}`, valasz: `${ban} a NAV szerint a benzin <strong>${s.benzin.ar}&nbsp;Ft</strong>, a dízel <strong>${s.dizel.ar}&nbsp;Ft</strong> literenként.${elozoMondat} Ezzel az árral számolhatod el a tankolást számla nélkül, például a kilométertérítésnél.` })}
+<div class="keret"><article class="cikk">
+<h2 id="most">${hn}i árak</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Üzemanyag</th><th>${cap(S.HONAPOK[most.h - 1])}</th>${elozo ? `<th>${cap(elozoNev)}</th><th>Változás</th>` : ''}${egyEve ? `<th class="csak-szeles">Egy éve</th>` : ''}</tr></thead><tbody>
+${sorok.map((x) => `<tr><th scope="row">${x.nev}</th><td><strong>${ar(x)}</strong></td>${elozo ? `<td>${x.elozo ?? '–'}</td><td>${valtozasSzoveg(x.valtozas)}</td>` : ''}${egyEve ? `<td class="csak-szeles">${x.egyEve ?? '–'}</td>` : ''}</tr>`).join('\n')}
+</tbody></table></div>
+<p class="tabla-megj">Forint literenként, a CNG forint kilogrammonként. A benzin a 95-ös, a keverék a kétütemű motorokba való benzin-olaj keverék. Forrás: <a href="${adat.uzemanyag.forras}" rel="noopener" target="_blank">NAV</a>${kozzeteve ? `, ${kozzeteve}` : ''}.</p>
+
+<h2 id="mire">Mire használhatod?</h2>
+<p>A NAV havonta közzéteszi, milyen áron lehet elszámolni az üzemanyagot a fogyasztási norma szerinti költségelszámolásban. Ezt használja a kilométertérítés a saját autós hivatali útnál, és ezt használhatja a vállalkozó is, ha a kilométerek alapján számol el.</p>
+${peldaMondat ? `<p>${peldaMondat}</p>` : ''}
+<p>A saját utadat a <a href="${L.l('kilometerterites-kalkulator/')}">kilométertérítés-kalkulátor</a> számolja ki, egy út teljes költségét pedig az <a href="${L.l('utikoltseg-kalkulator/')}">útiköltség-kalkulátor</a>.</p>
+
+<h2 id="idosor">Így változott ${u[0].ev} óta</h2>
+${idosorGrafikon(u)}
+<p>A teljes táblázat ${u[0].ev}. januártól, CSV-letöltéssel együtt az <a href="${L.l(ADAT_UT)}#uzemanyag">Adatok</a> oldalon van.</p>
+
+<h2 id="utolso-ev">Az elmúlt 12 hónap</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Hónap</th><th>Benzin</th><th>Dízel</th><th>Keverék</th><th>LPG</th><th>CNG</th></tr></thead><tbody>
+${utolso12.map((r) => `<tr><th scope="row">${M.honapHu(r.ev, r.h)}</th><td>${r.benzin}${r.benzin_vedett ? ` <span class="halk">(védett: ${r.benzin_vedett})</span>` : ''}</td><td>${r.dizel}${r.dizel_vedett ? ` <span class="halk">(védett: ${r.dizel_vedett})</span>` : ''}</td><td>${r.keverek ?? '–'}</td><td>${r.lpg ?? '–'}</td><td>${r.cng ?? '–'}</td></tr>`).join('\n')}
+</tbody></table></div>
+<p class="tabla-megj">Ft/l, a CNG Ft/kg. Forrás: NAV, a havi üzemanyagár-közlemények.</p>
+
+<h2>Gyakori kérdések</h2>
+${gyik(kerdesek)}
+<h2>Források</h2>
+${forrasLista([{ nev: `NAV: ${M.rag(most.ev, 'ban', 'ben')} alkalmazható üzemanyagárak`, url: adat.uzemanyag.forras }, { nev: 'NAV: üzemanyagár-elszámolás, a korábbi évek', url: 'https://nav.gov.hu/ugyfeliranytu/uzemanyag' }, { nev: 'Szja tv. 82. § (2): a NAV havi üzemanyagára', url: 'https://njt.hu/jogszabaly/1995-117-00-00' }])}
+${tovabb(L, ut)}
+</article></div>`;
+  return oldal(k, {
+    cim: `NAV üzemanyagár ${hn}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft`,
+    leiras, ut, tartalom,
+    jsonld: [gyikLd(kerdesek), morzsaLd(cfg, [{ nev: 'NAV-üzemanyagár', ut }])],
+  });
+}
+
 /** A letölthető CSV-k (pontosvesszővel elválasztva, UTF-8 BOM-mal, hogy a magyar Excel is jól nyissa meg). */
 export function adatCsvk(adat) {
   const csv = (fej, sorok) => `﻿${[fej, ...sorok].map((s) => s.map((x) => (x == null ? '' : String(x))).join(';')).join('\r\n')}\r\n`;
@@ -1600,6 +1701,7 @@ ${oldalfej(L, { morzsa: ['Adatok és idősorok'], cim: 'Adatok és idősorok', v
 <h2 id="uzemanyag">NAV-üzemanyagár havonta</h2>
 <p>A NAV havonta teszi közzé, milyen áron számolható el a tankolás a fogyasztási norma szerinti költségelszámolásban (például a kilométertérítésnél). ${honapNev(utolso)}: benzin <strong>${utolso.benzin} Ft</strong>, dízel <strong>${utolso.dizel} Ft</strong> literenként. Ebben az időszakban a benzin elszámolási ára ${csucs.ev}. ${M.honapBan(csucs.h)} volt a legmagasabb (${csucs.benzin} Ft), és ${melyp.ev}. ${M.honapBan(melyp.h)} a legalacsonyabb (${melyp.benzin} Ft).</p>
 ${idosorGrafikon(u)}
+<p>Az e havi árat az előző hónappal és az egy évvel korábbival összevetve a <a href="${L.l(NAVAR_UT)}">NAV-üzemanyagár</a> oldalon látod.</p>
 ${letolt('nav-uzemanyagar-havi.csv', 'A teljes havi táblázat (benzin, dízel, keverék, LPG, CNG)')}
 <details class="tabla-reszlet"><summary>Az összes hónap táblázatban</summary>
 ${tablaTarto(['Hónap', 'Benzin', 'Dízel', 'Keverék', 'LPG', 'CNG (Ft/kg)'], [...u].reverse().map((r) => [honapNev(r), `${r.benzin}${r.benzin_vedett ? ` <span class="halk">(védett: ${r.benzin_vedett})</span>` : ''}`, `${r.dizel}${r.dizel_vedett ? ` <span class="halk">(védett: ${r.dizel_vedett})</span>` : ''}`, r.keverek ?? '–', r.lpg ?? '–', r.cng ?? '–']), 'Ft/l, a CNG Ft/kg. Forrás: NAV, a havi üzemanyagár-közlemények.')}

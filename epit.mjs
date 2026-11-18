@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync, readFileSync, cpSync, rmSync, readdirSync, ex
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { betoltAdat, olvas, maBudapest, GYOKER } from './forras/adat.mjs';
-import { gilos, adatDatum as S_adatDatum } from './forras/sablon.mjs';
+import { gilos, lastmodDontes } from './forras/sablon.mjs';
 import * as S from './forras/js/szamitas.mjs';
 import * as O from './forras/oldalak.mjs';
 import * as M from './forras/js/megjelenites.mjs';
@@ -26,6 +26,16 @@ if (cfg.eles && hianyzik.length) {
   process.exit(1);
 }
 if (hianyzik.length) console.warn(`Figyelem: előnézeti mód (noindex). Élesítés előtt kitöltendő: ${hianyzik.join(', ')}.`);
+
+// A sitemap oldalankénti dátumához megjegyezzük a mostani (előző építésű) oldalakat, mielőtt a mappa törlődik
+const regiOldalak = new Map();
+if (!elonezet && existsSync(join(KI, 'sitemap.xml'))) {
+  for (const [, loc, datum] of readFileSync(join(KI, 'sitemap.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc><lastmod>([^<]+)<\/lastmod>/g)) {
+    const ut = loc.replace(cfg.domain + '/', '');
+    const f = join(KI, ut, 'index.html');
+    if (existsSync(f)) regiOldalak.set(ut, { html: readFileSync(f, 'utf8'), datum });
+  }
+}
 
 rmSync(KI, { recursive: true, force: true });
 mkdirSync(join(KI, 'assets/js'), { recursive: true });
@@ -66,6 +76,7 @@ const oldalak = [
   ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],
   ['vallalkozoknak/', O.vallalkozoknakOldal(k)],
+  [O.NAVAR_UT, O.navArOldal(k)],
   ['adatok/', O.adatokOldal(k)],
   ['cegautoado-kalkulator/', O.cegautoadoOldal(k)],
   ['cegauto-vagy-sajat-auto/', O.cegautoOldal(k)],
@@ -97,9 +108,12 @@ if (!elonezet) {
   writeFileSync(join(KI, 'robots.txt'), cfg.eles
     ? `# ${cfg.marka}: minden kereső- és AI-robot számára nyitott.\nUser-agent: *\nAllow: /\n\n${ROBOTOK.map((r) => `User-agent: ${r}\nAllow: /\n`).join('\n')}\nSitemap: ${cfg.domain}/sitemap.xml\n`
     : `# Munkaverzió: egyetlen oldal se kerüljön keresőbe.\nUser-agent: *\nAllow: /\n`);
-  // A lastmod az adatok utolsó ellenőrzött dátuma, nem az építésé: így csak akkor változik, ha tényleg frissült valami
-  const lastmod = S_adatDatum(adat).iso;
-  const urlek = oldalak.filter(([ut]) => ut !== 'impresszum/').map(([ut]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
+  // A lastmod oldalanként csak akkor lesz mai, ha az oldal tartalma tényleg változott (a minden oldalon
+  // szereplő ellenőrzési dátumot nem számítjuk változásnak, különben a Google figyelmen kívül hagyná a dátumot).
+  // A noindex oldalak (Az autóm) és az impresszum nem kerülnek bele.
+  const urlek = oldalak
+    .filter(([ut, html]) => ut !== 'impresszum/' && !/<meta name="robots" content="noindex/.test(html))
+    .map(([ut, html]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${lastmodDontes(regiOldalak.get(ut)?.html, html, regiOldalak.get(ut)?.datum, ma)}</lastmod></url>`).join('\n');
   // Letölthető idősorok (adatok/ oldal)
   for (const [f, tart] of Object.entries(O.adatCsvk(adat))) writeFileSync(join(KI, 'adatok', f), tart);
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
@@ -148,6 +162,7 @@ https://:version.:project.pages.dev/*
 - [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
 - [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
+- [NAV-üzemanyagár](${cfg.domain}/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
 
 ## Adatok
 

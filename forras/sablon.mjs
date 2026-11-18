@@ -18,6 +18,7 @@ export const FIOK = [
     ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027', 'Lejár a mentesség, cserélni kell a rendszámot'],
     ['autopalya-matrica-kalkulator/', 'Autópálya-matrica', 'Melyik matrica a legolcsóbb neked'],
     ['kilometerterites-kalkulator/', 'Kilométertérítés', 'Hivatali út és munkába járás'],
+    ['nav-uzemanyagar/', 'NAV-üzemanyagár', 'Az e havi elszámolási ár, számla nélkül'],
   ] },
   { cim: 'Vásárlás és fenntartás', elemek: [
     ['benzin-vagy-villany/', 'Benzin vagy villany', 'Két autó teljes költsége, megtérülés'],
@@ -69,6 +70,7 @@ export const TOBB_KALK = [
   { ut: 'le-kw-atvaltas/', nev: 'LE–kW átváltás' },
 ];
 export const TOVABBI = [
+  { ut: 'nav-uzemanyagar/', nev: 'NAV-üzemanyagár' },
   { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
   { ut: 'forrasok/', nev: 'Források' },
   { ut: 'valtozasok/', nev: 'Változások' },
@@ -132,9 +134,23 @@ export function adatDatum(adat) {
   return { cimke: 'NAV-adatok', iso: d[d.length - 1] };
 }
 
+// A sitemap lastmod-jához: két építés tartalma ugyanaz-e. A dátumokat (ellenőrzés napja, mai nap) és a
+// CSS/JS verziószámot kitakarjuk, mert ezek nem a látogatónak szóló tartalom változásai.
+const HONAPNEV = 'január|február|március|április|május|június|július|augusztus|szeptember|október|november|december';
+export function tartalomLenyomat(html) {
+  return html
+    .replace(/\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?/g, '#')
+    .replace(new RegExp(`\\d{4}\\. (${HONAPNEV}) \\d{1,2}\\.(, \\d{2}:\\d{2})?`, 'g'), '#')
+    .replace(/\?v=\w+/g, '');
+}
+export function lastmodDontes(regiHtml, ujHtml, regiDatum, ma) {
+  if (!regiHtml || !regiDatum) return ma;
+  return tartalomLenyomat(regiHtml) === tartalomLenyomat(ujHtml) ? regiDatum : ma;
+}
+
 /* ---------- Oldalkeret ---------- */
 
-export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = null }) {
+export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = null, indexelheto = true }) {
   const { cfg, elonezet, verzio } = k;
   const L = linkelo(ut, elonezet);
   const kanonikus = `${cfg.domain}/${ut}`;
@@ -152,7 +168,7 @@ export function oldal(k, { cim, leiras, ut, tartalom, jsonld = [], adatJson = nu
 ${cfg.eles && !elonezet ? `<script>/* A régi Cloudflare-címről (pages.dev) a saját domainre visz, ugyanarra az aloldalra */if(/\\.pages\\.dev$/.test(location.hostname))location.replace(${JSON.stringify(cfg.domain)}+location.pathname+location.search+location.hash)</script>` : ''}
 <title>${esc(teljesCim)}</title>
 <meta name="description" content="${esc(leiras)}">
-<meta name="robots" content="${cfg.eles ? 'index, follow, max-image-preview:large' : 'noindex, nofollow'}">
+<meta name="robots" content="${!cfg.eles ? 'noindex, nofollow' : indexelheto ? 'index, follow, max-image-preview:large' : 'noindex, follow'}">
 <link rel="canonical" href="${kanonikus}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="hu_HU">
@@ -343,7 +359,7 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['nav-uzemanyagar/', 'NAV-üzemanyagár'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

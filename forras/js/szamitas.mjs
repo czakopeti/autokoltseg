@@ -820,7 +820,9 @@ export function cegautoVagySajat(adat, b) {
 }
 
 /* ---------------- Mentett autó: melyik kalkulátorba mi kerül belőle, és mi kerül bele ---------------- */
-export const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek'];
+export const AUTOM_MEZOK = ['nev', 'kw', 'gyartasiEv', 'hajtas', 'cm3', 'fogyasztas', 'kwh', 'km', 'biztositas', 'szerviz', 'gumi', 'egyeb', 'ertek', 'muszaki', 'evfordulo'];
+/** Az Az autóm lap dátummezői: ha kitörli, a mentett érték is törlődjön. */
+const AUTOM_DATUMOK = ['muszaki', 'evfordulo'];
 const AUTOM_HAJTASOK = ['benzin', 'dizel', 'hibrid', 'plugin', 'elektromos'];
 /** Csak a kitöltött értékek: a hiányzó mezőt nem írjuk felül üressel. */
 const kitoltott = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
@@ -876,6 +878,7 @@ export function automKi(kalk, e, regi = {}) {
   if (e.kwEgyseg === 'le' && e[kwMezo]) a.kw = String(leKw(String(e[kwMezo]).replace(',', '.')));
   // a hajtás csak érvényes értéket kaphat
   if (a.hajtas && !AUTOM_HAJTASOK.includes(a.hajtas)) delete a.hajtas;
+  if (kalk === 'autom') for (const d of AUTOM_DATUMOK) if (e[d] === '') a[d] = '';
   return a;
 }
 
@@ -966,4 +969,83 @@ export function cegautoPeldak(adat, { ev, lf, szocho = true }) {
   let fordulo = null;
   for (let km = 0; km <= 100000; km += 500) if (szamol(km).r.kulonbseg > 0) { fordulo = km; break; }
   return { pelda: p, ar, sorok, fordulo };
+}
+
+/* ---------------- Az autóm: határidők naptárfájlban (.ics) ---------------- */
+const NAPTAR_EVEK = 5; // a biztosítási váltás határidejét ennyi évre előre tesszük be, évenként külön (a szökőév miatt)
+const icsEsc = (s) => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+/** RFC 5545: egy sor legfeljebb 75 bájt, a folytatás szóközzel kezdődik. Karakterhatáron törünk, hogy az ékezet ne sérüljön. */
+function icsHajt(sor) {
+  const enc = new TextEncoder();
+  const ki = [];
+  let akt = '', hossz = 0;
+  for (const ch of sor) {
+    const b = enc.encode(ch).length;
+    if (hossz + b > (ki.length ? 74 : 75)) { ki.push(akt); akt = ''; hossz = 0; }
+    akt += ch; hossz += b;
+  }
+  ki.push(akt);
+  return ki.join('\r\n ');
+}
+const icsNap = (iso) => iso.replace(/-/g, '');
+/** A hónap napjának ragja: 1-jén, 2-án, 3-án, 5-én, 21-én, 30-án. */
+export function napRag(n) { const d = n % 10; return n === 1 ? 'jén' : n === 2 || [20, 30].includes(n) || [3, 6, 8].includes(d) ? 'án' : 'én'; }
+const huNapon = (iso) => { const [e, h, n] = iso.split('-').map(Number); return `${e}. ${HONAPOK[h - 1]} ${n}-${napRag(n)}`; };
+const uidNev = (nev) => (nev ? `-${String(nev).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24)}` : '');
+const szokoev = (e) => (e % 4 === 0 && e % 100 !== 0) || e % 400 === 0;
+
+/**
+ * Az autó határidői naptárba: műszaki vizsga lejárata, a kötelező biztosítás felmondási határideje és a gépjárműadó befizetése.
+ * b: { nev, hajtas, muszaki: 'YYYY-MM-DD', evfordulo: 'YYYY-MM-DD', ma: 'YYYY-MM-DD', most: ISO időbélyeg, url }
+ * Visszaad: { ics, esemenyek: [{ tipus, nap, cim }] } vagy { hiba }.
+ */
+export function hataridoNaptar(adat, b) {
+  // a JavaScript a február 31-et csendben március 3-ra fordítja, ezért visszaalakítva is egyeznie kell
+  const datum = (x) => /^\d{4}-\d{2}-\d{2}$/.test(x || '') && !Number.isNaN(Date.parse(`${x}T12:00:00Z`)) && new Date(`${x}T12:00:00Z`).toISOString().slice(0, 10) === x;
+  const nevben = b.nev ? ` (${String(b.nev).trim().slice(0, 40)})` : '';
+  const url = b.url || 'https://autozom.hu/autom/';
+  const es = [];
+  if (b.muszaki) {
+    if (!datum(b.muszaki)) return { hiba: 'A műszaki vizsga lejáratát dátumként add meg.' };
+    if (b.muszaki < b.ma) return { hiba: 'A megadott műszaki lejárat már elmúlt. Ha közben megújítottad, írd be az újat.' };
+    es.push({ tipus: 'muszaki', nap: b.muszaki, cim: `Lejár a műszaki vizsga${nevben}`, leiras: 'Eddig a napig érvényes a műszaki vizsga. Érdemes időben időpontot kérni egy vizsgaállomáson.', riasztas: [30, 7] });
+  }
+  if (b.evfordulo) {
+    if (!datum(b.evfordulo)) return { hiba: 'A biztosítási évfordulót dátumként add meg.' };
+    const k = adat.szabalyok.kgfb;
+    const elso = kovetkezoEvforduló(b.evfordulo, b.ma);
+    const md = b.evfordulo.slice(5);
+    for (let i = 0; i < NAPTAR_EVEK + 1 && es.filter((x) => x.tipus === 'kgfb').length < NAPTAR_EVEK; i++) {
+      const ev = Number(elso.slice(0, 4)) + i;
+      const kezdet = md === '02-29' && !szokoev(ev) ? `${ev}-03-01` : `${ev}-${md}`;
+      const felmondas = napEltol(kezdet, -k.felmondas_nap);
+      if (felmondas < b.ma) continue; // az idei határidő már lejárt: a következő évtől
+      es.push({ tipus: 'kgfb', nap: felmondas, cim: `Kötelező biztosítás: eddig válthatsz${nevben}`, leiras: `Ha másik biztosítóhoz mennél, a felmondásnak eddig a napig meg kell érkeznie a mostani biztosítódhoz. Az új biztosítási időszak ${huNapon(kezdet)} kezdődik.`, riasztas: [14, 3] });
+    }
+  }
+  if (b.hajtas !== 'elektromos') {
+    const [hNev, nNap] = String(adat.szabalyok.hataridok.gepjarmuado_befizetes).replace(/\.$/, '').split(' ');
+    const ho = String(HONAPOK.indexOf(hNev) + 1).padStart(2, '0'), nap = String(Number(nNap)).padStart(2, '0');
+    let ev = Number(b.ma.slice(0, 4));
+    if (`${ev}-${ho}-${nap}` < b.ma) ev += 1;
+    // A villanyautó mentes. A plug-in hibrid 2026-os mentessége a forgalomba helyezés napjától függ, amit itt nem kérdezünk,
+    // ezért annál is betesszük: egy fölösleges emlékeztető kisebb baj, mint egy elmaradt befizetés.
+    es.push({ tipus: 'gjado', nap: `${ev}-${ho}-${nap}`, cim: `Gépjárműadó befizetése${nevben}`, leiras: `A gépjárműadót minden évben ${HONAPOK[Number(ho) - 1]} ${Number(nap)}-ig kell befizetni. Az összeget a NAV határozata tartalmazza, előre a ${url.replace(/autom\/$/, 'gepjarmuado-kalkulator/')} oldalon is kiszámolhatod.`, riasztas: [7], evente: true });
+  }
+  if (!es.length) return { hiba: 'Add meg a műszaki vizsga lejáratát vagy a biztosítási évfordulót.' };
+  es.sort((x, y) => x.nap.localeCompare(y.nap));
+  const dtstamp = new Date(b.most || Date.now()).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const sorok = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//autozom.hu//Az autóm//HU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Az autóm határidői'];
+  for (const x of es) {
+    sorok.push('BEGIN:VEVENT',
+      // Állandó azonosító: ha újra letölti és importálja, a naptár frissíti az eseményt, nem duplázza
+      `UID:${x.tipus}-${icsNap(x.nap)}${uidNev(b.nev)}@autozom.hu`, `DTSTAMP:${dtstamp}`,
+      `DTSTART;VALUE=DATE:${icsNap(x.nap)}`, `DTEND;VALUE=DATE:${icsNap(napEltol(x.nap, 1))}`,
+      ...(x.evente ? ['RRULE:FREQ=YEARLY'] : []),
+      `SUMMARY:${icsEsc(x.cim)}`, `DESCRIPTION:${icsEsc(x.leiras)}`, `URL:${url}`, 'TRANSP:TRANSPARENT');
+    for (const n of x.riasztas) sorok.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(x.cim)}`, `TRIGGER:-P${n}D`, 'END:VALARM');
+    sorok.push('END:VEVENT');
+  }
+  sorok.push('END:VCALENDAR');
+  return { ics: `${sorok.map(icsHajt).join('\r\n')}\r\n`, esemenyek: es.map(({ tipus, nap, cim }) => ({ tipus, nap, cim })) };
 }
