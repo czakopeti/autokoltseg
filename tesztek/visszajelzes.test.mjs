@@ -39,7 +39,7 @@ test('szöveges visszajelzés GitHub-jegy lesz, kitakart elérhetőséggel', asy
     const r = await onRequestPost({ request: keres({ ut: '/megjavitsam-vagy-csereljem/', ertek: 'szoveg', szoveg: 'Rossz! hívj: +36 30 123 4567, @valaki, a@b.hu. Ára 30 000 000 Ft', cim: 'Megjavítsam? | autózom', adatok: { a_javitas: '600000', '<rossz>': 'x' }, eredmeny: 'A javítás olcsóbb: 974 400 Ft' }), env });
     assert.equal(r.status, 200);
   } finally { globalThis.fetch = eredeti; }
-  assert.match(kuldott.url, /repos\/czakopeti\/autokoltseg\/issues$/);
+  assert.match(kuldott.url, /repos\/czakopeti\/autozom-visszajelzes\/issues$/);
   assert.equal(kuldott.auth, 'Bearer teszt');
   assert.deepEqual(kuldott.labels, ['visszajelzes']);
   assert.equal(kuldott.title, 'Visszajelzés: Megjavítsam?');
