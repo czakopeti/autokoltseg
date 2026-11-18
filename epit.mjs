@@ -130,7 +130,7 @@ https://:version.:project.pages.dev/*
   const evekLista = Object.keys(adat.tetelek.gepjarmuado).join(' és ');
   writeFileSync(join(KI, 'llms.txt'), `# ${cfg.marka}
 
-> Az autód. A költségeid. A döntéseid. ${M.nevelo(cfg.marka).replace(/^a/, "A")} ${cfg.marka} független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat minden reggel automatikusan összeveti a NAV-val.
+> Az autód. A költségeid. A döntéseid. ${M.nevelo(cfg.marka).replace(/^a/, "A")} ${cfg.marka} független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat rendszeresen, a NAV havi közzétételei körül naponta automatikusan összeveti a NAV-val.
 
 ## Kalkulátorok
 

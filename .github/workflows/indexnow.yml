@@ -32,7 +32,7 @@ jobs:
           ref: main
           fetch-depth: 2
       - name: Várunk, amíg a Cloudflare kiteszi az új változatot
-        run: sleep 180
+        run: sleep 90   # a Cloudflare kb. egy perc alatt kiteszi a változást
       - name: Változott oldalak beküldése
         env:
           MIND: ${{ inputs.mind }}

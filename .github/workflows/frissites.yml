@@ -4,7 +4,11 @@ name: Napi frissítés
 # Ha a NAV-ellenőrzés hibát jelez, a korábbi (ellenőrzött) adat marad kint, a futás piros lesz, és a GitHub e-mailt küld.
 on:
   schedule:
-    - cron: "17 4 * * *"   # 05:17 / 06:17 budapesti idő szerint
+    # A GitHub-perckeret kímélése: a NAV havi árai a hónap végén vagy elején jelennek meg, a jövő évi
+    # adótételek októberben vagy novemberben. Ilyenkor minden reggel, máskor hetente (hétfőn) fut.
+    - cron: "17 4 1-5,22-31 * *"   # 05:17 / 06:17 budapesti idő szerint
+    - cron: "17 4 * 10,11 *"
+    - cron: "17 4 * * 1"
   workflow_dispatch:
   push:
     branches: [main]
