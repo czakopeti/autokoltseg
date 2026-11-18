@@ -1,6 +1,6 @@
 // Az elszámolás (eredmény) HTML-je. Ugyanezt használja az építő (a HTML-ben már benne van a szám)
 // és a böngésző (élő számolás), így a kettő nem térhet el.
-import * as S from './szamitas.js?v=7af3a011';
+import * as S from './szamitas.js?v=44907556';
 
 const nf = new Intl.NumberFormat('hu-HU', { useGrouping: 'always' });
 export const fmt = (n) => nf.format(Math.round(n));
@@ -588,7 +588,7 @@ export function cegautoPanel(adat, r) {
   let h = vegosszeg(fej, Math.abs(d), sub);
   const k = r.kmDij;
   h += '<p class="panel-cim">Cégautó</p><ul class="tetelek">';
-  h += tetel('Az autó éves költsége', ftx(r.C), { forras: 'sajat', al: `értékvesztés ${ftx(r.ertekvesztes)}, üzemanyag vagy áram ${ftx(r.energia)}, biztosítás és szerviz ${ftx(r.fix)}` });
+  h += tetel('Az autó éves költsége', ftx(r.C), { forras: 'sajat', al: `értékvesztés ${ftx(r.ertekvesztes)}, üzemanyag vagy áram ${ftx(r.energia)}, biztosítás, szerviz és egyéb ${ftx(r.fix)}` });
   h += tetel('Gépjárműadó', ftx(r.gj), { forras: 'hivatalos', forrasUrl: adat.tetelek.gepjarmuado[r.ev]?.forras });
   h += tetel('Cégautóadó', ftx(r.ca.fizetendo), { forras: 'hivatalos', forrasUrl: r.ca.forras, al: r.ca.mentes ? 'az autó mentes' : `havi ${ftx(r.ca.havi)} × 12, a gépjárműadóval csökkentve` });
   h += tetel('A cég kiadása', ftx(r.aCeg), { al: 'a magáncélú használat után nem kell adót fizetni' });

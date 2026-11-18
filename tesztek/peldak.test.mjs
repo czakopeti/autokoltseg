@@ -66,3 +66,12 @@ test('példatáblák az oldalakon: a GYIK és a táblázat ugyanazt mondja', () 
   assert.match(ch, /id="pelda"/);
   assert.match(ch, /Hány kilométer üzleti út felett éri meg a saját autó\?/);
 });
+
+test('ellenőrzés késése: két napnál régebbi utolsó ellenőrzésnél jelez, frissnél nem', async () => {
+  const { ellenorzesKesik } = await import('../forras/sablon.mjs');
+  assert.equal(ellenorzesKesik('2026-11-08T05:12:00Z', '2026-11-18'), true);
+  assert.equal(ellenorzesKesik('2026-11-17T05:12:00Z', '2026-11-18'), false);
+  assert.equal(ellenorzesKesik('2026-11-16T05:12:00Z', '2026-11-18'), false);
+  assert.equal(ellenorzesKesik('2026-11-15T05:12:00Z', '2026-11-18'), true);
+  assert.equal(ellenorzesKesik(null, '2026-11-18'), false);
+});

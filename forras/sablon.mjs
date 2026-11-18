@@ -198,13 +198,18 @@ ${adatJson ? `<script type="application/json" id="adat">${JSON.stringify(adatJso
 `;
 }
 
+/** Igaz, ha a napi ellenőrzés két napnál régebben futott le utoljára (például mert a GitHub-futások leálltak). */
+export function ellenorzesKesik(utolso, ma) {
+  if (!utolso || !ma) return false;
+  return (Date.parse(String(ma).slice(0, 10)) - Date.parse(String(utolso).slice(0, 10))) / 86400000 > 2;
+}
 function lablec(k, L) {
   const { adat, ma, cfg } = k;
   const ell = adat.allapot.utolso_ellenorzes || ma;
   return `<footer class="lablec"><div class="keret">
 <div>
 <p><strong>Független oldal, nem a NAV hivatalos oldala.</strong> A NAV közzétett adatai alapján számolunk. A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
-<p>Az adatokat minden reggel összevetjük a NAV oldalával. ${adat.allapot.utolso_ellenorzes ? `Legutóbbi ellenőrzés: ${datumHu(ell)}` : `A legfrissebb NAV-adat: ${datumHu(adatDatum(adat).iso)}`}</p>
+<p>${ellenorzesKesik(adat.allapot.utolso_ellenorzes, ma) ? `Az adatokat naponta szoktuk összevetni a NAV oldalával, de ez ${datumHu(ell)} óta technikai okból szünetel. Az azóta közzétett változások még nem szerepelhetnek.` : `Az adatokat minden reggel összevetjük a NAV oldalával. ${adat.allapot.utolso_ellenorzes ? `Legutóbbi ellenőrzés: ${datumHu(ell)}` : `A legfrissebb NAV-adat: ${datumHu(adatDatum(adat).iso)}`}`}</p>
 </div>
 <div><h2>Kalkulátorok</h2><ul>${[...MENU, ...TOBB_KALK].map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
 <div><h2>${esc(cfg.marka)}</h2><ul>

@@ -1,7 +1,7 @@
 // Az oldalak. Minden szám az adatfájlokból jön, a szöveg a SZOVEG_STILUS.md szerint.
 import * as S from './js/szamitas.mjs';
 import * as M from './js/megjelenites.mjs';
-import { oldal, oldalfej, forgalmi, automFent, automLent, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
+import { oldal, oldalfej, forgalmi, automFent, automLent, ellenorzesKesik, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
 
 function evek(k) {
   const gj = k.adat.tetelek.gepjarmuado;
@@ -466,7 +466,7 @@ ${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${ENERGIA_SOR(adat, x)[0]}
 <p>Minden reggel lefut egy ellenőrzés. Megnézi a NAV üzemanyagár-oldalát, és ha megjelent a következő hónap, átveszi az árakat. Októbertől azt is figyeli, közzétette-e a NAV a jövő évi adótételeket.</p>
 <p>Új számot csak akkor veszünk át, ha a NAV oldala a megszokott felépítésű, és minden érték ésszerű határok között van. Utána lefutnak a számítási tesztek, és csak ha mind rendben van, frissül az oldal. Ha valami nem stimmel, a korábbi, ellenőrzött adat marad kint, és mi értesítést kapunk.</p>
 <p>A dátumtól függő részek, például hogy melyik év az alapértelmezett, minden nap újraszámolódnak, így január 1-jén az oldal magától átáll az új évre.</p>
-<p class="halk">Legutóbbi ellenőrzés: ${al.utolso_ellenorzes ? `${datumHu(al.utolso_ellenorzes)}, ${al.utolso_ellenorzes.slice(11, 16)}` : datumHu(k.ma)}.${al.figyelmeztetesek?.length ? ` Nyitott jelzés: ${al.figyelmeztetesek.join(' ')}` : ''}</p>
+<p class="halk">Legutóbbi ellenőrzés: ${al.utolso_ellenorzes ? `${datumHu(al.utolso_ellenorzes)}, ${al.utolso_ellenorzes.slice(11, 16)}` : datumHu(k.ma)}.${ellenorzesKesik(al.utolso_ellenorzes, k.ma) ? ' Az ellenőrzés azóta technikai okból szünetel: az azóta közzétett NAV-változások még nem szerepelhetnek az oldalon.' : ''}${al.figyelmeztetesek?.length ? ` Nyitott jelzés: ${al.figyelmeztetesek.join(' ')}` : ''}</p>
 <h2>Hibát találtál?</h2>
 <p>${k.cfg.kapcsolat_email ? `Írj a ${k.cfg.kapcsolat_email} címre. Minden jelzést megnézünk, és ha javítunk, itt is jelezzük.` : 'A kapcsolati e-mail-cím hamarosan itt lesz.'}</p>
 ${tovabb(L, ut)}
@@ -1478,9 +1478,9 @@ ${sor('P.3', negyzetek('uzemanyag', 'Üzemanyag', [['benzin', 'Benzin'], ['dizel
 ${sor('P.1', szamMezo({ id: 'cm3', cim: 'Hengerűrtartalom', me: 'cm³', placeholder: 'pl. 1498', min: 50, max: 10000, sugo: 'Ebből jön a km-térítés alapnormája. Villanyautónál hagyd üresen.' }))}
 </fieldset>
 <fieldset><legend>Egy év költségei</legend>
-${sor('', szamMezo({ id: 'ertekvesztes', cim: 'Értékvesztés', me: 'Ft', placeholder: 'pl. 900 000', min: 0, sugo: 'Mennyit veszít évente az értékéből. Pénzügyi lízingnél nagyjából az éves lízingdíj.' }))}
+${sor('', szamMezo({ id: 'ertekvesztes', cim: 'Értékvesztés', me: 'Ft', placeholder: 'pl. 900 000', min: 0, sugo: 'Mennyit veszít évente az értékéből. Hitelnél és lízingnél se a havi részletet írd ide: annak tőkerésze nem költség, a kamatot pedig a lenti mezőben add meg.' }))}
 ${sor('', szamMezo({ id: 'energia', cim: 'Üzemanyag vagy áram', me: 'Ft', placeholder: 'pl. 700 000', min: 0, sugo: 'Az összes útra, a magánutakkal együtt.' }))}
-${sor('', szamMezo({ id: 'fix', cim: 'Biztosítás, szerviz, gumi, matrica', me: 'Ft', placeholder: 'pl. 400 000', min: 0 }))}
+${sor('', szamMezo({ id: 'fix', cim: 'Biztosítás, szerviz, gumi, matrica, kamat', me: 'Ft', placeholder: 'pl. 400 000', min: 0, sugo: 'Ha hitelből vagy lízingből van, az éves kamat és díj is ide tartozik.' }))}
 </fieldset>
 <fieldset><legend>Használat és adózás</legend>
 ${sor('', szamMezo({ id: 'uzletiKm', cim: 'Üzleti út évente', me: 'km', placeholder: 'pl. 15 000', min: 0, sugo: 'Amit kiküldetési rendelvénnyel el lehet számolni. A munkába járás nem számít.' }))}
