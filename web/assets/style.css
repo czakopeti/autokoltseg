@@ -668,6 +668,7 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 
 /* Fenntartási példatábla: az autók oszlopban, a fejlécben rövid leírással */
 .peldatabla th { white-space: normal; min-width: 7.5em; }
+.tabla.peldatabla thead th { vertical-align: top; }
 .peldatabla th a { display: block; font-weight: 700; color: var(--tinta); }
 .peldatabla th .kicsi { display: block; font-weight: 400; text-transform: none; letter-spacing: 0; margin-top: 2px; line-height: 1.35; }
 .peldatabla tr.osszeg td { border-top: 1.5px solid var(--tinta); }
