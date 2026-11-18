@@ -1643,6 +1643,35 @@ export function adatCsvk(adat) {
   };
 }
 
+/**
+ * Gépi adatcsatorna (JSON) a fejlesztőknek: ugyanazok az adatok, mint a CSV-kben, állandó mezőnevekkel.
+ * A v1 mezői nem változnak; ha egyszer változniuk kell, az v2 lesz, a v1 közben megmarad.
+ */
+export const JSON_UT = 'adatok/v1/';
+export function adatJsonok(adat, cfg) {
+  const t = adat.tetelek;
+  const evekBol = (o) => Object.keys(o).filter((k) => /^\d{4}$/.test(k)).sort();
+  const ellenorizve = adat.allapot?.utolso_ellenorzes?.slice(0, 10) || null;
+  const licenc = { nev: 'CC BY 4.0', url: 'https://creativecommons.org/licenses/by/4.0/deed.hu', forrasjeloles: 'autozom.hu, a NAV adatai alapján' };
+  const fej = (nev, leiras, forras) => ({ verzio: 1, nev, leiras, forras, licenc, ellenorizve, dokumentacio: `${cfg.domain}/${ADAT_UT}#fejlesztoknek` });
+  // Sávhatárok a számoló függvényekből, hogy a JSON és a kalkulátor sose térjen el
+  const hatarok = (fv, max) => { const h = []; for (let x = 0; x <= max; x++) { const i = fv(x); h[i] ??= { tol: x, ig: x }; h[i].ig = x; } h.at(-1).ig = null; return h; };
+  const gjKor = hatarok(S.gjadoSav, 40);
+  const ilKw = hatarok((kw) => S.illetekSor(Math.max(kw, 1)), 200), ilKor = hatarok(S.illetekOszlop, 40);
+  const ceKw = [{ tol: 0, ig: 50 }, { tol: 51, ig: 90 }, { tol: 91, ig: 120 }, { tol: 121, ig: null }];
+  const u = uzemanyagSorok(adat);
+  const honap = (r) => ({ honap: r.kulcs, ...Object.fromEntries(UZEMANYAG_OSZLOPOK.map(([k, nev]) => [nev, r[k] ?? null])), kozzeteve: adat.uzemanyag.kozzeteve?.[`${r.ev}-${r.h}`] ?? null });
+  const fajlok = {
+    'nav-uzemanyagar.json': { ...fej('NAV havi üzemanyagárak', 'A fogyasztási norma szerinti költségelszámolásban alkalmazható havi üzemanyagár (Szja tv. 82. § (2)). Ft/l, a CNG Ft/kg. A védett ár csak azokban a hónapokban szerepel, amikor a NAV közölte.', 'https://nav.gov.hu/ugyfeliranytu/uzemanyag'), legfrissebb: honap(u.at(-1)), honapok: u.map(honap) },
+    'gepjarmuado.json': { ...fej('Gépjárműadó, személyautó', 'Ft/kW évente, a gyártási évtől számított kor szerint. A kor = adóév − gyártási év. Az elektromos autó mentes.', 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek'), evek: Object.fromEntries(evekBol(t.gepjarmuado).map((ev) => [ev, { kozzeteve: t.gepjarmuado[ev].kozzeteve ?? null, forras: t.gepjarmuado[ev].forras ?? null, savok: t.gepjarmuado[ev].savok.map((ft, i) => ({ kor_tol: gjKor[i].tol, kor_ig: gjKor[i].ig, ft_per_kw: ft })) }])) },
+    'cegautoado.json': { ...fej('Cégautóadó', 'Ft/hónap személyautónként, a teljesítmény és a környezetvédelmi osztályjelzés (forgalmi engedély V.9) szerint.', 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/cegautoado'), evek: Object.fromEntries(evekBol(t.cegautoado).map((ev) => { const c = t.cegautoado[ev]; return [ev, { kozzeteve: c.kozzeteve ?? null, forras: c.forras ?? null, tetelek: c.tabla.flatMap((sor, i) => sor.map((ft, j) => ({ kw_tol: ceKw[i].tol, kw_ig: ceKw[i].ig, osztaly: c.oszlopok[j].replace(/[„”]/g, ''), ft_per_honap: ft }))) }]; })) },
+    'atirasi-illetek.json': { ...fej('Átírási (vagyonszerzési) illeték, személyautó', 'Ft/kW, a teljesítmény és a gyártási évtől számított kor szerint.', 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek'), evek: Object.fromEntries(evekBol(t.illetek).map((ev) => [ev, { kozzeteve: t.illetek[ev].kozzeteve ?? null, forras: t.illetek[ev].forras ?? null, tetelek: t.illetek[ev].tabla.flatMap((sor, i) => sor.map((ft, j) => ({ kw_tol: ilKw[i].tol, kw_ig: ilKw[i].ig, kor_tol: ilKor[j].tol, kor_ig: ilKor[j].ig, ft_per_kw: ft }))) }])) },
+    'e-matrica.json': { ...fej('E-matrica díjak, személyautó (D1)', 'Bruttó díjak forintban, évenként.', 'https://nemzetiutdij.hu/'), evek: Object.fromEntries(Object.keys(adat.szabalyok.matrica.evek).sort().map((ev) => [ev, { kozzeteve: adat.szabalyok.matrica.evek[ev].kozzeteve ?? null, ...Object.fromEntries(MATRICA_SOROK.map(([k]) => [k, adat.szabalyok.matrica.evek[ev].d1[k]])) }])) },
+  };
+  fajlok['index.json'] = { verzio: 1, nev: 'autozom.hu adatcsatorna', licenc, ellenorizve, dokumentacio: `${cfg.domain}/${ADAT_UT}#fejlesztoknek`, adatok: Object.entries(fajlok).map(([f, o]) => ({ nev: o.nev, url: `${cfg.domain}/${JSON_UT}${f}` })) };
+  return fajlok;
+}
+
 /** Vonaldiagram két sorozattal (benzin, dízel), közvetlen feliratokkal és rácsvonalakkal. A súgót az app.mjs adja. */
 function idosorGrafikon(sorok) {
   const W = 760, H = 330, bal = 44, jobb = 108, fent = 16, lent = 30;
@@ -1681,18 +1710,19 @@ export function adatokOldal(k) {
   const gjEvek = evek(t.gepjarmuado), caEvek = evek(t.cegautoado), ilEvek = evek(t.illetek), mEvek = Object.keys(m.evek).sort();
   const csvUrl = (f) => `${cfg.domain}/${ut}${f}`;
   const licenc = 'https://creativecommons.org/licenses/by/4.0/deed.hu';
-  const dataset = (nev, leiras, f, kezd, veg, alapja) => ({
+  const dataset = (nev, leiras, f, kezd, veg, alapja, json) => ({
     '@type': 'Dataset', name: nev, description: leiras, url: `${cfg.domain}/${ut}`, license: licenc, isAccessibleForFree: true, inLanguage: 'hu',
     creator: { '@type': 'Organization', name: cfg.marka, url: cfg.domain }, spatialCoverage: 'Magyarország', temporalCoverage: `${kezd}/${veg}`,
-    isBasedOn: alapja, distribution: [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: csvUrl(f) }],
+    isBasedOn: alapja, distribution: [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: csvUrl(f) }, ...(json ? [{ '@type': 'DataDownload', encodingFormat: 'application/json', contentUrl: `${cfg.domain}/${JSON_UT}${json}` }] : [])],
   });
   const kerdesek = [
     { k: 'Felhasználhatom az adatokat?', v: ['Igen, szabadon, kereskedelmi célra is (CC BY 4.0). Kérjük, írd mellé a forrást: „autozom.hu, a NAV adatai alapján”, és ha lehet, linkeld ezt az oldalt.'] },
     { k: 'Milyen gyakran frissülnek?', v: ['A hónap végén és elején, amikor a NAV az új havi üzemanyagárakat közzéteszi, minden reggel automatikusan összevetjük az adatainkat a NAV oldalával, így az új hónap ára a közzététel utáni reggel bekerül. Októberben és novemberben a jövő évi adótételeket is naponta figyeljük, máskor hetente egyszer ellenőrzünk. A matricadíjakat és a jogszabályi tételeket évente egyszer, a közzétételük után vesszük fel.'] },
     { k: 'Változhat egy már közzétett régi adat?', v: ['Csak indokolt javítással. Egy automatikus ellenőrzés minden frissítéskor összeveti az adatokat az előzővel, és megállítja a frissítést, ha egy már tárolt hónap vagy év eltűnne vagy megváltozna. A szándékos javításokat okkal együtt naplózzuk.'] },
+    { k: 'Van API?', v: ['Igen, JSON-fájlok formájában, regisztráció és kulcs nélkül. A címek és a mezők leírása a „Fejlesztőknek: JSON” részben van ezen az oldalon.'] },
     { k: 'Miért csak 2023-tól vannak a havi üzemanyagárak?', v: ['A NAV honlapján 2023 januárjától érhetők el a havi táblázatok. A korábbi hónapok csak a Hivatalos Értesítőben megjelent havi közleményekben vannak meg. Ezeket később, közleményenként ellenőrizve tervezzük felvenni.'] },
   ];
-  const leiras = `A NAV havi üzemanyagárai ${elso.ev} óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként. Grafikon, táblázat és CSV-letöltés, szabadon felhasználható.`;
+  const leiras = `A NAV havi üzemanyagárai ${elso.ev} óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként. Grafikon, táblázat, CSV és JSON, szabadon felhasználható.`;
   const tablaTarto = (fej, sorok, cap) => `<div class="tabla-tarto"><table class="tabla"><thead><tr>${fej.map((x) => `<th>${x}</th>`).join('')}</tr></thead><tbody>${sorok.map((s) => `<tr>${s.map((c, i) => (i ? `<td>${c}</td>` : `<th scope="row">${c}</th>`)).join('')}</tr>`).join('')}</tbody><caption>${cap}</caption></table></div>`;
   const letolt = (f, mi) => `<p><a class="letoltes" href="${f}" download>${mi} letöltése (CSV)</a></p>`;
   const tartalom = (L) => `
@@ -1723,6 +1753,20 @@ ${letolt('atirasi-illetek-tetelek.csv', 'Az átírási illeték tételei')}
 ${tablaTarto(['Matrica', ...mEvek], MATRICA_SOROK.map(([kulcs, nev]) => [nev, ...mEvek.map((e) => M.ftx(m.evek[e].d1[kulcs]))]), 'Bruttó díjak. Forrás: Magyar Közút / Nemzeti Útdíjfizetési Szolgáltató.')}
 ${letolt('e-matrica-dijak-d1.csv', 'Az e-matrica díjai')}
 
+<h2 id="fejlesztoknek">Fejlesztőknek: JSON</h2>
+<p>Ha egy program magától venné át az adatokat, például egy útnyilvántartó vagy egy könyvelőprogram a havi NAV-árat, ugyanezek az adatok JSON-ban is elérhetők. Nem kell hozzá regisztráció vagy kulcs, és bármelyik oldalról lekérhetők, böngészőből is (CORS).</p>
+<ul>${Object.entries(adatJsonok(adat, cfg)).map(([f, o]) => `<li><a href="${f.replace(/^/, L.l(JSON_UT))}"><code>/${JSON_UT}${f}</code></a>: ${f === 'index.json' ? 'az összes adatfájl listája' : /^\p{Lu}{2}/u.test(o.nev) ? o.nev : o.nev.charAt(0).toLowerCase() + o.nev.slice(1)}</li>`).join('')}</ul>
+<p>A legfrissebb NAV-ár például így néz ki a <code>nav-uzemanyagar.json</code> fájl <code>legfrissebb</code> mezőjében:</p>
+<pre><code>${esc(JSON.stringify(adatJsonok(adat, cfg)['nav-uzemanyagar.json'].legfrissebb, null, 2))}</code></pre>
+<p>Tudnivalók a használathoz:</p>
+<ul>
+<li>A hónap kulcsa <code>ÉÉÉÉ-HH</code> alakú, az összegek forintban vannak. Ahol nincs adat, ott <code>null</code> áll.</li>
+<li>Az új hónap ára a NAV közzététele utáni reggel kerül be. Az <code>ellenorizve</code> mező mutatja, mikor vetettük össze utoljára az adatokat a NAV oldalával.</li>
+<li>A v1 meglévő mezői nem változnak, legfeljebb új mező jöhet. Ha egyszer változniuk kell, az új változat v2 címen jelenik meg, és a v1 is megmarad.</li>
+<li>Az adat havonta változik, ezért elég naponta egyszer lekérni. A fájlok egy óráig gyorsítótárazhatók.</li>
+<li>A felhasználás feltétele ugyanaz, mint a CSV-knél: írd mellé a forrást.</li>
+</ul>
+
 <h2>Felhasználás</h2>
 <p>Az adatok szabadon felhasználhatók, kereskedelmi célra is, a <a href="${licenc}">CC BY 4.0</a> feltételei szerint. Forrásként ezt írd: <strong>autozom.hu, a NAV adatai alapján</strong>. A CSV-fájlokban pontosvessző választja el a mezőket, így a magyar Excel is rögtön oszlopokra bontja őket.</p>
 <h2>Gyakori kérdések</h2>
@@ -1735,10 +1779,10 @@ ${tovabb(L, ut)}
     cim: 'Adatok és idősorok: NAV-üzemanyagár, gépjárműadó, matrica',
     leiras, ut, tartalom,
     jsonld: [
-      dataset('NAV havi üzemanyagárak (benzin, dízel, keverék, LPG, CNG)', `A NAV által havonta közzétett, a fogyasztási norma szerinti költségelszámolásban alkalmazható üzemanyagárak, ${elso.kulcs}–${utolso.kulcs}.`, 'nav-uzemanyagar-havi.csv', elso.kulcs, utolso.kulcs, 'https://nav.gov.hu/ugyfeliranytu/uzemanyag'),
-      dataset('Gépjárműadó tételei Magyarországon', 'A személyautók gépjárműadójának Ft/kW tételei koronként, évenként.', 'gepjarmuado-tetelek.csv', gjEvek[0], gjEvek.at(-1), 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek'),
-      dataset('Cégautóadó tételei Magyarországon', 'A cégautóadó havi tételei teljesítmény és környezetvédelmi osztály szerint, évenként.', 'cegautoado-tetelek.csv', caEvek[0], caEvek.at(-1), 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/cegautoado'),
-      dataset('E-matrica díjak, személyautó (D1)', 'Az országos, vármegyei és M1 regionális e-matrica díjai évenként.', 'e-matrica-dijak-d1.csv', mEvek[0], mEvek.at(-1), 'https://nemzetiutdij.hu/'),
+      dataset('NAV havi üzemanyagárak (benzin, dízel, keverék, LPG, CNG)', `A NAV által havonta közzétett, a fogyasztási norma szerinti költségelszámolásban alkalmazható üzemanyagárak, ${elso.kulcs}–${utolso.kulcs}.`, 'nav-uzemanyagar-havi.csv', elso.kulcs, utolso.kulcs, 'https://nav.gov.hu/ugyfeliranytu/uzemanyag', 'nav-uzemanyagar.json'),
+      dataset('Gépjárműadó tételei Magyarországon', 'A személyautók gépjárműadójának Ft/kW tételei koronként, évenként.', 'gepjarmuado-tetelek.csv', gjEvek[0], gjEvek.at(-1), 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek', 'gepjarmuado.json'),
+      dataset('Cégautóadó tételei Magyarországon', 'A cégautóadó havi tételei teljesítmény és környezetvédelmi osztály szerint, évenként.', 'cegautoado-tetelek.csv', caEvek[0], caEvek.at(-1), 'https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/cegautoado', 'cegautoado.json'),
+      dataset('E-matrica díjak, személyautó (D1)', 'Az országos, vármegyei és M1 regionális e-matrica díjai évenként.', 'e-matrica-dijak-d1.csv', mEvek[0], mEvek.at(-1), 'https://nemzetiutdij.hu/', 'e-matrica.json'),
       gyikLd(kerdesek), morzsaLd(cfg, [{ nev: 'Adatok és idősorok', ut }]),
     ],
   });

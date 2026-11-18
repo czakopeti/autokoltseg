@@ -1,0 +1,171 @@
+{
+  "verzio": 1,
+  "nev": "Cégautóadó",
+  "leiras": "Ft/hónap személyautónként, a teljesítmény és a környezetvédelmi osztályjelzés (forgalmi engedély V.9) szerint.",
+  "forras": "https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/cegautoado",
+  "licenc": {
+    "nev": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
+    "forrasjeloles": "autozom.hu, a NAV adatai alapján"
+  },
+  "ellenorizve": "2026-11-18",
+  "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
+  "evek": {
+    "2026": {
+      "kozzeteve": "2025-10-27",
+      "forras": null,
+      "tetelek": [
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "0–4",
+          "ft_per_honap": 38500
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "6–10",
+          "ft_per_honap": 20000
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 17500
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "0–4",
+          "ft_per_honap": 51000
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "6–10",
+          "ft_per_honap": 25000
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 20000
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "0–4",
+          "ft_per_honap": 76000
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "6–10",
+          "ft_per_honap": 51000
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 25000
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "0–4",
+          "ft_per_honap": 101000
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "6–10",
+          "ft_per_honap": 76000
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 51000
+        }
+      ]
+    },
+    "2027": {
+      "kozzeteve": "2026-10-19",
+      "forras": "https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/cegautoado",
+      "tetelek": [
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "0–4",
+          "ft_per_honap": 39000
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "6–10",
+          "ft_per_honap": 20000
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 50,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 17500
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "0–4",
+          "ft_per_honap": 51500
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "6–10",
+          "ft_per_honap": 25500
+        },
+        {
+          "kw_tol": 51,
+          "kw_ig": 90,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 20000
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "0–4",
+          "ft_per_honap": 77000
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "6–10",
+          "ft_per_honap": 51500
+        },
+        {
+          "kw_tol": 91,
+          "kw_ig": 120,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 25500
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "0–4",
+          "ft_per_honap": 102000
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "6–10",
+          "ft_per_honap": 77000
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "osztaly": "5; 14–15",
+          "ft_per_honap": 51500
+        }
+      ]
+    }
+  }
+}

@@ -22,7 +22,7 @@
 
 ## Adatok
 
-- [Adatok és idősorok](https://autozom.hu/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés, CC BY 4.0
+- [Adatok és idősorok](https://autozom.hu/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés és JSON-adatcsatorna regisztráció nélkül (https://autozom.hu/adatok/v1/index.json), CC BY 4.0
 
 ## Vállalkozóknak
 

@@ -116,6 +116,9 @@ if (!elonezet) {
     .map(([ut, html]) => `<url><loc>${cfg.domain}/${ut}</loc><lastmod>${lastmodDontes(regiOldalak.get(ut)?.html, html, regiOldalak.get(ut)?.datum, ma)}</lastmod></url>`).join('\n');
   // Letölthető idősorok (adatok/ oldal)
   for (const [f, tart] of Object.entries(O.adatCsvk(adat))) writeFileSync(join(KI, 'adatok', f), tart);
+  // Gépi adatcsatorna (JSON), lásd az Adatok oldal „Fejlesztőknek” részét
+  mkdirSync(join(KI, O.JSON_UT), { recursive: true });
+  for (const [f, o] of Object.entries(O.adatJsonok(adat, cfg))) writeFileSync(join(KI, O.JSON_UT, f), `${JSON.stringify(o, null, 2)}\n`);
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
 /*
@@ -125,6 +128,14 @@ if (!elonezet) {
   X-Frame-Options: SAMEORIGIN
   Cross-Origin-Opener-Policy: same-origin
 ${cfg.eles ? '' : '  X-Robots-Tag: noindex, nofollow, noarchive\n'}
+# Az adatcsatorna (JSON, CSV) bármely oldalról lekérhető; egy óráig gyorsítótárazható, az adat havonta változik
+/adatok/v1/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600
+  Content-Type: application/json; charset=utf-8
+/adatok/*.csv
+  Access-Control-Allow-Origin: *
+
 # A betűk és a verziózott fájlok sokáig gyorsítótárazhatók
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
@@ -166,7 +177,7 @@ https://:version.:project.pages.dev/*
 
 ## Adatok
 
-- [Adatok és idősorok](${cfg.domain}/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés, CC BY 4.0
+- [Adatok és idősorok](${cfg.domain}/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés és JSON-adatcsatorna regisztráció nélkül (${cfg.domain}/adatok/v1/index.json), CC BY 4.0
 
 ## Vállalkozóknak
 

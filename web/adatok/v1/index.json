@@ -1,0 +1,33 @@
+{
+  "verzio": 1,
+  "nev": "autozom.hu adatcsatorna",
+  "licenc": {
+    "nev": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
+    "forrasjeloles": "autozom.hu, a NAV adatai alapján"
+  },
+  "ellenorizve": "2026-11-18",
+  "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
+  "adatok": [
+    {
+      "nev": "NAV havi üzemanyagárak",
+      "url": "https://autozom.hu/adatok/v1/nav-uzemanyagar.json"
+    },
+    {
+      "nev": "Gépjárműadó, személyautó",
+      "url": "https://autozom.hu/adatok/v1/gepjarmuado.json"
+    },
+    {
+      "nev": "Cégautóadó",
+      "url": "https://autozom.hu/adatok/v1/cegautoado.json"
+    },
+    {
+      "nev": "Átírási (vagyonszerzési) illeték, személyautó",
+      "url": "https://autozom.hu/adatok/v1/atirasi-illetek.json"
+    },
+    {
+      "nev": "E-matrica díjak, személyautó (D1)",
+      "url": "https://autozom.hu/adatok/v1/e-matrica.json"
+    }
+  ]
+}

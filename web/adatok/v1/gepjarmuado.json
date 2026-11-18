@@ -1,0 +1,77 @@
+{
+  "verzio": 1,
+  "nev": "Gépjárműadó, személyautó",
+  "leiras": "Ft/kW évente, a gyártási évtől számított kor szerint. A kor = adóév − gyártási év. Az elektromos autó mentes.",
+  "forras": "https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek",
+  "licenc": {
+    "nev": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
+    "forrasjeloles": "autozom.hu, a NAV adatai alapján"
+  },
+  "ellenorizve": "2026-11-18",
+  "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
+  "evek": {
+    "2026": {
+      "kozzeteve": "2025-10-27",
+      "forras": "https://nav.gov.hu/gepjarmuado/az-ado-szamitasa",
+      "savok": [
+        {
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 375
+        },
+        {
+          "kor_tol": 4,
+          "kor_ig": 7,
+          "ft_per_kw": 325
+        },
+        {
+          "kor_tol": 8,
+          "kor_ig": 11,
+          "ft_per_kw": 250
+        },
+        {
+          "kor_tol": 12,
+          "kor_ig": 15,
+          "ft_per_kw": 205
+        },
+        {
+          "kor_tol": 16,
+          "kor_ig": null,
+          "ft_per_kw": 150
+        }
+      ]
+    },
+    "2027": {
+      "kozzeteve": "2026-10-19",
+      "forras": "https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek/belfoldi-gepjarmuado/belfoldi-gepjarmuado-2027",
+      "savok": [
+        {
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 380
+        },
+        {
+          "kor_tol": 4,
+          "kor_ig": 7,
+          "ft_per_kw": 330
+        },
+        {
+          "kor_tol": 8,
+          "kor_ig": 11,
+          "ft_per_kw": 255
+        },
+        {
+          "kor_tol": 12,
+          "kor_ig": 15,
+          "ft_per_kw": 205
+        },
+        {
+          "kor_tol": 16,
+          "kor_ig": null,
+          "ft_per_kw": 150
+        }
+      ]
+    }
+  }
+}

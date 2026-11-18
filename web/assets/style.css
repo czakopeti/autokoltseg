@@ -299,6 +299,10 @@ table.kompakt tr.kiemelt-sor td { color: var(--tinta); }
 .cikk p, .cikk li { color: var(--tinta2); }
 .cikk strong { color: var(--tinta); }
 .cikk ul { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+/* Kód a fejlesztői leírásban */
+.cikk code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; background: var(--lap); border: 1px solid var(--vonal); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; }
+.cikk pre { margin: 0; background: var(--lap); border: 1px solid var(--vonal); border-radius: 6px; padding: 14px 16px; overflow-x: auto; }
+.cikk pre code { background: none; border: 0; padding: 0; font-size: 13.5px; line-height: 1.55; overflow-wrap: normal; }
 .tabla-tarto { overflow-x: auto; }
 table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-top: 2px solid var(--tinta); }
 .tabla caption { caption-side: bottom; text-align: left; font-size: 13.5px; color: var(--tinta2); padding-top: 10px; }

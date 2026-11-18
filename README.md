@@ -97,6 +97,10 @@ Ami egyszer bekerült, az megmarad. Az évenkénti adótételek (`data/tetelek.j
 
 ## IndexNow (Bing, ChatGPT-kereső, Copilot)
 
+## JSON-adatcsatorna
+
+Az építés a CSV-k mellé JSON-fájlokat is kiír a `web/adatok/v1/` mappába (`O.adatJsonok`): NAV havi üzemanyagár, gépjárműadó, cégautóadó, átírási illeték, e-matrica, és egy `index.json` a listával. Regisztráció és kulcs nélkül, CORS-szal (`_headers`), egy óra gyorsítótárral. A sávhatárokat (kor, kW) a kalkulátor saját függvényei adják, így a JSON nem térhet el a számolástól. A v1 meglévő mezőit ne változtasd meg (a teszt őrzi): ha muszáj, legyen v2, és a v1 maradjon. A fejlesztői leírás az Adatok oldal „Fejlesztőknek: JSON” része.
+
 Minden élesítés után a `.github/workflows/indexnow.yml` szól a Bingnek, mely oldalak változtak. Azt veszi változottnak, aminek a `sitemap.xml`-ben új lett a dátuma. Az építés (`epit.mjs`) oldalanként csak akkor ad mai dátumot, ha az oldal tartalma tényleg változott: a minden oldalon szereplő ellenőrzési dátum és a CSS/JS verziószám cseréje nem számít. Az Az autóm lap nem kerül a sitemapbe, és noindex, mert személyes eszköz. Ez a kézi mentésekre és a napi NAV-frissítésre is igaz. A kulcs a `config.json` `indexnow_kulcs` mezőjében van, az építés kiteszi `web/<kulcs>.txt` néven. A kulcs nyilvános, ez így rendben van. Ha minden oldalt újra be akarsz küldeni: Actions → IndexNow → Run workflow, és pipáld be a „mind” lehetőséget. A Google ezt nem használja, ott a sitemap.xml és a Search Console számít.
 
 ## Claude nélkül is

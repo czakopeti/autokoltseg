@@ -1,0 +1,195 @@
+{
+  "verzio": 1,
+  "nev": "Átírási (vagyonszerzési) illeték, személyautó",
+  "leiras": "Ft/kW, a teljesítmény és a gyártási évtől számított kor szerint.",
+  "forras": "https://nav.gov.hu/ugyfeliranytu/adokulcsok_jarulekmertekek/valorizalt-adomertekek",
+  "licenc": {
+    "nev": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
+    "forrasjeloles": "autozom.hu, a NAV adatai alapján"
+  },
+  "ellenorizve": "2026-11-18",
+  "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
+  "evek": {
+    "2026": {
+      "kozzeteve": "2025-10-27",
+      "forras": "https://adozona.hu/jogtar/497937_NAV_kozlemeny_HE_2025_49_2026_valorizalt",
+      "tetelek": [
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 450
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 300
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 750
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 450
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 850
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 750
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 950
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 850
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 750
+        }
+      ]
+    },
+    "2027": {
+      "kozzeteve": "2026-10-19",
+      "forras": "https://adozona.hu/jogtar/6179_NAV_kozlemeny_HE_2026_53_2027_valorizalt",
+      "tetelek": [
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 450
+        },
+        {
+          "kw_tol": 0,
+          "kw_ig": 40,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 300
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 750
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 41,
+          "kw_ig": 80,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 450
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 850
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 750
+        },
+        {
+          "kw_tol": 81,
+          "kw_ig": 120,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 550
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 0,
+          "kor_ig": 3,
+          "ft_per_kw": 950
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 4,
+          "kor_ig": 8,
+          "ft_per_kw": 850
+        },
+        {
+          "kw_tol": 121,
+          "kw_ig": null,
+          "kor_tol": 9,
+          "kor_ig": null,
+          "ft_per_kw": 750
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "verzio": 1,
+  "nev": "E-matrica díjak, személyautó (D1)",
+  "leiras": "Bruttó díjak forintban, évenként.",
+  "forras": "https://nemzetiutdij.hu/",
+  "licenc": {
+    "nev": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
+    "forrasjeloles": "autozom.hu, a NAV adatai alapján"
+  },
+  "ellenorizve": "2026-11-18",
+  "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
+  "evek": {
+    "2026": {
+      "kozzeteve": "2025-12-05",
+      "napi": 5550,
+      "tiznapos": 6900,
+      "havi": 11170,
+      "eves": 61760,
+      "varmegyei": 7190,
+      "m1_regionalis": 15000
+    },
+    "2027": {
+      "kozzeteve": "2026-11-06",
+      "napi": 5630,
+      "tiznapos": 6990,
+      "havi": 11320,
+      "eves": 62560,
+      "varmegyei": 7280,
+      "m1_regionalis": 15000
+    }
+  }
+}

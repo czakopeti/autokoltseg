@@ -61,3 +61,8 @@ jobs:
             u="https://autozom.hu/adatok/$(basename "$f")"
             printf '%s %s sorok=%s\n' "$(curl -sS -m 20 -o /dev/null -w '%{http_code} %{content_type}' "$u")" "$u" "$(curl -sS -m 20 "$u" | wc -l)"
           done
+          echo "== JSON-adatcsatorna (200, application/json, CORS)"
+          for f in web/adatok/v1/*.json; do
+            u="https://autozom.hu/adatok/v1/$(basename "$f")"
+            printf '%s %s cors=%s\n' "$(curl -sS -m 20 -o /dev/null -w '%{http_code} %{content_type}' "$u")" "$u" "$(curl -sSI -m 20 "$u" | grep -i '^access-control-allow-origin' | tr -d '\r' | cut -d' ' -f2)"
+          done
