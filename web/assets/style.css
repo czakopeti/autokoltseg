@@ -340,7 +340,9 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
 
 /* ---------- Lábléc ---------- */
 .lablec { margin-top: 110px; border-top: 2px solid var(--tinta); padding: 40px 0 48px; }
-.lablec .keret { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px; }
+.lablec .keret { display: grid; grid-template-columns: minmax(0, 1fr); gap: 36px; }
+.lablec .keret > div:first-child { max-width: 46em; }
+.lablec-csoportok { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px 32px; }
 .lablec p { font-size: 15px; color: var(--tinta2); max-width: 30em; }
 .lablec p + p { margin-top: 10px; }
 .lablec h2 { font-family: var(--szoveg); font-size: 15px; font-weight: 700; letter-spacing: 0; margin-bottom: 10px; }
@@ -358,8 +360,7 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
   .szerzodes-lap { position: static; max-height: none; padding: 32px 22px; }
   .pecset { right: 10px; bottom: -40px; width: 112px; height: 112px; }
   .lista a { grid-template-columns: 1fr; gap: 8px; }
-  .lablec .keret { grid-template-columns: 1fr 1fr; }
-  .lablec .keret > div:first-child { grid-column: 1 / -1; }
+  .lablec-csoportok { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   body { font-size: 16.5px; }
@@ -374,7 +375,7 @@ table.tabla { width: 100%; border-collapse: collapse; font-size: 15.5px; border-
   .kod.ures { display: none; }
   .beir input { font-size: 26px; }
   .szakasz { padding-top: 72px; }
-  .lablec .keret { grid-template-columns: 1fr; }
+  .lablec-csoportok { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* Érintőképernyőn legalább kb. 40 képpont magas kattintható felület. Ahol a szöveg közé esik,
@@ -740,3 +741,4 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 .utny-lap .alairasok:has(> div:only-child) { grid-template-columns: minmax(0, 18em); justify-content: end; }
 @media print { .utny-lap table { font-size: 10pt; } .utny-lap thead { display: table-header-group; } .utny-lap tr { break-inside: avoid; } }
 .utny-lap td.nap { white-space: nowrap; }
+.csoport-bevezeto { max-width: 42em; color: var(--tinta2); margin: 8px 0 20px; }

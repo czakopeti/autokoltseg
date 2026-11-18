@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync, readFileSync, cpSync, rmSync, readdirSync, ex
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { betoltAdat, olvas, maBudapest, GYOKER } from './forras/adat.mjs';
-import { gilos, lastmodDontes } from './forras/sablon.mjs';
+import { gilos, lastmodDontes, CSOPORTOK } from './forras/sablon.mjs';
 import * as S from './forras/js/szamitas.mjs';
 import * as O from './forras/oldalak.mjs';
 import * as M from './forras/js/megjelenites.mjs';
@@ -154,45 +154,48 @@ https://:version.:project.pages.dev/*
   const lf = Object.entries(adat.uzemanyag.evek).flatMap(([e, h]) => Object.keys(h).map((x) => `${e}-${x}`)).pop();
   const lfh = S.legfrissebbHonap(adat);
   const evekLista = Object.keys(adat.tetelek.gepjarmuado).join(' és ');
+  // A szöveges térkép az AI-asszisztenseknek: ugyanazok a csoportok és ugyanaz a sorrend, mint a főoldalon.
+  const LLMS = {
+    'gepjarmuado-kalkulator/': `a ${evekLista.replace(/(\d{4})/g, '$1.')} évi NAV-tételekkel, a teljesítmény (kW) és a gyártási év alapján; az elektromos és a plug-in hibrid mentessége`,
+    'atirasi-illetek-kalkulator/': `vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó`,
+    'benzin-vagy-villany/': `két autó teljes költsége havonta és évekre, megtérülési idő, km-határ`,
+    'autofenntartas-kalkulator/': `havi és kilométerenkénti költség üzemanyaggal, értékvesztéssel, biztosítással, szervizzel és adóval`,
+    'utikoltseg-kalkulator/': `mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: ${M.honapHu(lfh.ev, lfh.honap)}); fejenkénti, havi és éves költség`,
+    'kilometerterites-kalkulator/': `a NAV havi üzemanyagárával (legfrissebb: ${M.honapHu(lfh.ev, lfh.honap)}) és a fogyasztási normával, plusz 15 Ft/km; munkába járás kilométerenként`,
+    'plug-in-hibrid-2027/': `gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje${ma <= adat.szabalyok.phev.rendszam_hatarido ? ` (határidő: ${M.datumHu(adat.szabalyok.phev.rendszam_hatarido)})` : ''}`,
+    'autohitel-kalkulator/': `havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt`,
+    'autopalya-matrica-kalkulator/': `éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb, a ${Object.keys(adat.szabalyok.matrica.evek).map((e) => `${e}.`).join(' és ')} évi díjakkal`,
+    'megjavitsam-vagy-csereljem/': `megjavítsam a régi autót, vagy eladjam és vegyek másikat; két út teljes költsége évekre, értékvesztéssel és átírással`,
+    'kotelezo-biztositas-valtas/': `felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre`,
+    'vetlen-baleset/': `mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület`,
+    'le-kw-atvaltas/': `1 LE = 0,7355 kW, táblázattal`,
+    'autom/': `egy autó minden költsége egy lapon, és a határidők (műszaki, kötelező biztosítás, gépjárműadó) naptárfájlban`,
+    'utnyilvantartas-kikuldetesi-rendelveny/': `kitölthető, nyomtatható, a törvény szerinti kötelező adatokkal; havi elszámolás annak a hónapnak a NAV-árával, amikor az út volt, és 15 Ft/km normaköltséggel; az utak Excelből is bemásolhatók`,
+    'nav-uzemanyagar/': `az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival`,
+    'adatok/': `a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés és JSON-adatcsatorna regisztráció nélkül (${cfg.domain}/adatok/v1/index.json), CC BY 4.0`,
+    'vallalkozoknak/': `cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra; könyvelőknek a havi NAV-ár Excelbe és JSON-ban`,
+    'cegautoado-kalkulator/': `havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők, a ${Object.keys(adat.tetelek.cegautoado).filter((e) => /^\d{4}$/.test(e)).map((e) => `${e}.`).join(' és ')} évi NAV-tételekkel`,
+    'cegauto-vagy-sajat-auto/': `kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben`,
+    'adasveteli-szerzodes-minta/': `kitölthető, nyomtatható adásvételi szerződés használt autóhoz, tanúkkal, a vételár betűvel kiírva`,
+    'forrasok/': `minden tétel forrása és közzétételi dátuma, a becslések módszere`,
+    'valtozasok/': `az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel`,
+    'rolunk/': `független, ingyenes, forrással; mi hivatalos, mi saját adat, mi becslés`,
+  };
+  const sor = ([u, n, , teljes]) => `- [${teljes || n}](${cfg.domain}/${u}): ${LLMS[u]}`;
   writeFileSync(join(KI, 'llms.txt'), `# ${cfg.marka}
 
-> Az autód. A költségeid. A döntéseid. ${M.nevelo(cfg.marka).replace(/^a/, "A")} ${cfg.marka} független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat rendszeresen, a NAV havi közzétételei körül naponta automatikusan összeveti a NAV-val.
+> Az autód. A költségeid. A döntéseid. ${M.nevelo(cfg.marka).replace(/^a/, 'A')} ${cfg.marka} független, ingyenes magyar oldal az autó költségeiről. Kiszámolja a gépjárműadót, az átírás díját, a havi fenntartási költséget és a kilométertérítést a NAV közzétett tételeivel, összehasonlítja a benzines és az elektromos autó teljes költségét, és kitölthető útnyilvántartást, kiküldetési rendelvényt és adásvételi szerződést ad. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat rendszeresen, a NAV havi közzétételei körül naponta automatikusan összeveti a NAV oldalával. Fent vannak a gépjárműadó ${evekLista.replace(/(\d{4})/g, '$1.')} évi tételei, a legfrissebb NAV-üzemanyagár pedig a ${M.honapHu(lfh.ev, lfh.honap)}i.
 
-## Kalkulátorok
+${CSOPORTOK.map((cs) => `## ${cs.cim}\n\n${cs.bevezeto}\n\n${cs.elemek.map(sor).join('\n')}`).join('\n\n')}
 
-- [Gépjárműadó](${cfg.domain}/gepjarmuado-kalkulator/): ${evekLista}. évi tételek kW és gyártási év alapján, elektromos és plug-in hibrid mentesség
-- [Átírás](${cfg.domain}/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
-- [Benzines vagy elektromos autó](${cfg.domain}/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
-- [Fenntartás](${cfg.domain}/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
-- [Útiköltség](${cfg.domain}/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap); fejenkénti, havi és éves költség
-- [Kilométertérítés](${cfg.domain}/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: ${lfh.ev}. ${lfh.honap}. hónap), fogyasztási norma, munkába járás
-- [Plug-in hibrid 2027](${cfg.domain}/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
-- [Autóhitel](${cfg.domain}/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt
-- [Autópálya-matrica](${cfg.domain}/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (${Object.keys(adat.szabalyok.matrica.evek).join(', ')}. évi díjak)
-- [Javítás vagy csere](${cfg.domain}/megjavitsam-vagy-csereljem/): megjavítsam a régi autót, vagy eladjam és vegyek másikat; két út teljes költsége évekre, értékvesztéssel és átírással
-- [Kötelező biztosítás váltás](${cfg.domain}/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
-- [Vétlen baleset](${cfg.domain}/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
-- [LE–kW átváltás](${cfg.domain}/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
-- [Az autóm](${cfg.domain}/autom/): egy autó minden költsége egy lapon
-- [Útnyilvántartás és kiküldetési rendelvény](${cfg.domain}/utnyilvantartas-kikuldetesi-rendelveny/): kitölthető, nyomtatható, a kötelező adatokkal; havi elszámolás a NAV-árral és a 15 Ft/km normaköltséggel, Excelből bemásolható utak
-- [NAV-üzemanyagár](${cfg.domain}/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
+## Gépi adatok
 
-## Adatok
+- [JSON-adatcsatorna](${cfg.domain}/adatok/v1/index.json): NAV havi üzemanyagár, gépjárműadó, cégautóadó, átírási illeték, e-matrica; regisztráció és kulcs nélkül, CC BY 4.0
+- [A legfrissebb NAV-üzemanyagár CSV-ben](${cfg.domain}/adatok/nav-uzemanyagar-legfrissebb.csv): egy sor, Excelbe és Google Táblázatba húzható
 
-- [Adatok és idősorok](${cfg.domain}/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés és JSON-adatcsatorna regisztráció nélkül (${cfg.domain}/adatok/v1/index.json), CC BY 4.0
+## Az oldalról
 
-## Vállalkozóknak
-
-- [Vállalkozóknak](${cfg.domain}/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra
-- [Cégautóadó](${cfg.domain}/cegautoado-kalkulator/): havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők (${Object.keys(adat.tetelek.cegautoado).join(', ')}. évi NAV-tételek)
-- [Cégautó vagy saját autó](${cfg.domain}/cegauto-vagy-sajat-auto/): kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben
-- [Adásvételi szerződés](${cfg.domain}/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
-
-## Források és frissítés
-
-- [Honnan vannak a számok?](${cfg.domain}/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
-- [Mi változott?](${cfg.domain}/valtozasok/): az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel
-- [Rólunk és szerkesztői elvek](${cfg.domain}/rolunk/): független, ingyenes, forrással; mi hivatalos, mi saját adat, mi becslés
+- [Rólunk és szerkesztői elvek](${cfg.domain}/rolunk/): ${LLMS['rolunk/'] || 'független, ingyenes, forrással'}
 `);
 }
 

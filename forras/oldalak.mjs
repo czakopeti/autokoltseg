@@ -1,7 +1,7 @@
 // Az oldalak. Minden szám az adatfájlokból jön, a szöveg a SZOVEG_STILUS.md szerint.
 import * as S from './js/szamitas.mjs';
 import * as M from './js/megjelenites.mjs';
-import { oldal, oldalfej, forgalmi, automFent, automLent, ellenorzesKesik, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
+import { CSOPORTOK, oldal, oldalfej, forgalmi, automFent, automLent, ellenorzesKesik, elszamolas, sor, szamMezo, negyzetek, jelolo, valaszto, egysegValto, HAJTASOK, gyik, gyikLd, morzsaLd, alkalmazasLd, forrasLista, tovabb, datumHu, fmt, honapHu, esc } from './sablon.mjs';
 
 function evek(k) {
   const gj = k.adat.tetelek.gepjarmuado;
@@ -33,6 +33,45 @@ export function phevSzoveg(ev) {
 }
 
 /* ======================= FŐOLDAL ======================= */
+
+/**
+ * A főoldal kártyáinak szövege oldalanként: mit kap, aki rákattint. A sorrendet és a csoportot a CSOPORTOK adja (sablon.mjs).
+ * A teszt ellenőrzi, hogy minden csoportelemnek van itt szövege.
+ */
+export const FOOLDAL_KARTYAK = {
+  'atirasi-illetek-kalkulator/': [() => 'Mennyibe kerül az autó a vételáron felül: illeték, vizsgálat, okmányok, behozott autónál regisztrációs adó.', 'Kiszámolom'],
+  'benzin-vagy-villany/': [() => 'Két autó teljes költsége havonta és évekre előre: értékvesztés, energia, adók. Mikor térül meg a drágább villanyautó?', 'Összehasonlítom'],
+  'autohitel-kalkulator/': [() => 'Havi törlesztő a THM-mel, és mennyibe kerül valójában az autó, ha a kamatot és az értékvesztést is beleszámolod.', 'Kiszámolom'],
+  'megjavitsam-vagy-csereljem/': [() => 'Megjavítsam a régi autót, vagy eladjam és vegyek másikat? A két út teljes költsége évekre előre.', 'Kiszámolom'],
+  'adasveteli-szerzodes-minta/': [() => 'Kitölthető, nyomtatható minta használt autó eladásához, tanúkkal és a vételárral betűvel.', 'Kitöltöm'],
+  'gepjarmuado-kalkulator/': [(c) => `Mennyit fizetsz ${c.jovo ? `${M.rag(c.aktualis, 'ban', 'ben')} és ${M.rag(c.jovo, 'ban', 'ben')}` : M.rag(c.aktualis, 'ban', 'ben')}, és mikor vagy mentes.`, 'Kiszámolom'],
+  'autofenntartas-kalkulator/': [() => 'Mennyibe kerül havonta a saját autód, ha mindent beleszámolsz: üzemanyag, értékvesztés, biztosítás, szerviz, adó.', 'Kiszámolom'],
+  'kotelezo-biztositas-valtas/': [() => 'Meddig mondhatod fel a kötelezőt, mikor jön a díjértesítő, és melyik bonus-malus osztályba kerülsz jövőre.', 'Kiszámolom'],
+  'autopalya-matrica-kalkulator/': [() => 'Éves, vármegyei vagy alkalmi: melyik a legolcsóbb annak, ahogy te autózol.', 'Kiszámolom'],
+  'utikoltseg-kalkulator/': [(c) => `Mennyibe kerül egy út benzinnel, dízellel vagy árammal a NAV ${M.honapBan(c.lf.honap).replace(/ban$|ben$/, 'i')} árával, és mennyi jut egy utasra.`, 'Kiszámolom'],
+  'plug-in-hibrid-2027/': [() => 'Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.', 'Kiszámolom'],
+  'vetlen-baleset/': [() => 'Mi jár a károkozó biztosítójától: javítás, csereautó, határidők, és mit tehetsz, ha nem fizet.', 'Elolvasom'],
+  'autom/': [() => 'Mentsd el az autódat, és egy lapon látod az adót idén és jövőre, a havi költséget, az értékvesztést és a határidőket.', 'Megnyitom'],
+  'vallalkozoknak/': [() => 'Mi vonatkozik a kft.-re, a bt.-re és az egyéni vállalkozóra, és melyik megoldás éri meg.', 'Megnézem'],
+  'kilometerterites-kalkulator/': [(c) => `Mennyit fizethet a munkáltató, ha a saját autóddal utazol: hivatali út a NAV ${M.honapBan(c.lf.honap).replace(/ban$|ben$/, 'i')} árával és a fogyasztási normával, munkába járás kilométerenként.`, 'Kiszámolom'],
+  'utnyilvantartas-kikuldetesi-rendelveny/': [() => 'Kitölthető útnyilvántartás és kiküldetési rendelvény a kötelező adatokkal, havi elszámolással. Az utakat Excelből is bemásolhatod.', 'Kitöltöm'],
+  'nav-uzemanyagar/': [(c) => `Az e havi elszámolási ár benzinre, dízelre, LPG-re és CNG-re, ${M.honapHu(c.lf.ev, c.lf.honap)}, az előző hónappal összevetve.`, 'Megnézem'],
+  'cegautoado-kalkulator/': [() => 'Havi és éves cégautóadó a teljesítmény és a környezetvédelmi osztály szerint, a gépjárműadó levonásával.', 'Kiszámolom'],
+  'cegauto-vagy-sajat-auto/': [() => 'Vegye meg a cég az autót cégautóadóval, vagy a sajátodat számold el adómentes kilométertérítéssel? A tulajdonos zsebéből nézve.', 'Összehasonlítom'],
+  'adatok/': [() => 'A NAV havi üzemanyagárai és az autós adótételek grafikonon, táblázatban, CSV-ben, Excelbe és programba húzható formában.', 'Megnézem'],
+  'le-kw-atvaltas/': [() => 'Hány kW egy lóerő, és melyik szerepel a forgalmiban.', 'Átváltom'],
+  'valtozasok/': [() => 'Minden új NAV-tétel és havi üzemanyagár, amit átvettünk, dátummal és azzal, mit jelent neked.', 'Megnézem'],
+  'forrasok/': [() => 'Minden szám forrása és közzétételi dátuma, és hogyan becsüljük, ami nem hivatalos adat.', 'Megnézem'],
+};
+function fooldalCsoportok(L, c) {
+  return CSOPORTOK.map((cs) => `<section class="szakasz" id="${cs.id}"><div class="keret">
+<h2>${cs.cim}</h2>
+<p class="csoport-bevezeto">${cs.bevezeto}</p>
+<ul class="lista">
+${cs.elemek.map(([u, n, , teljes]) => { const [szoveg, ugrik] = FOOLDAL_KARTYAK[u]; return `<li><a href="${L.l(u)}"><h3>${teljes || n}</h3><p>${szoveg(c)}</p><span class="ugrik">${ugrik}</span></a></li>`; }).join('\n')}
+</ul>
+</div></section>`).join('\n');
+}
 
 export function fooldal(k) {
   const { adat } = k;
@@ -80,27 +119,7 @@ ${elszamolas(k, M.uresPanel('Írd be a teljesítményt és a gyártási évet.')
 </div>
 
 ${k.ma <= adat.szabalyok.phev.rendszam_hatarido ? `<section class="szakasz"><div class="keret"><div class="hatarido-sav"><p><strong>${(() => { const d = M.datumNapon(adat.szabalyok.phev.rendszam_hatarido).replace(/^\d+\. /, ''); return d[0].toUpperCase() + d.slice(1); })()} lejár a határidő: eddig kell fehérre cserélni a plug-in hibridek zöld rendszámát.</strong> Utána zöld rendszámmal nem lehet közlekedni, 2027-től pedig adót is fizetsz az autó után.</p><a href="${L.l('plug-in-hibrid-2027/')}">Mennyibe kerül?</a></div></div></section>` : ''}
-<section class="szakasz"><div class="keret">
-<h2>Részletesen</h2>
-<ul class="lista">
-<li><a href="${L.l('gepjarmuado-kalkulator/')}"><h3>Gépjárműadó</h3><p>Mennyit fizetsz ${jovo ? `${M.rag(aktualis, 'ban', 'ben')} és ${M.rag(jovo, 'ban', 'ben')}` : M.rag(aktualis, 'ban', 'ben')}, és mikor vagy mentes.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('atirasi-illetek-kalkulator/')}"><h3>Átírás</h3><p>Mennyibe kerül az autó a vételáron felül: illeték, vizsgálat, okmányok, behozott autónál regisztrációs adó.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('benzin-vagy-villany/')}"><h3>Benzin vagy villany</h3><p>Két autó teljes költsége havonta és évekre előre: értékvesztés, energia, adók. Mikor térül meg a drágább villanyautó?</p><span class="ugrik">Összehasonlítom</span></a></li>
-<li><a href="${L.l('autofenntartas-kalkulator/')}"><h3>Fenntartás</h3><p>Mennyibe kerül havonta a saját autód, ha mindent beleszámolsz: üzemanyag, értékvesztés, biztosítás, szerviz, adó.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('utikoltseg-kalkulator/')}"><h3>Útiköltség</h3><p>Mennyibe kerül az út benzinnel, dízellel vagy árammal a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával, és mennyi jut egy utasra.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet a munkáltató, ha a saját autóddal utazol: hivatali út a NAV ${M.honapBan(lf.honap).replace(/ban$|ben$/, 'i')} árával és a fogyasztási normával, munkába járás ${adat.szabalyok.km.munkaba_jaras_ft_km} Ft/km-rel.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('autom/')}"><h3>Az autóm</h3><p>Mentsd el az autódat, és egy lapon látod az adót idén és jövőre, a havi költséget és az értékvesztést.</p><span class="ugrik">Megnyitom</span></a></li>
-<li><a href="${L.l('plug-in-hibrid-2027/')}"><h3>Plug-in hibrid 2027</h3><p>Mennyivel többet fizetsz jövőre: gépjárműadó, cégautóadó, budapesti parkolás és a rendszámcsere.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('autohitel-kalkulator/')}"><h3>Autóhitel</h3><p>Havi törlesztő a THM-mel, és mennyibe kerül valójában az autó, ha a kamatot és az értékvesztést is beleszámolod.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('autopalya-matrica-kalkulator/')}"><h3>Autópálya-matrica</h3><p>Éves, vármegyei vagy alkalmi: melyik a legolcsóbb annak, ahogy te autózol.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('megjavitsam-vagy-csereljem/')}"><h3>Javítás vagy csere</h3><p>Megjavítsam a régi autót, vagy eladjam és vegyek másikat? A két út teljes költsége évekre előre.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('kotelezo-biztositas-valtas/')}"><h3>Kötelező biztosítás</h3><p>Meddig mondhatod fel a kötelezőt, mikor jön a díjértesítő, és melyik bonus-malus osztályba kerülsz jövőre.</p><span class="ugrik">Kiszámolom</span></a></li>
-<li><a href="${L.l('vetlen-baleset/')}"><h3>Vétlen baleset</h3><p>Mi jár a károkozó biztosítójától: javítás, csereautó, határidők, és mit tehetsz, ha nem fizet.</p><span class="ugrik">Elolvasom</span></a></li>
-<li><a href="${L.l('vallalkozoknak/')}"><h3>Vállalkozóknak</h3><p>Cégautóadó, kilométertérítés kiküldetési rendelvénnyel, és hogy a cég vegye-e meg az autót, vagy a sajátodat számold el.</p><span class="ugrik">Megnézem</span></a></li>
-<li><a href="${L.l('adasveteli-szerzodes-minta/')}"><h3>Adásvételi szerződés</h3><p>Kitölthető, nyomtatható minta használt autó eladásához.</p><span class="ugrik">Kitöltöm</span></a></li>
-<li><a href="${L.l('le-kw-atvaltas/')}"><h3>LE–kW átváltás</h3><p>Hány kW egy lóerő, és melyik szerepel a forgalmiban.</p><span class="ugrik">Átváltom</span></a></li>
-</ul>
-</div></section>
+${fooldalCsoportok(L, { aktualis, jovo, lf })}
 ${jovoreBlokk}`;
   };
 
@@ -109,7 +128,9 @@ ${jovoreBlokk}`;
     leiras: `Írd be a forgalmi engedély adatait, és megmutatjuk a gépjárműadót ${jovo ? `${M.rag(aktualis, 'ra', 're')} és ${M.rag(jovo, 'ra', 're')}` : M.rag(aktualis, 'ra', 're')}, az átírás díját és a kilométertérítést a NAV tételeivel.`,
     ut: '', tartalom,
     adatJson: { tetelek: adat.tetelek, szabalyok: { okmanyok: adat.szabalyok.okmanyok, km: adat.szabalyok.km, hataridok: adat.szabalyok.hataridok }, uzemanyag: { evek: adat.uzemanyag.evek, forras: adat.uzemanyag.forras }, ev: aktualis, ma: k.ma },
-    jsonld: [{ '@context': 'https://schema.org', '@type': 'WebSite', name: k.cfg.marka, url: `${k.cfg.domain}/`, inLanguage: 'hu' }],
+    jsonld: [{ '@context': 'https://schema.org', '@type': 'WebSite', name: k.cfg.marka, url: `${k.cfg.domain}/`, inLanguage: 'hu' },
+      // Az oldal szerkezete a keresőknek és az AI-nak: a csoportok és az oldalak, ugyanabban a sorrendben, mint a főoldalon
+      ...CSOPORTOK.map((cs) => ({ '@context': 'https://schema.org', '@type': 'ItemList', name: cs.cim, description: cs.bevezeto, itemListElement: cs.elemek.map(([u, n], i) => ({ '@type': 'ListItem', position: i + 1, name: n, url: `${k.cfg.domain}/${u}` })) }))],
   });
 }
 
@@ -1350,13 +1371,22 @@ export function vallalkozoknakOldal(k) {
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Vállalkozóknak'], cim: 'Autó a vállalkozásban: mennyi adó, mi éri meg?', valasz: `Kft.-nél és bt.-nél a cég nevén lévő személyautó után havonta ${M.ftx(min)}–${M.ftx(max)} cégautóadó jár ${M.rag(ev, 'ban', 'ben')}, a saját autódat viszont kiküldetési rendelvénnyel adómentesen elszámolhatod. Átalányadózó és katás egyéni vállalkozó nem fizet cégautóadót.` })}
 <section class="szakasz"><div class="keret">
-<h2>Kalkulátorok</h2>
+<h2>Kalkulátorok és nyomtatványok</h2>
 <ul class="lista">
 <li><a href="${L.l('cegautoado-kalkulator/')}"><h3>Cégautóadó</h3><p>Mennyi a havi és az éves cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}, a gépjárműadó levonásával, negyedéves határidőkkel.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l('cegauto-vagy-sajat-auto/')}"><h3>Cégautó vagy saját autó?</h3><p>A cég vegye meg az autót, vagy a sajátodat számold el km-térítéssel? A két út a te zsebedből nézve, és hány km üzleti út felett fordul.</p><span class="ugrik">Összehasonlítom</span></a></li>
 <li><a href="${L.l('kilometerterites-kalkulator/')}"><h3>Kilométertérítés</h3><p>Mennyit fizethet adómentesen a cég egy üzleti útra a saját autódért: a NAV havi üzemanyagára, az alapnorma és a 15 Ft/km.</p><span class="ugrik">Kiszámolom</span></a></li>
 <li><a href="${L.l(UTNY_UT)}"><h3>Útnyilvántartás és kiküldetési rendelvény</h3><p>Kitölthető, nyomtatható, a kötelező adatokkal. Az utakat Excelből is bemásolhatod, a havi elszámolást a NAV-árral kiszámolja.</p><span class="ugrik">Kitöltöm</span></a></li>
 <li><a href="${L.l(NAVAR_UT)}"><h3>NAV-üzemanyagár</h3><p>Az e havi elszámolási ár, az előző hónappal összevetve. Excelbe és Google Táblázatba is behúzható.</p><span class="ugrik">Megnézem</span></a></li>
+</ul>
+</div></section>
+<section class="szakasz" id="konyveloknek"><div class="keret">
+<h2>Könyvelőknek</h2>
+<p class="csoport-bevezeto">Ha több ügyfélnél kell havonta a NAV-ár, vagy egy programba építenéd be az adótételeket.</p>
+<ul class="lista">
+<li><a href="${L.l(ADAT_UT)}#excel"><h3>Excel és Google Táblázat</h3><p>A havi NAV-ár egy cellában, és magától frissül. Google Táblázatban egy képlet, Excelben néhány kattintás.</p><span class="ugrik">Beállítom</span></a></li>
+<li><a href="${L.l(ADAT_UT)}#fejlesztoknek"><h3>JSON-adatcsatorna</h3><p>A NAV-üzemanyagár, a gépjárműadó, a cégautóadó, az illeték és a matrica géppel olvasható formában, regisztráció és kulcs nélkül.</p><span class="ugrik">Megnézem</span></a></li>
+<li><a href="${L.l('valtozasok/')}"><h3>Mi változott?</h3><p>Az új NAV-tételek és a havi árak dátummal, egy helyen, amint átvettük őket.</p><span class="ugrik">Megnézem</span></a></li>
 </ul>
 </div></section>
 <div class="keret"><article class="cikk">

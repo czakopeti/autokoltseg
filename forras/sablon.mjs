@@ -10,73 +10,60 @@ export const MENU = [
   { ut: 'autofenntartas-kalkulator/', nev: 'Fenntartás' },
   { ut: 'autom/', nev: 'Az autóm' },
 ];
-/** A balról beúszó menü: minden oldal, csoportosítva, egy rövid mondattal. */
-export const FIOK = [
-  { cim: 'Adók és díjak', elemek: [
-    ['gepjarmuado-kalkulator/', 'Gépjárműadó', 'Mennyit fizetsz idén és jövőre'],
-    ['atirasi-illetek-kalkulator/', 'Átírás', 'Illeték, vizsgálat, okmányok'],
-    ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027', 'Lejár a mentesség, cserélni kell a rendszámot'],
-    ['autopalya-matrica-kalkulator/', 'Autópálya-matrica', 'Melyik matrica a legolcsóbb neked'],
-    ['kilometerterites-kalkulator/', 'Kilométertérítés', 'Hivatali út és munkába járás'],
-    ['nav-uzemanyagar/', 'NAV-üzemanyagár', 'Az e havi elszámolási ár, számla nélkül'],
-  ] },
-  { cim: 'Vásárlás és fenntartás', elemek: [
+/**
+ * Az oldal szerkezete: minden tartalmi oldal pontosan egy csoportban. Ebből épül a főoldal, a balról beúszó menü,
+ * a lábléc, az llms.txt és az oldalak alján a „Kapcsolódó oldalak” sáv, így mindenhol ugyanaz a rend.
+ * Az elemek: [cím, név, rövid mondat a menübe, és ha kell, a hosszabb név a főoldalra és az llms.txt-be].
+ */
+export const CSOPORTOK = [
+  { id: 'vasarlas', cim: 'Autót veszel vagy eladsz', bevezeto: 'Mennyibe kerül valójában az autó, amelyiket kinézted, és mi kell az adásvételhez.', elemek: [
+    ['atirasi-illetek-kalkulator/', 'Átírás', 'Illeték, vizsgálat, okmányok', 'Átírási illeték és költségek'],
     ['benzin-vagy-villany/', 'Benzin vagy villany', 'Két autó teljes költsége, megtérülés'],
-    ['autofenntartas-kalkulator/', 'Fenntartás', 'Mennyibe kerül havonta az autód'],
-    ['utikoltseg-kalkulator/', 'Útiköltség', 'Mennyibe kerül egy út autóval'],
     ['autohitel-kalkulator/', 'Autóhitel', 'Törlesztő és az autó valódi költsége'],
     ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere', 'Megjavítsam, vagy vegyek másikat?'],
     ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés', 'Kitölthető, nyomtatható minta'],
   ] },
-  { cim: 'Biztosítás és kár', elemek: [
+  { id: 'fenntartas', cim: 'Fenntartod az autód', bevezeto: 'Amit évente, havonta vagy egy-egy útnál fizetsz, és a határidők, amelyekre figyelned kell.', elemek: [
+    ['gepjarmuado-kalkulator/', 'Gépjárműadó', 'Mennyit fizetsz idén és jövőre'],
+    ['autofenntartas-kalkulator/', 'Fenntartás', 'Mennyibe kerül havonta az autód'],
     ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás', 'Meddig mondhatod fel, és a bonus-malus'],
+    ['autopalya-matrica-kalkulator/', 'Autópálya-matrica', 'Melyik matrica a legolcsóbb neked'],
+    ['utikoltseg-kalkulator/', 'Útiköltség', 'Mennyibe kerül egy út autóval'],
+    ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027', 'Lejár a mentesség, cserélni kell a rendszámot'],
     ['vetlen-baleset/', 'Vétlen baleset', 'Mi jár a biztosítótól, és meddig'],
+    ['autom/', 'Az autóm', 'A mentett autód minden költsége egy lapon'],
   ] },
-  { cim: 'Vállalkozóknak', elemek: [
+  { id: 'vallalkozas', cim: 'Vállalkozás és üzleti út', bevezeto: 'Cégautóadó, kilométertérítés és a hozzájuk tartozó nyomtatványok, vállalkozóknak és könyvelőknek.', elemek: [
     ['vallalkozoknak/', 'Autó a vállalkozásban', 'Mi vonatkozik a kft.-re és az egyéni vállalkozóra'],
+    ['kilometerterites-kalkulator/', 'Kilométertérítés', 'Hivatali út és munkába járás'],
+    ['utnyilvantartas-kikuldetesi-rendelveny/', 'Útnyilvántartás', 'És kiküldetési rendelvény, nyomtatható', 'Útnyilvántartás és kiküldetési rendelvény'],
+    ['nav-uzemanyagar/', 'NAV-üzemanyagár', 'Az e havi elszámolási ár, számla nélkül'],
     ['cegautoado-kalkulator/', 'Cégautóadó', 'Havonta és évente, a gépjárműadó levonásával'],
     ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó', 'Cégautóadó vagy adómentes km-térítés'],
-    ['utnyilvantartas-kikuldetesi-rendelveny/', 'Útnyilvántartás', 'És kiküldetési rendelvény, nyomtatható'],
   ] },
-  { cim: 'Eszközök', elemek: [
-    ['autom/', 'Az autóm', 'A mentett autód minden költsége egy lapon'],
+  { id: 'adatok', cim: 'Adatok és eszközök', bevezeto: 'A NAV-tételek és az üzemanyagárak táblázatban, letölthetően, Excelbe és programba is.', elemek: [
+    ['adatok/', 'Adatok és idősorok', 'Táblázat, CSV, Excel, JSON'],
     ['le-kw-atvaltas/', 'LE–kW átváltás', 'Hány kW egy lóerő'],
-  ] },
-  { cim: 'Az oldalról', elemek: [
-    ['adatok/', 'Adatok és idősorok', 'Üzemanyagár, adótételek, matrica, CSV-ben'],
-    ['forrasok/', 'Honnan vannak a számok?', ''],
-    ['valtozasok/', 'Mi változott?', ''],
-    ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
+    ['valtozasok/', 'Mi változott?', 'Új NAV-tételek és havi árak, dátummal'],
+    ['forrasok/', 'Honnan vannak a számok?', 'Minden tétel forrása és dátuma'],
   ] },
 ];
+/** Az oldalról szóló, nem tartalmi oldalak: csak a menüben és a láblécben. */
+export const OLDALROL = [
+  ['rolunk/', 'Rólunk és szerkesztői elvek', ''],
+  ['adatvedelem/', 'Adatvédelem', ''],
+  ['impresszum/', 'Impresszum', ''],
+];
+/** A balról beúszó menü: a csoportok, és a végén az oldalról szóló lapok. */
+export const FIOK = [...CSOPORTOK, { id: 'oldalrol', cim: 'Az oldalról', elemek: OLDALROL.slice(0, 1) }];
+/** Melyik csoportba tartozik egy oldal (a „Kapcsolódó oldalak” sávhoz). */
+export const csoportja = (ut) => CSOPORTOK.find((cs) => cs.elemek.some(([u]) => u === ut)) || null;
 const VALL_UTAK = ['vallalkozoknak/', 'cegautoado-kalkulator/', 'cegauto-vagy-sajat-auto/', 'utnyilvantartas-kikuldetesi-rendelveny/'];
 const TASKA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 7.5h16a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1ZM3 12.5h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 const HAMBURGER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
 /** A kalkulátorok címe a kalkulátor kulcsa szerint: a „Következő lépés” linkjeihez (app.mjs). */
 export const KALK_UTAK = { gepjarmuado: 'gepjarmuado-kalkulator/', atiras: 'atirasi-illetek-kalkulator/', km: 'kilometerterites-kalkulator/', uti: 'utikoltseg-kalkulator/', osszevet: 'benzin-vagy-villany/', fenntartas: 'autofenntartas-kalkulator/', phev: 'plug-in-hibrid-2027/', hitel: 'autohitel-kalkulator/', matrica: 'autopalya-matrica-kalkulator/', javitas: 'megjavitsam-vagy-csereljem/', cegautoado: 'cegautoado-kalkulator/', cegauto: 'cegauto-vagy-sajat-auto/' };
-
-/** Kalkulátorok, amelyek nem férnek a fő menübe: a láblécben és a főoldalon vannak. */
-export const TOBB_KALK = [
-  { ut: 'utikoltseg-kalkulator/', nev: 'Útiköltség' },
-  { ut: 'kilometerterites-kalkulator/', nev: 'Kilométertérítés' },
-  { ut: 'cegautoado-kalkulator/', nev: 'Cégautóadó' },
-  { ut: 'cegauto-vagy-sajat-auto/', nev: 'Cégautó vagy saját autó' },
-  { ut: 'plug-in-hibrid-2027/', nev: 'Plug-in hibrid 2027' },
-  { ut: 'autohitel-kalkulator/', nev: 'Autóhitel' },
-  { ut: 'autopalya-matrica-kalkulator/', nev: 'Autópálya-matrica' },
-  { ut: 'megjavitsam-vagy-csereljem/', nev: 'Javítás vagy csere' },
-  { ut: 'kotelezo-biztositas-valtas/', nev: 'Kötelező biztosítás' },
-  { ut: 'vetlen-baleset/', nev: 'Vétlen baleset' },
-  { ut: 'le-kw-atvaltas/', nev: 'LE–kW átváltás' },
-];
-export const TOVABBI = [
-  { ut: 'nav-uzemanyagar/', nev: 'NAV-üzemanyagár' },
-  { ut: 'utnyilvantartas-kikuldetesi-rendelveny/', nev: 'Útnyilvántartás' },
-  { ut: 'adasveteli-szerzodes-minta/', nev: 'Adásvételi szerződés' },
-  { ut: 'forrasok/', nev: 'Források' },
-  { ut: 'valtozasok/', nev: 'Változások' },
-];
 
 /** Linkkészítő: élesben /ut/, előnézetben relatív útvonal index.html-lel. */
 export function linkelo(oldalUt, elonezet) {
@@ -229,16 +216,7 @@ function lablec(k, L) {
 <p><strong>Független oldal, nem a NAV hivatalos oldala.</strong> A NAV közzétett adatai alapján számolunk. A számítások tájékoztató jellegűek, és nem helyettesítik az adótanácsadást. A ténylegesen fizetendő adót és illetéket a NAV határozata tartalmazza.</p>
 <p>${ellenorzesKesik(adat.allapot.utolso_ellenorzes, ma) ? `Az adatok rendszeres összevetése a NAV oldalával ${datumHu(ell)} óta technikai okból szünetel. Az azóta közzétett változások még nem szerepelhetnek.` : `Az adatokat rendszeresen összevetjük a NAV oldalával. ${adat.allapot.utolso_ellenorzes ? `Legutóbbi ellenőrzés: ${datumHu(ell)}` : `A legfrissebb NAV-adat: ${datumHu(adatDatum(adat).iso)}`}`}</p>
 </div>
-<div><h2>Kalkulátorok</h2><ul>${[...MENU, ...TOBB_KALK].map((m) => `<li><a href="${L.l(m.ut)}">${m.nev}</a></li>`).join('')}</ul></div>
-<div><h2>${esc(cfg.marka)}</h2><ul>
-<li><a href="${L.l('adasveteli-szerzodes-minta/')}">Adásvételi szerződés minta</a></li>
-<li><a href="${L.l('adatok/')}">Adatok és idősorok</a></li>
-<li><a href="${L.l('forrasok/')}">Források és frissítés</a></li>
-<li><a href="${L.l('valtozasok/')}">Mi változott?</a></li>
-<li><a href="${L.l('rolunk/')}">Rólunk és szerkesztői elvek</a></li>
-<li><a href="${L.l('adatvedelem/')}">Adatvédelem</a></li>
-<li><a href="${L.l('impresszum/')}">Impresszum</a></li>
-</ul></div>
+<nav class="lablec-csoportok" aria-label="Az oldal tartalma">${[...CSOPORTOK, { cim: esc(cfg.marka), elemek: OLDALROL }].map((cs) => `<div><h2>${cs.cim}</h2><ul>${cs.elemek.map(([u, n]) => `<li><a href="${L.l(u)}">${n}</a></li>`).join('')}</ul></div>`).join('')}</nav>
 </div></footer>`;
 }
 
@@ -361,7 +339,10 @@ export function forrasLista(elemek) {
   return `<ul class="forrasok">${elemek.map((f) => `<li>${f.url ? `<a href="${f.url}" rel="noopener" target="_blank">${f.nev}</a>` : `<span>${f.nev}</span>`}${f.d ? `<small>${f.d}</small>` : ''}</li>`).join('')}</ul>`;
 }
 export function tovabb(L, aktiv) {
-  const t = [['gepjarmuado-kalkulator/', 'Gépjárműadó'], ['atirasi-illetek-kalkulator/', 'Átírási illeték'], ['benzin-vagy-villany/', 'Benzines vagy villanyautó?'], ['autofenntartas-kalkulator/', 'Fenntartási költség'], ['utikoltseg-kalkulator/', 'Útiköltség'], ['kilometerterites-kalkulator/', 'Kilométertérítés'], ['nav-uzemanyagar/', 'NAV-üzemanyagár'], ['utnyilvantartas-kikuldetesi-rendelveny/', 'Útnyilvántartás'], ['plug-in-hibrid-2027/', 'Plug-in hibrid 2027'], ['autohitel-kalkulator/', 'Autóhitel'], ['autopalya-matrica-kalkulator/', 'Autópálya-matrica'], ['megjavitsam-vagy-csereljem/', 'Javítás vagy csere'], ['kotelezo-biztositas-valtas/', 'Kötelező biztosítás váltás'], ['vetlen-baleset/', 'Vétlen baleset'], ['le-kw-atvaltas/', 'LE–kW átváltás'], ['adasveteli-szerzodes-minta/', 'Adásvételi szerződés minta'], ['cegautoado-kalkulator/', 'Cégautóadó'], ['cegauto-vagy-sajat-auto/', 'Cégautó vagy saját autó'], ['forrasok/', 'Honnan vannak a számok?']].filter(([u]) => u !== aktiv);
+  // Előbb a saját csoport oldalai, utána a többi csoporté: így minden oldal minden tartalmi oldalra linkel.
+  const sajat = csoportja(aktiv);
+  const sorrend = sajat ? [sajat, ...CSOPORTOK.filter((cs) => cs !== sajat)] : CSOPORTOK;
+  const t = sorrend.flatMap((cs) => cs.elemek).filter(([u]) => u !== aktiv && u !== 'autom/');
   return `<nav class="tovabb" aria-label="Kapcsolódó oldalak">${t.map(([u, n]) => `<a href="${L.l(u)}">${n}</a>`).join('')}</nav>`;
 }
 

@@ -1,39 +1,55 @@
 # autózom
 
-> Az autód. A költségeid. A döntéseid. Az autózom független, ingyenes magyar oldal: kiszámolja egy autó gépjárműadóját, átírási költségét, havi fenntartási költségét és a kilométertérítést a NAV közzétett tételeivel, és összehasonlítja a benzines és az elektromos autó teljes költségét. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat rendszeresen, a NAV havi közzétételei körül naponta automatikusan összeveti a NAV-val.
+> Az autód. A költségeid. A döntéseid. Az autózom független, ingyenes magyar oldal az autó költségeiről. Kiszámolja a gépjárműadót, az átírás díját, a havi fenntartási költséget és a kilométertérítést a NAV közzétett tételeivel, összehasonlítja a benzines és az elektromos autó teljes költségét, és kitölthető útnyilvántartást, kiküldetési rendelvényt és adásvételi szerződést ad. Minden eredménynél jelöli, mi hivatalos NAV-adat, mi a látogató saját adata és mi becslés. Nem a NAV oldala. Az adatokat rendszeresen, a NAV havi közzétételei körül naponta automatikusan összeveti a NAV oldalával. Fent vannak a gépjárműadó 2026. és 2027. évi tételei, a legfrissebb NAV-üzemanyagár pedig a 2026. novemberi.
 
-## Kalkulátorok
+## Autót veszel vagy eladsz
 
-- [Gépjárműadó](https://autozom.hu/gepjarmuado-kalkulator/): 2026 és 2027. évi tételek kW és gyártási év alapján, elektromos és plug-in hibrid mentesség
-- [Átírás](https://autozom.hu/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
-- [Benzines vagy elektromos autó](https://autozom.hu/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
-- [Fenntartás](https://autozom.hu/autofenntartas-kalkulator/): havi és kilométerenkénti költség, értékvesztéssel
-- [Útiköltség](https://autozom.hu/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: 2026. 11. hónap); fejenkénti, havi és éves költség
-- [Kilométertérítés](https://autozom.hu/kilometerterites-kalkulator/): NAV-üzemanyagár (legfrissebb: 2026. 11. hónap), fogyasztási norma, munkába járás
-- [Plug-in hibrid 2027](https://autozom.hu/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
+Mennyibe kerül valójában az autó, amelyiket kinézted, és mi kell az adásvételhez.
+
+- [Átírási illeték és költségek](https://autozom.hu/atirasi-illetek-kalkulator/): vagyonszerzési illeték, eredetiségvizsgálat, okmányok, külföldről hozott autónál regisztrációs adó
+- [Benzin vagy villany](https://autozom.hu/benzin-vagy-villany/): két autó teljes költsége havonta és évekre, megtérülési idő, km-határ
 - [Autóhitel](https://autozom.hu/autohitel-kalkulator/): havi törlesztő THM-ből, kamat, átírás, értékvesztés, az autó valódi költsége a futamidő alatt
-- [Autópálya-matrica](https://autozom.hu/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb (2026, 2027. évi díjak)
 - [Javítás vagy csere](https://autozom.hu/megjavitsam-vagy-csereljem/): megjavítsam a régi autót, vagy eladjam és vegyek másikat; két út teljes költsége évekre, értékvesztéssel és átírással
-- [Kötelező biztosítás váltás](https://autozom.hu/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
-- [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
-- [LE–kW átváltás](https://autozom.hu/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
-- [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon
-- [Útnyilvántartás és kiküldetési rendelvény](https://autozom.hu/utnyilvantartas-kikuldetesi-rendelveny/): kitölthető, nyomtatható, a kötelező adatokkal; havi elszámolás a NAV-árral és a 15 Ft/km normaköltséggel, Excelből bemásolható utak
-- [NAV-üzemanyagár](https://autozom.hu/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
+- [Adásvételi szerződés](https://autozom.hu/adasveteli-szerzodes-minta/): kitölthető, nyomtatható adásvételi szerződés használt autóhoz, tanúkkal, a vételár betűvel kiírva
 
-## Adatok
+## Fenntartod az autód
+
+Amit évente, havonta vagy egy-egy útnál fizetsz, és a határidők, amelyekre figyelned kell.
+
+- [Gépjárműadó](https://autozom.hu/gepjarmuado-kalkulator/): a 2026. és 2027. évi NAV-tételekkel, a teljesítmény (kW) és a gyártási év alapján; az elektromos és a plug-in hibrid mentessége
+- [Fenntartás](https://autozom.hu/autofenntartas-kalkulator/): havi és kilométerenkénti költség üzemanyaggal, értékvesztéssel, biztosítással, szervizzel és adóval
+- [Kötelező biztosítás](https://autozom.hu/kotelezo-biztositas-valtas/): felmondási határidő az évfordulóból (január 1-jénél december 1.), díjértesítő, bonus-malus osztály jövőre
+- [Autópálya-matrica](https://autozom.hu/autopalya-matrica-kalkulator/): éves, vármegyei, M1 regionális vagy alkalmi e-matrica, melyik a legolcsóbb, a 2026. és 2027. évi díjakkal
+- [Útiköltség](https://autozom.hu/utikoltseg-kalkulator/): mennyibe kerül egy út benzinnel, dízellel, LPG-vel vagy árammal, a NAV havi árával (legfrissebb: 2026. november); fejenkénti, havi és éves költség
+- [Plug-in hibrid 2027](https://autozom.hu/plug-in-hibrid-2027/): gépjárműadó és cégautóadó a mentesség lejárta után, budapesti parkolás, a zöld rendszám cseréje (határidő: 2026. november 30.)
+- [Vétlen baleset](https://autozom.hu/vetlen-baleset/): mi jár a károkozó kötelező biztosításától (javítás, csereautó, értékcsökkenés), határidők, Pénzügyi Békéltető Testület
+- [Az autóm](https://autozom.hu/autom/): egy autó minden költsége egy lapon, és a határidők (műszaki, kötelező biztosítás, gépjárműadó) naptárfájlban
+
+## Vállalkozás és üzleti út
+
+Cégautóadó, kilométertérítés és a hozzájuk tartozó nyomtatványok, vállalkozóknak és könyvelőknek.
+
+- [Autó a vállalkozásban](https://autozom.hu/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra; könyvelőknek a havi NAV-ár Excelbe és JSON-ban
+- [Kilométertérítés](https://autozom.hu/kilometerterites-kalkulator/): a NAV havi üzemanyagárával (legfrissebb: 2026. november) és a fogyasztási normával, plusz 15 Ft/km; munkába járás kilométerenként
+- [Útnyilvántartás és kiküldetési rendelvény](https://autozom.hu/utnyilvantartas-kikuldetesi-rendelveny/): kitölthető, nyomtatható, a törvény szerinti kötelező adatokkal; havi elszámolás annak a hónapnak a NAV-árával, amikor az út volt, és 15 Ft/km normaköltséggel; az utak Excelből is bemásolhatók
+- [NAV-üzemanyagár](https://autozom.hu/nav-uzemanyagar/): az e havi NAV elszámolási ár (benzin, dízel, keverék, LPG, CNG), az előző hónappal és az egy évvel korábbival
+- [Cégautóadó](https://autozom.hu/cegautoado-kalkulator/): havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők, a 2026. és 2027. évi NAV-tételekkel
+- [Cégautó vagy saját autó](https://autozom.hu/cegauto-vagy-sajat-auto/): kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben
+
+## Adatok és eszközök
+
+A NAV-tételek és az üzemanyagárak táblázatban, letölthetően, Excelbe és programba is.
 
 - [Adatok és idősorok](https://autozom.hu/adatok/): a NAV havi üzemanyagárai 2023 óta, a gépjárműadó, a cégautóadó, az átírási illeték és az e-matrica díjai évenként; CSV-letöltés és JSON-adatcsatorna regisztráció nélkül (https://autozom.hu/adatok/v1/index.json), CC BY 4.0
-
-## Vállalkozóknak
-
-- [Vállalkozóknak](https://autozom.hu/vallalkozoknak/): cégautóadó, kilométertérítés kiküldetési rendelvénnyel; mi vonatkozik a kft.-re, az egyéni vállalkozóra, az átalányadózóra és a katásra
-- [Cégautóadó](https://autozom.hu/cegautoado-kalkulator/): havi és éves cégautóadó kW és környezetvédelmi osztály alapján, a gépjárműadó levonásával, negyedéves határidők (2026, 2027. évi NAV-tételek)
-- [Cégautó vagy saját autó](https://autozom.hu/cegauto-vagy-sajat-auto/): kft. és bt. tulajdonosainak: cégautó cégautóadóval, vagy saját autó adómentes km-térítéssel; a két út a tulajdonos zsebéből nézve, osztalékadóval, és a fordulópont km-ben
-- [Adásvételi szerződés](https://autozom.hu/adasveteli-szerzodes-minta/): kitölthető, nyomtatható minta
-
-## Források és frissítés
-
-- [Honnan vannak a számok?](https://autozom.hu/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
+- [LE–kW átváltás](https://autozom.hu/le-kw-atvaltas/): 1 LE = 0,7355 kW, táblázattal
 - [Mi változott?](https://autozom.hu/valtozasok/): az átvett NAV-adatok időrendben, közzététellel és hatálybalépéssel
+- [Honnan vannak a számok?](https://autozom.hu/forrasok/): minden tétel forrása és közzétételi dátuma, a becslések módszere
+
+## Gépi adatok
+
+- [JSON-adatcsatorna](https://autozom.hu/adatok/v1/index.json): NAV havi üzemanyagár, gépjárműadó, cégautóadó, átírási illeték, e-matrica; regisztráció és kulcs nélkül, CC BY 4.0
+- [A legfrissebb NAV-üzemanyagár CSV-ben](https://autozom.hu/adatok/nav-uzemanyagar-legfrissebb.csv): egy sor, Excelbe és Google Táblázatba húzható
+
+## Az oldalról
+
 - [Rólunk és szerkesztői elvek](https://autozom.hu/rolunk/): független, ingyenes, forrással; mi hivatalos, mi saját adat, mi becslés
