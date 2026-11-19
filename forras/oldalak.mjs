@@ -465,7 +465,7 @@ export function forrasokOldal(k) {
   const t = adat.tetelek;
   const sor2 = (nev, ertek, d) => `<tr><td>${nev}</td><td>${ertek}</td><td>${d || ''}</td></tr>`;
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['Források és frissítés'], cim: 'Honnan vannak a számok?', bevezeto: 'A NAV közleményeiből és a jogszabályokból. Minden tétel mellett ott a dátum, amikor megjelent, és az oldal rendszeresen, a NAV közzétételei körül naponta megnézi, jött-e új.' })}
+${oldalfej(L, { morzsa: ['Források és frissítés'], cim: 'Honnan vannak a számok?', bevezeto: 'A NAV közleményeiből és a jogszabályokból. Minden tétel mellett ott a dátum, amikor megjelent, és az oldal minden reggel megnézi, jött-e új.' })}
 <div class="keret"><article class="cikk" style="padding-top:20px">
 <h2>Az adatok</h2>
 <div class="tabla-tarto"><table class="tabla"><thead><tr><th>Mi</th><th>Érték</th><th>Megjelent</th></tr></thead><tbody>
@@ -487,7 +487,7 @@ ${adat.szabalyok.energia.forrasok.map((x) => `<tr><td>${ENERGIA_SOR(adat, x)[0]}
 </tbody><caption>A töltési veszteséget ${adat.szabalyok.energia.veszteseg}%-kal számoljuk. ${adat.szabalyok.energia.tolto_leiras}</caption></table></div>
 <p>Az értékvesztés egy hajtástípus átlagos aránya, nem a te autód garantált értékvesztése. A márka, a felszereltség, az állapot és a futott kilométer sokat számít, ezért ha tudod, mennyiért adhatnád el az autódat, írd be: azzal pontosabb.</p>
 <h2>Hogyan frissül?</h2>
-<p>A hónap végén és elején minden reggel, máskor hetente egyszer lefut egy ellenőrzés. Megnézi a NAV üzemanyagár-oldalát, és ha megjelent a következő hónap, átveszi az árakat. Októberben és novemberben naponta azt is figyeli, közzétette-e a NAV a jövő évi adótételeket.</p>
+<p>Minden reggel lefut egy ellenőrzés. Megnézi a NAV üzemanyagár-oldalát, és ha megjelent a következő hónap, átveszi az árakat. Azt is figyeli, közzétette-e a NAV a jövő évi adótételeket. Az eredmények mellett és a pecséten a legutóbbi sikeres ellenőrzés napja áll.</p>
 <p>Új számot csak akkor veszünk át, ha a NAV oldala a megszokott felépítésű, és minden érték ésszerű határok között van. Utána lefutnak a számítási tesztek, és csak ha mind rendben van, frissül az oldal. Ha valami nem stimmel, a korábbi, ellenőrzött adat marad kint, és mi értesítést kapunk.</p>
 <p>A dátumtól függő részek, például hogy melyik év az alapértelmezett, minden nap újraszámolódnak, így január 1-jén az oldal magától átáll az új évre.</p>
 <p class="halk">Legutóbbi ellenőrzés: ${al.utolso_ellenorzes ? `${datumHu(al.utolso_ellenorzes)}, ${al.utolso_ellenorzes.slice(11, 16)}` : datumHu(k.ma)}.${ellenorzesKesik(al.utolso_ellenorzes, k.ma) ? ' Az ellenőrzés azóta technikai okból szünetel: az azóta közzétett NAV-változások még nem szerepelhetnek az oldalon.' : ''}${al.figyelmeztetesek?.length ? ` Nyitott jelzés: ${al.figyelmeztetesek.join(' ')}` : ''}</p>
@@ -1159,7 +1159,7 @@ ${oldalfej(L, { morzsa: ['Rólunk'], cim: 'Kik vagyunk, és hogyan dolgozunk?', 
 <ul>
 <li><strong>Forrás nélkül nincs szám.</strong> Minden tételnél ott a forrás és a közzététel napja. A <a href="${L.l('forrasok/')}">Források</a> oldalon egy helyen is megtalálod őket.</li>
 <li><strong>Megmondjuk, mi biztos és mi nem.</strong> Az eredményekben minden sor jelölést kap: <em>hivatalos</em>, ha a NAV vagy jogszabály szerinti tétel, <em>saját</em>, ha te adtad meg, <em>becslés</em>, ha a mi feltevésünk. A becslések módszerét leírjuk.</li>
-<li><strong>Rendszeresen ellenőrzünk.</strong> Egy program a hónap végén és elején, valamint októberben és novemberben minden reggel, máskor hetente összeveti az adatainkat a NAV oldalával. Ha a NAV új tételt tesz közzé, átvesszük, és a <a href="${L.l('valtozasok/')}">Változások</a> oldalon jelezzük, mikor és mi változott.</li>
+<li><strong>Rendszeresen ellenőrzünk.</strong> Egy program minden reggel összeveti az adatainkat a NAV oldalával. Ha a NAV új tételt tesz közzé, átvesszük, és a <a href="${L.l('valtozasok/')}">Változások</a> oldalon jelezzük, mikor és mi változott.</li>
 <li><strong>A hibát kijavítjuk, és leírjuk.</strong> ${cfg.kapcsolat_email ? `Ha hibát találsz, írj a <a href="mailto:${esc(cfg.kapcsolat_email)}">${esc(cfg.kapcsolat_email)}</a> címre, vagy használd az eredmény alatti „Szerinted hibás?” gombot.` : 'A hibabejelentés címe hamarosan itt lesz.'} A javítást a Változások oldalon is feltüntetjük.</li>
 <li><strong>Nincs fizetett sorrend.</strong> Nem ajánlunk bankot, biztosítót vagy autót pénzért. Ha egyszer hirdetés vagy támogatás jelenik meg az oldalon, azt egyértelműen jelöljük, és nem befolyásolja a számokat.</li>
 <li><strong>Nem gyűjtünk rólad adatot.</strong> Nincs regisztráció és nincs követő süti. Amit beírsz, a böngésződben marad, a mentett autód is. Hozzánk csak az jut el, amit a visszajelzés-dobozban magad elküldesz. Részletek az <a href="${L.l('adatvedelem/')}">Adatvédelem</a> oldalon.</li>
@@ -1721,7 +1721,7 @@ export function navArOldal(k) {
     { k: 'Melyik hónap árát kell használni?', v: ['Annak a hónapnak az árát, amikor az út volt. Egy októberi útnál az októberi ár számít, akkor is, ha az elszámolást novemberben készíted el.'] },
     { k: 'Mi a keverékár?', v: ['A kétütemű motorokba való benzin és olaj keverékének elszámolási ára. Ma főleg régebbi motorkerékpároknál és kisgépeknél fordul elő.'] },
     ...(vedettHonapok.length ? [{ k: 'Mi a védett ár?', v: [`Azokban a hónapokban, amikor a benzinnek és a dízelnek hatósági, úgynevezett védett ára is volt, a NAV mindkét árat közzétette. Az adataink közül ez ${vedettHonapok.length === 1 ? vedettHonapok[0] : `${vedettHonapok[0]} és ${vedettHonapok.at(-1)} között`} volt így, a táblázatokban zárójelben látod. A NAV tájékoztatása szerint aki jogosult volt a hatósági árra, az a piaci helyett azzal számolhatott; aki nem volt jogosult, az számla nélkül a közzétett piaci árat vehette figyelembe.`] }] : []),
-    { k: 'Mikor jelenik meg a következő hónap ára?', v: [`A NAV a hónap végén teszi közzé a következő hónap árait.${kozzeteveIso ? ` A ${hn}i árak ${M.datumNapon(kozzeteveIso)} jelentek meg.` : ''} Ilyenkor minden reggel összevetjük az adatainkat a NAV oldalával, így az új hónap ára a megjelenése utáni reggel itt van.`] },
+    { k: 'Mikor jelenik meg a következő hónap ára?', v: [`A NAV a hónap végén teszi közzé a következő hónap árait.${kozzeteveIso ? ` A ${hn}i árak ${M.datumNapon(kozzeteveIso)} jelentek meg.` : ''} Minden reggel összevetjük az adatainkat a NAV oldalával, így az új hónap ára a megjelenése utáni reggel itt van.`] },
   ];
   const leiras = `NAV üzemanyagár ${hn}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft literenként, a keverék, az LPG és a CNG ára, az előző hónaphoz képest. Ezzel számolhatsz számla nélkül a kilométertérítésnél.`;
   const tartalom = (L) => `
@@ -1854,7 +1854,7 @@ export function adatokOldal(k) {
   });
   const kerdesek = [
     { k: 'Felhasználhatom az adatokat?', v: ['Igen, szabadon, kereskedelmi célra is (CC BY 4.0). Kérjük, írd mellé a forrást: „autozom.hu, a NAV adatai alapján”, és ha lehet, linkeld ezt az oldalt.'] },
-    { k: 'Milyen gyakran frissülnek?', v: ['A hónap végén és elején, amikor a NAV az új havi üzemanyagárakat közzéteszi, minden reggel automatikusan összevetjük az adatainkat a NAV oldalával, így az új hónap ára a közzététel utáni reggel bekerül. Októberben és novemberben a jövő évi adótételeket is naponta figyeljük, máskor hetente egyszer ellenőrzünk. A matricadíjakat és a jogszabályi tételeket évente egyszer, a közzétételük után vesszük fel.'] },
+    { k: 'Milyen gyakran frissülnek?', v: ['Minden reggel automatikusan összevetjük az adatainkat a NAV oldalával, így az új hónap üzemanyagára és a jövő évi adótételek a közzététel utáni reggel bekerülnek. A matricadíjakat és a jogszabályi tételeket évente egyszer, a közzétételük után vesszük fel.'] },
     { k: 'Változhat egy már közzétett régi adat?', v: ['Csak indokolt javítással. Egy automatikus ellenőrzés minden frissítéskor összeveti az adatokat az előzővel, és megállítja a frissítést, ha egy már tárolt hónap vagy év eltűnne vagy megváltozna. A szándékos javításokat okkal együtt naplózzuk.'] },
     { k: 'Van API?', v: ['Igen, JSON-fájlok formájában, regisztráció és kulcs nélkül. A címek és a mezők leírása a „Fejlesztőknek: JSON” részben van ezen az oldalon.'] },
     { k: 'Miért csak 2023-tól vannak a havi üzemanyagárak?', v: ['A NAV honlapján 2023 januárjától érhetők el a havi táblázatok. A korábbi hónapok csak a Hivatalos Értesítőben megjelent havi közleményekben vannak meg. Ezeket később, közleményenként ellenőrizve tervezzük felvenni.'] },

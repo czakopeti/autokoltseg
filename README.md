@@ -30,7 +30,7 @@ FRISSITO_MINTA=1 node frissito/futtat.mjs   # ugyanez a tesztek mintaoldalaival
 
 ## Hogyan frissül magától?
 
-A hónap végén és elején (1–5. és 22–31.), októberben és novemberben minden reggel, máskor hétfőnként 05:17-kor (UTC 04:17) a GitHub Actions (a perckeret kímélése miatt nem fut minden nap):
+Minden reggel 05:17-kor (UTC 04:17; nyári időszámításban 06:17-kor) a GitHub Actions. A pecsét és az eredmények fejléce a legutóbbi sikeres ellenőrzés napját mutatja, ezért fut naponta; a repó nyilvános, így ez nem kerül pénzbe:
 
 1. letölti a NAV üzemanyagár-oldalát, és ha új hónap jelent meg, átveszi;
 2. megnézi, közzétették-e az idei vagy a jövő évi gépjárműadó-, regisztrációsadó- és cégautóadó-tételeket;

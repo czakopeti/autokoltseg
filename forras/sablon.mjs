@@ -206,10 +206,10 @@ ${adatJson ? `<script type="application/json" id="adat">${JSON.stringify(adatJso
 `;
 }
 
-/** Igaz, ha az ellenőrzés nyolc napnál régebben futott le utoljára (hetente legalább egyszer fut; ha nem, a GitHub-futások leálltak). */
+/** Igaz, ha az ellenőrzés három napnál régebben futott le utoljára (minden reggel fut; ha három napja nem sikerült, a futások leálltak vagy a NAV-oldal változott). */
 export function ellenorzesKesik(utolso, ma) {
   if (!utolso || !ma) return false;
-  return (Date.parse(String(ma).slice(0, 10)) - Date.parse(String(utolso).slice(0, 10))) / 86400000 > 8;
+  return (Date.parse(String(ma).slice(0, 10)) - Date.parse(String(utolso).slice(0, 10))) / 86400000 > 3;
 }
 function lablec(k, L) {
   const { adat, ma, cfg } = k;
@@ -294,7 +294,7 @@ export function elszamolas(k, belso, { cim = 'Elszámolás', gombok = true, labj
 <div class="elsz-fej"><h2 id="elsz-cim">${cim}</h2>${(() => { const d = adatDatum(k.adat); return `<time datetime="${d.iso}" title="${d.cimke === 'Ellenőrizve' ? 'Ekkor vetettük össze az adatokat a NAV oldalával' : 'Ekkor tette közzé a NAV a legfrissebb adatot, amivel számolunk'}">${d.cimke}: ${datumHu(d.iso)}</time>`; })()}</div>
 <div class="elsz-tartalom" aria-live="polite">${belso}</div>
 ${gombok ? `<div class="elsz-lab"><button class="szoveg-gomb" type="button" data-masol>Számítás megosztása</button><button class="szoveg-gomb" type="button" data-nyomtat>Nyomtatás</button></div>${VJ_HELY}` : labjegy ? `<div class="elsz-lab"><p class="kicsi">${labjegy}</p></div>` : ''}
-${pecset(k.ma, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
+${pecset(adatDatum(k.adat).iso, true, k.cfg.marka, true).replace('<svg class="pecset ut"', `<svg class="pecset${kesz ? ' ut' : ''}"${kesz ? '' : ' hidden'}`)}
 </section>
 <a class="mini" href="#eredmeny" hidden><span class="mi"></span><span class="mennyi"></span></a>`;
 }
