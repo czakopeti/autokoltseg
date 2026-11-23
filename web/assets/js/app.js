@@ -1,7 +1,7 @@
 // Böngészős réteg: menü, űrlapok, élő elszámolás, mentett autó (csak kérésre), megosztható link, grafikon.
 // Szerverre csak az megy, amit a látogató a visszajelzés-dobozban maga elküld.
-import * as S from './szamitas.js?v=546b872d';
-import * as M from './megjelenites.js?v=546b872d';
+import * as S from './szamitas.js?v=1c89357d';
+import * as M from './megjelenites.js?v=1c89357d';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -17,8 +17,10 @@ const AUTOM = 'autokoltseg-autom-v2';
 // Csak darabszámok: melyik oldalon hányan kezdtek bele és jutottak eredményig, mentettek, osztottak meg.
 // Se süti, se azonosító, se a beírt adatok; a böngészőben sem tárolunk hozzá semmit. Oldalbetöltésenként egy esemény egyszer.
 const elkuldve = new Set();
+// A statisztika-oldalon kikapcsolható: az oldal gazdája a saját eszközein ne torzítsa a számokat
+const NEM_SZAMOL = 'autozom-nem-szamol';
 function meres(esemeny) {
-  if (elkuldve.has(esemeny) || location.protocol !== 'https:') return;
+  if (elkuldve.has(esemeny) || location.protocol !== 'https:' || tarolo.get(NEM_SZAMOL)) return;
   elkuldve.add(esemeny);
   try { fetch('/api/meres', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ut: location.pathname, esemeny }) }).catch(() => {}); } catch { /* */ }
 }
@@ -635,6 +637,16 @@ async function statisztika(gy) {
     h = m === 12 ? `${e + 1}-01` : `${e}-${String(m + 1).padStart(2, '0')}`;
   }
   const lekér = (url) => fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  // Saját eszköz kizárása a számlálásból (csak ebben a böngészőben, a localStorage-ban)
+  const kizar = $('[data-stat-kizar]', gy), kizarSzoveg = $('[data-stat-kizar-szoveg]', gy);
+  const kizarMutat = () => {
+    const ki = !!tarolo.get(NEM_SZAMOL);
+    kizar.textContent = ki ? 'Számolj újra ezen az eszközön' : 'Ezen az eszközön ne számolj';
+    kizarSzoveg.textContent = ki ? 'Ez az eszköz ki van zárva, az itt végzett számítások nem kerülnek a számlálókba.' : 'Ez az eszköz most beleszámít a számlálókba.';
+    kizar.setAttribute('aria-pressed', String(ki));
+  };
+  kizar?.addEventListener('click', () => { if (tarolo.get(NEM_SZAMOL)) tarolo.del(NEM_SZAMOL); else tarolo.set(NEM_SZAMOL, true); kizarMutat(); });
+  if (kizar) kizarMutat();
   const [adatok, vj] = await Promise.all([Promise.all(honapok.map((h) => lekér(`/api/meres?honap=${h}`))), lekér('/api/visszajelzes')]);
   const havi = Object.fromEntries(honapok.map((h, i) => [h, adatok[i]]));
   const csempek = $('[data-stat-csempek]', gy), oldalak = $('[data-stat-oldalak]', gy);

@@ -756,3 +756,6 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 .stat-sav { display: block; height: 6px; margin-top: 6px; background: var(--kiemel); border-radius: 3px; overflow: hidden; }
 .stat-sav > span { display: block; height: 100%; background: var(--tinta); border-radius: 3px; }
 @media (max-width: 700px) { .stat-csempek { grid-template-columns: 1fr 1fr; } .stat-ertek { font-size: 1.6rem; } }
+.stat-kizar { background: var(--lap); border: 1px solid var(--vonal); border-radius: 10px; padding: 14px 16px; margin: 18px 0; }
+.stat-kizar .sugo { display: block; margin: 8px 0 0; }
+.stat-kizar [data-stat-kizar-szoveg] { font-weight: 600; color: var(--tinta); }

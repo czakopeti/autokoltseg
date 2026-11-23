@@ -2136,6 +2136,7 @@ export function statOldal(k) {
 <div class="keret"><article class="cikk stat" data-statisztika data-kezdo="2026-11">
 <h1>Használati statisztika</h1>
 <p class="stat-bev">Az oldal saját, névtelen számlálói: hányan kezdtek el számolni, és hányan jutottak eredményig. Aki csak elolvasta az oldalt, az itt nem szerepel, azt a Cloudflare Web Analytics mutatja.</p>
+<div class="stat-kizar"><button type="button" class="gomb masodlagos" data-stat-kizar aria-pressed="false">Ezen az eszközön ne számolj</button><p class="sugo" data-stat-kizar-szoveg></p><p class="sugo">A saját próbáid így nem torzítják a számokat. Minden eszközön és böngészőben egyszer kell megnyomni. Az Igen/Nem visszajelzéseket nem érinti.</p></div>
 <p class="stat-valaszto"><label for="stat-honap">Hónap</label> <select id="stat-honap" name="stat-honap"></select></p>
 <div class="stat-csempek" data-stat-csempek><p>Betöltés…</p></div>
 <h2>Kalkulátoronként</h2>
