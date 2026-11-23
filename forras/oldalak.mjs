@@ -2123,3 +2123,30 @@ ${tovabb(L, ut)}
     jsonld: [alkalmazasLd(k.cfg, 'Gyorshajtási bírság kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Gyorshajtási bírság', ut }])],
   });
 }
+
+/* ======================= STATISZTIKA (nem indexelt, nincs a menüben) ======================= */
+export const STAT_UT = 'statisztika/';
+export function statOldal(k) {
+  const ut = STAT_UT;
+  // Oldalnevek a táblázathoz: a csoportokból, a főoldal és a vállalkozói gyűjtőoldal külön
+  const nevek = { '/': 'Főoldal', '/vallalkozoknak/': 'Vállalkozóknak (gyűjtőoldal)' };
+  for (const cs of CSOPORTOK) for (const [u, nev] of cs.elemek) nevek[`/${u}`] = nev;
+  const leiras = 'Hányan használták az autózom kalkulátorait: havi számlálók oldalanként, befejezési arány és visszajelzések.';
+  const tartalom = () => `
+<div class="keret"><article class="cikk stat" data-statisztika data-kezdo="2026-11">
+<h1>Használati statisztika</h1>
+<p class="stat-bev">Az oldal saját, névtelen számlálói: hányan kezdtek el számolni, és hányan jutottak eredményig. Aki csak elolvasta az oldalt, az itt nem szerepel, azt a Cloudflare Web Analytics mutatja.</p>
+<p class="stat-valaszto"><label for="stat-honap">Hónap</label> <select id="stat-honap" name="stat-honap"></select></p>
+<div class="stat-csempek" data-stat-csempek><p>Betöltés…</p></div>
+<h2>Kalkulátoronként</h2>
+<div data-stat-oldalak></div>
+<h2>Hónapról hónapra</h2>
+<div data-stat-trend></div>
+<h2>Visszajelzések</h2>
+<p class="stat-bev">Az „Igen” és „Nem” gombok összesen, az indulás óta.</p>
+<div data-stat-vj></div>
+<p class="megj">Nyers adat: <a href="/api/meres">/api/meres</a> és <a href="/api/visszajelzes">/api/visszajelzes</a>. A te saját próbáid is benne vannak.</p>
+</article></div>
+<script type="application/json" id="stat-nevek">${JSON.stringify(nevek)}</script>`;
+  return oldal(k, { cim: 'Használati statisztika', leiras, ut, tartalom, indexelheto: false });
+}

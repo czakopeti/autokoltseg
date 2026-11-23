@@ -14,7 +14,8 @@ test('minden oldal pontosan egyszer szerepel a szerkezetben, és nincs árva old
   assert.ok(oldalak.length > 20, 'az oldallista beolvasása');
   assert.equal(new Set(csoportban).size, csoportban.length, 'egy oldal két csoportban');
   const szerkezet = new Set([...csoportban, ...OLDALROL.map(([u]) => u)]);
-  for (const u of oldalak.filter((x) => x !== '')) assert.ok(szerkezet.has(u), `nincs csoportban: ${u}`);
+  // a statisztika szándékosan rejtett: nem indexelt, nincs a menüben
+  for (const u of oldalak.filter((x) => x !== '' && x !== 'statisztika/')) assert.ok(szerkezet.has(u), `nincs csoportban: ${u}`);
   for (const u of szerkezet) assert.ok(oldalak.includes(u), `nem létező oldal a szerkezetben: ${u}`);
 });
 

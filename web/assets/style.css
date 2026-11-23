@@ -742,3 +742,17 @@ table.kompakt tr.kiemelt-sor th { color: var(--tinta); }
 @media print { .utny-lap table { font-size: 10pt; } .utny-lap thead { display: table-header-group; } .utny-lap tr { break-inside: avoid; } }
 .utny-lap td.nap { white-space: nowrap; }
 .csoport-bevezeto { max-width: 42em; color: var(--tinta2); margin: 8px 0 20px; }
+
+/* Statisztika-oldal (nem indexelt) */
+.stat .stat-bev { color: var(--tinta2); }
+.stat-valaszto { display: flex; gap: 10px; align-items: center; margin: 18px 0; }
+.stat-valaszto select { font: inherit; padding: 6px 10px; border: 1px solid var(--vonal2); border-radius: 6px; background: var(--lap); color: var(--tinta); }
+.stat-csempek { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 8px 0 28px; }
+.stat-csempe { background: var(--lap); border: 1px solid var(--vonal); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat-ertek { font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat-cim { font-size: .88rem; color: var(--tinta2); }
+.stat-tabla td:first-child { width: 55%; }
+.stat-extra { display: block; font-size: .82rem; color: var(--tinta2); }
+.stat-sav { display: block; height: 6px; margin-top: 6px; background: var(--kiemel); border-radius: 3px; overflow: hidden; }
+.stat-sav > span { display: block; height: 100%; background: var(--tinta); border-radius: 3px; }
+@media (max-width: 700px) { .stat-csempek { grid-template-columns: 1fr 1fr; } .stat-ertek { font-size: 1.6rem; } }

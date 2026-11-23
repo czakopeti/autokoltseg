@@ -75,6 +75,7 @@ const oldalak = [
   [O.FEDEZETLEN_UT, O.fedezetlenOldal(k)],
   [O.MUSZAKI_UT, O.muszakiOldal(k)],
   [O.GYORS_UT, O.gyorshajtasOldal(k)],
+  [O.STAT_UT, O.statOldal(k)],
   ['vetlen-baleset/', O.vetlenOldal(k)],
   ['le-kw-atvaltas/', O.lekwOldal(k)],
   ['adasveteli-szerzodes-minta/', O.adasveteliOldal(k)],

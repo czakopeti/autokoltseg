@@ -303,7 +303,7 @@ ${pecset(adatDatum(k.adat).iso, true, k.cfg.marka, true).replace('<svg class="pe
 /* ---------- Visszajelzés ---------- */
 const VJ_HELY = '<!--visszajelzes-->';
 // Ezeken az oldalakon nincs visszajelzés-doboz (jogi szöveg, főoldal)
-const VJ_NELKUL = ['', 'impresszum/', 'adatvedelem/'];
+const VJ_NELKUL = ['', 'impresszum/', 'adatvedelem/', 'statisztika/'];
 const HUVELYK = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"><path d="M7 10.5v9.5H4v-9.5h3Zm0 0 3.6-6.8c1.6 0 2.7 1.1 2.3 2.8L12.4 10h5.4a2 2 0 0 1 2 2.4l-1.2 5.9a2.1 2.1 0 0 1-2.1 1.7H7"/></svg>';
 
 /** A „Hasznos volt?” doboz. Kalkulátornál a beírt számokat is elküldheti a látogató, ha akarja. */

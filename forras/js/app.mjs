@@ -619,7 +619,55 @@ function megosztottJelzes(form) {
 }
 
 /* ---------- Indítás ---------- */
+/* ---------- Statisztika-oldal: a havi számlálók és a visszajelzések táblázatban ---------- */
+async function statisztika(gy) {
+  const nevek = (() => { try { return JSON.parse($('#stat-nevek').textContent); } catch { return {}; } })();
+  const nev = (u) => nevek[u] || u;
+  const szam = (n) => new Intl.NumberFormat('hu-HU').format(n || 0);
+  const szazalek = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '–');
+  const HONAPOK = ['január', 'február', 'március', 'április', 'május', 'június', 'július', 'augusztus', 'szeptember', 'október', 'november', 'december'];
+  const honapNev = (h) => `${h.slice(0, 4)}. ${HONAPOK[Number(h.slice(5, 7)) - 1]}`;
+  const most = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Budapest' }).format(new Date()).slice(0, 7);
+  const honapok = [];
+  for (let h = gy.dataset.kezdo || most; h <= most;) {
+    honapok.push(h);
+    const [e, m] = h.split('-').map(Number);
+    h = m === 12 ? `${e + 1}-01` : `${e}-${String(m + 1).padStart(2, '0')}`;
+  }
+  const lekér = (url) => fetch(url, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const [adatok, vj] = await Promise.all([Promise.all(honapok.map((h) => lekér(`/api/meres?honap=${h}`))), lekér('/api/visszajelzes')]);
+  const havi = Object.fromEntries(honapok.map((h, i) => [h, adatok[i]]));
+  const csempek = $('[data-stat-csempek]', gy), oldalak = $('[data-stat-oldalak]', gy);
+  if (adatok.every((x) => !x)) { csempek.innerHTML = '<p>A számlálót most nem sikerült elérni. Próbáld újra pár perc múlva.</p>'; return; }
+  const valaszto = $('#stat-honap', gy);
+  valaszto.innerHTML = honapok.slice().reverse().map((h) => `<option value="${h}">${honapNev(h)}</option>`).join('');
+  const mutat = (h) => {
+    const d = havi[h];
+    const o = d?.osszesen || {};
+    csempek.innerHTML = [
+      ['Elkezdett számítás', szam(o.indit)],
+      ['Eredményig jutott', szam(o.kesz)],
+      ['Befejezési arány', szazalek(o.kesz, o.indit)],
+      ['Továbbkattintás másik kalkulátorra', szam((o.tovabb || 0) + (o.kovetkezo || 0))],
+    ].map(([c, v]) => `<div class="stat-csempe"><span class="stat-ertek">${v}</span><span class="stat-cim">${c}</span></div>`).join('');
+    const sorok = Object.entries(d?.oldalak || {}).map(([u, x]) => ({ u, ...x })).filter((x) => x.indit || x.kesz).sort((a, b) => (b.indit || 0) - (a.indit || 0));
+    if (!sorok.length) { oldalak.innerHTML = '<p>Ebben a hónapban még senki nem számolt.</p>'; return; }
+    const max = Math.max(...sorok.map((x) => x.indit || 0), 1);
+    const extra = (x) => [['mentes', 'mentés'], ['megosztas', 'megosztás'], ['nyomtat', 'nyomtatás'], ['naptar', 'naptár']].filter(([k]) => x[k]).map(([k, n]) => `${x[k]} ${n}`).join(', ');
+    oldalak.innerHTML = `<div class="tabla-tarto"><table class="tabla stat-tabla"><thead><tr><th>Kalkulátor</th><th>Elkezdte</th><th>Eredményig</th><th class="csak-szeles">Arány</th></tr></thead><tbody>${sorok.map((x) => `<tr><td><a href="${x.u}">${nev(x.u)}</a>${extra(x) ? `<span class="stat-extra">${extra(x)}</span>` : ''}<span class="stat-sav" aria-hidden="true"><span style="width:${Math.max(2, Math.round(((x.indit || 0) / max) * 100))}%"></span></span></td><td>${szam(x.indit)}</td><td>${szam(x.kesz)}</td><td class="csak-szeles">${szazalek(x.kesz, x.indit)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  valaszto.addEventListener('change', () => mutat(valaszto.value));
+  mutat(valaszto.value);
+  $('[data-stat-trend]', gy).innerHTML = `<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Hónap</th><th>Elkezdte</th><th>Eredményig</th><th>Arány</th></tr></thead><tbody>${honapok.slice().reverse().map((h) => { const o = havi[h]?.osszesen || {}; return `<tr><td>${honapNev(h)}</td><td>${szam(o.indit)}</td><td>${szam(o.kesz)}</td><td>${szazalek(o.kesz, o.indit)}</td></tr>`; }).join('')}</tbody></table></div>`;
+  const vjSorok = Object.entries(vj || {}).filter(([, x]) => x.fel || x.le).sort((a, b) => (b[1].fel + b[1].le) - (a[1].fel + a[1].le));
+  $('[data-stat-vj]', gy).innerHTML = vjSorok.length
+    ? `<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Oldal</th><th>Igen</th><th>Nem</th></tr></thead><tbody>${vjSorok.map(([u, x]) => `<tr><td><a href="${u}">${nev(u)}</a></td><td>${szam(x.fel)}</td><td>${szam(x.le)}</td></tr>`).join('')}</tbody></table></div>`
+    : '<p>Még nem érkezett visszajelzés.</p>';
+}
+
 function indit() {
+  const stat = $('[data-statisztika]');
+  if (stat) { statisztika(stat); return; }
   const form = $('form[data-kalk]');
   if (!form) return;
   const tipus = form.dataset.kalk;
