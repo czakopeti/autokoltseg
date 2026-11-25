@@ -8,18 +8,18 @@
     "url": "https://creativecommons.org/licenses/by/4.0/deed.hu",
     "forrasjeloles": "autozom.hu, a NAV adatai alapján"
   },
-  "ellenorizve": "2026-11-24",
+  "ellenorizve": "2026-11-25",
   "dokumentacio": "https://autozom.hu/adatok/#fejlesztoknek",
   "legfrissebb": {
-    "honap": "2026-11",
-    "benzin_ft_l": 639,
-    "dizel_ft_l": 712,
-    "keverek_ft_l": 695,
-    "lpg_ft_l": 365,
+    "honap": "2026-12",
+    "benzin_ft_l": 644,
+    "dizel_ft_l": 723,
+    "keverek_ft_l": 699,
+    "lpg_ft_l": 387,
     "cng_ft_kg": 890,
     "benzin_vedett_ft_l": null,
     "dizel_vedett_ft_l": null,
-    "kozzeteve": "2026-10-25"
+    "kozzeteve": null
   },
   "honapok": [
     {
@@ -538,6 +538,17 @@
       "benzin_vedett_ft_l": null,
       "dizel_vedett_ft_l": null,
       "kozzeteve": "2026-10-25"
+    },
+    {
+      "honap": "2026-12",
+      "benzin_ft_l": 644,
+      "dizel_ft_l": 723,
+      "keverek_ft_l": 699,
+      "lpg_ft_l": 387,
+      "cng_ft_kg": 890,
+      "benzin_vedett_ft_l": null,
+      "dizel_vedett_ft_l": null,
+      "kozzeteve": null
     }
   ]
 }

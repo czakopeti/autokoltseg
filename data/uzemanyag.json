@@ -343,6 +343,13 @@
         "keverek": 695,
         "lpg": 365,
         "cng": 890
+      },
+      "12": {
+        "benzin": 644,
+        "dizel": 723,
+        "keverek": 699,
+        "lpg": 387,
+        "cng": 890
       }
     }
   },
@@ -353,5 +360,8 @@
     "2023": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2023-ban-alkalmazhato-uzemanyagarak",
     "2024": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2024-ben-alkalmazhato-uzemanyagarak",
     "2025": "https://nav.gov.hu/ugyfeliranytu/uzemanyag/2025-ben-alkalmazhato-uzemanyagarak"
+  },
+  "atveve": {
+    "2026-12": "2026-11-25"
   }
 }
