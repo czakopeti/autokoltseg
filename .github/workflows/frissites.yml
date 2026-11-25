@@ -31,10 +31,12 @@ jobs:
         if: github.event_name != 'push'
         continue-on-error: true
         run: node frissito/futtat.mjs
-      - name: Tesztek
-        run: node --test tesztek/*.test.mjs
+      # Előbb építünk, mert a tesztek egy része a kész oldalakat (web/) veti össze a friss adattal.
+      # Ha a tesztek elbuknak, a Mentés nem fut, így semmi nem kerül ki.
       - name: Építés
         run: node epit.mjs
+      - name: Tesztek
+        run: node --test tesztek/*.test.mjs
       - name: Mentés
         run: |
           git config user.name "autokoltseg-bot"

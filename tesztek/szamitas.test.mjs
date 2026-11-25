@@ -101,7 +101,8 @@ test('kilométertérítés: NAV 08. füzet példái és a korábbi oldal példá
   assert.equal(b.uzemanyagFt, 6071); assert.equal(b.osszesen, 7571);
   const v = S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', cm3: 1598, ev: 2026, honap: 6, vedett: true });
   assert.equal(v.ar, 595);
-  assert.ok(S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', cm3: 1598, ev: 2026, honap: 12 }).hiba);
+  // olyan hónapra, amire még nincs NAV-ár, hibát ad (nem számol régi árral)
+  assert.ok(S.kikuldetes(adat, { km: 100, uzemanyag: 'benzin', cm3: 1598, ev: 2099, honap: 1 }).hiba);
 });
 
 test('munkába járás', () => {
