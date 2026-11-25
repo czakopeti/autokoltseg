@@ -125,8 +125,32 @@ if (!elonezet) {
   mkdirSync(join(KI, O.JSON_UT), { recursive: true });
   for (const [f, o] of Object.entries(O.adatJsonok(adat, cfg))) writeFileSync(join(KI, O.JSON_UT, f), `${JSON.stringify(o, null, 2)}\n`);
   if (cfg.eles) writeFileSync(join(KI, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlek}\n</urlset>\n`);
+  // Content-Security-Policy: csak a saját szkriptek, a beágyazott (inline) szkriptek hash alapján, és a Cloudflare Web Analytics.
+  // A JSON-adatblokkok (application/json, ld+json) nem futnak, ezért nem kell őket engedélyezni.
+  const inline = new Set();
+  for (const [, html] of oldalak) for (const m of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) inline.add(m[1]);
+  const hashek = [...inline].map((x) => `'sha256-${createHash('sha256').update(x).digest('base64')}'`).join(' ');
+  const csp = [
+    "default-src 'self'",
+    `script-src 'self'${hashek ? ` ${hashek}` : ''} https://static.cloudflareinsights.com`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "connect-src 'self' https://cloudflareinsights.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'self'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+  // security.txt (RFC 9116): kinek írjon, aki biztonsági hibát talál. Évente lejár, a napi építés frissen tartja.
+  mkdirSync(join(KI, '.well-known'), { recursive: true });
+  const lejar = new Date(Date.parse(`${ma}T00:00:00Z`) + 365 * 86400000).toISOString();
+  writeFileSync(join(KI, '.well-known', 'security.txt'), `Contact: mailto:${cfg.kapcsolat_email}\nExpires: ${lejar}\nPreferred-Languages: hu, en\nCanonical: ${cfg.domain}/.well-known/security.txt\n`);
   writeFileSync(join(KI, '_headers'), `# Biztonsági fejlécek minden oldalra
 /*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: ${csp}
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
