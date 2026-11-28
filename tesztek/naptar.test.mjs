@@ -83,7 +83,7 @@ test('NAV-üzemanyagár oldal: a cím a legfrissebb hónap ára, és új hónapn
   assert.equal(`${most.ev}-${most.h}`, `${lf.ev}-${lf.honap}`);
   const html = navArOldal(k);
   const b = sorok.find((x) => x.kulcs === 'benzin');
-  assert.ok(html.includes(`<title>NAV üzemanyagár ${M.honapHu(most.ev, most.h)}: benzin ${b.ar} Ft`), 'a címben a legfrissebb ár');
+  assert.ok(html.includes(`<title>NAV ${S.HONAPOK[most.h - 1]}i üzemanyagár ${most.ev}: benzin ${b.ar} Ft`), 'a címben a legfrissebb hónap („decemberi”) és ára');
   assert.ok(sorok.every((x) => x.valtozas === null || x.valtozas === x.ar - x.elozo));
   // egy új hónap a NAV-tól: a cím és a változás is követi
   const uj = structuredClone(adat);
@@ -91,9 +91,9 @@ test('NAV-üzemanyagár oldal: a cím a legfrissebb hónap ára, és új hónapn
   uj.uzemanyag.evek[ev] ??= {};
   uj.uzemanyag.evek[ev][h] = { benzin: b.ar - 7, dizel: 700, keverek: 690, lpg: 360, cng: 880 };
   const html2 = navArOldal({ ...k, adat: uj });
-  assert.ok(html2.includes(`<title>NAV üzemanyagár ${M.honapHu(ev, h)}: benzin ${b.ar - 7} Ft`));
+  assert.ok(html2.includes(`<title>NAV ${S.HONAPOK[h - 1]}i üzemanyagár ${ev}: benzin ${b.ar - 7} Ft`));
   assert.ok(html2.includes('−7 Ft'));
-  assert.match(html2, new RegExp(`<title>NAV üzemanyagár ${M.honapHu(ev, h)}`));
+  assert.match(html2, new RegExp(`<title>NAV ${S.HONAPOK[h - 1]}i üzemanyagár ${ev}`));
   assert.ok(!/undefined|NaN|\[object/.test(html2));
 });
 

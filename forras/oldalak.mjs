@@ -245,7 +245,7 @@ export function atirasOldal(k) {
     { k: 'Mennyi a regisztrációs adó egy külföldről hozott autónál?', v: [`Az alapösszeget (${M.rag(aktualis, 'ban', 'ben')} ${M.ftx(regAlap.ft)}) megszorozzák a teljesítményhez és a környezetvédelmi osztályhoz tartozó szorzóval, majd az autó kora szerint csökkentik. Egy 2021 előtt forgalomba helyezett, „15”-ös osztályú, 85 kW-os, ${regPelda.honapok} hónapos autónál ${M.ftx(regPelda.teljes)} a teljes összeg, ebből ${regPelda.csokk}% a kor miatti csökkentés, így ${M.ftx(regPelda.osszeg)} marad.`] },
     { k: 'Meddig kell átíratni az autót?', v: [`A szerződéskötéstől számított ${adat.szabalyok.hataridok.atiras_napok} napon belül. Az eredetiségvizsgálat a vizsgálat napjától 60 napig használható fel.`] },
   ];
-  const leiras = `Átírási illeték ${aktualis}: illeték, eredetiségvizsgálat, forgalmi és törzskönyv egy összegben, külföldről hozott autónál regisztrációs adóval. A NAV tételeivel.`;
+  const leiras = `Mennyibe kerül az autó átírása ${M.rag(aktualis, 'ban', 'ben')}? Átírási költség kalkulátor: illeték, eredetiségvizsgálat, forgalmi és törzskönyv egy összegben, külföldről hozott autónál regisztrációs adóval. A NAV tételeivel.`;
 
   const tartalom = (L) => `
 ${oldalfej(L, { morzsa: ['Átírás'], cim: `Mennyibe kerül az autó átírása ${M.rag(aktualis, 'ban', 'ben')}?`, valasz: `Az illeték kilowattonként ${Math.min(...il.tabla.flat())}–${Math.max(...il.tabla.flat())} Ft a teljesítménytől és az autó korától függően, erre jön kb. ${M.ftx(Math.round((ok.eredetisegvizsgalat_alap + ok.forgalmi_engedely + ok.torzskonyv + ok.torzskonyv_postazas) / 1000) * 1000)} vizsgálat és okmány. Elektromos autó után nincs illeték.` })}
@@ -311,7 +311,7 @@ ${tovabb(L, ut)}
 </article></div>`;
 
   return oldal(k, {
-    cim: `Átírási illeték ${aktualis}: mennyibe kerül az autó átírása?`,
+    cim: `Autó átírás költségei ${aktualis}: kalkulátor illetékkel és díjakkal`,
     leiras, ut, tartalom,
     adatJson: { tetelek: { illetek: adat.tetelek.illetek, regado_alap: ra, regado_szorzok: sz, regado_korcsokkentes: kcs }, szabalyok: { okmanyok: ok, hataridok: adat.szabalyok.hataridok } },
     jsonld: [alkalmazasLd(k.cfg, 'Átírási illeték kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Átírás', ut }])],
@@ -1113,14 +1113,19 @@ export function lekwOldal(k) {
   const ut = 'le-kw-atvaltas/';
   const tiz = (x) => M.tized(x, 1);
   const sorok = [60, 75, 90, 100, 110, 120, 130, 150, 170, 190, 200, 250, 300];
+  // A forgalmi engedélyekben gyakori kW-értékek: ezekre keresnek („77 kw hány lóerő”)
+  const kwSorok = [44, 51, 55, 59, 63, 66, 70, 74, 77, 81, 85, 88, 92, 96, 100, 103, 110, 115, 118, 125, 132, 140, 150, 162, 180, 195, 220, 250];
+  const le = (kw) => Math.round(kw * 1.35962);
   const kerdesek = [
+    { k: 'Hány lóerő 1 kW?', v: ['1 kW 1,36 lóerő (pontosabban 1,35962 LE). Fejben: a kW-ot szorozd meg 1,36-tal, és megkapod a lóerőt.'] },
+    ...[74, 77, 85, 95, 110, 125].map((kw) => ({ k: `${kw} kW hány lóerő?`, v: [`${kw} kW ${le(kw)} lóerő (${M.tized(kw * 1.35962, 1)} LE). A forgalmi engedély P.2 sorában a kW szerepel, ebből számolják az adót.`] })),
     { k: 'Hány kW egy lóerő?', v: ['1 lóerő 0,7355 kW, 1 kW pedig 1,36 lóerő. Fejben: a lóerőt oszd el 1,36-tal, és megkapod a kW-ot.'] },
     { k: 'Melyik szerepel a forgalmi engedélyben?', v: ['A kW. A forgalmi engedély P.2 sorában a teljesítmény kilowattban szerepel, és a gépjárműadót, az átírási illetéket és a cégautóadót is ebből számolják.'] },
     { k: 'Miért más a lóerő az autó hirdetésében?', v: ['A gyártók gyakran kerekítve adják meg a lóerőt, és a hirdetések egy része a brit lóerőt (hp) használja, ami 0,7457 kW. Az adóhoz mindig a forgalmiban szereplő kW-ot használd.'] },
   ];
-  const leiras = 'Lóerő–kW átváltás: 1 LE = 0,7355 kW, 1 kW = 1,36 LE. Átváltó és táblázat, és hogy a forgalmi engedélyben melyik szerepel.';
+  const leiras = 'Hány lóerő 1 kW? 1 kW = 1,36 LE, 1 LE = 0,7355 kW. Átváltó és táblázat a gyakori értékekkel (44–250 kW), és hogy a forgalmi engedélyben melyik szerepel.';
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['LE–kW átváltás'], cim: 'Hány kW egy lóerő?', valasz: '1 lóerő 0,7355 kW, 1 kW 1,36 lóerő. A forgalmi engedély P.2 sorában kW szerepel, az adót és az illetéket is ebből számolják.' })}
+${oldalfej(L, { morzsa: ['LE–kW átváltás'], cim: 'Hány lóerő egy kW, és hány kW egy lóerő?', valasz: '1 kW 1,36 lóerő, 1 lóerő 0,7355 kW. A forgalmi engedély P.2 sorában kW szerepel, az adót és az illetéket is ebből számolják.' })}
 <div class="keret">
 <form class="forgalmi atvalto" data-kalk="lekw" novalidate>${''}<div class="forgalmi-fej"><h2>Átváltó</h2><p>Bármelyik mezőbe írhatsz.</p></div>
 <div class="ket">${sor('', szamMezo({ id: 'le', cim: 'Lóerő', me: 'LE', placeholder: 'pl. 115', tized: true }))}${sor('P.2', szamMezo({ id: 'kwAt', cim: 'Teljesítmény', me: 'kW', placeholder: 'pl. 85', tized: true }))}</div>
@@ -1129,7 +1134,11 @@ ${oldalfej(L, { morzsa: ['LE–kW átváltás'], cim: 'Hány kW egy lóerő?', v
 </form>
 </div>
 <div class="keret"><article class="cikk">
-<h2>Átváltási táblázat</h2>
+<h2>Hány lóerő? kW-ból lóerőbe</h2>
+<div class="tabla-tarto"><table class="tabla"><thead><tr><th>Kilowatt (kW)</th><th>Lóerő (LE)</th><th class="csak-szeles">Pontosan</th></tr></thead><tbody>
+${kwSorok.map((kw) => `<tr><td>${kw} kW</td><td>${le(kw)} LE</td><td class="csak-szeles">${tiz(kw * 1.35962)} LE</td></tr>`).join('')}
+</tbody><caption>A forgalmi engedélyekben gyakori teljesítmények. Metrikus lóerővel (LE) számolva.</caption></table></div>
+<h2>Hány kW? Lóerőből kW-ba</h2>
 <div class="tabla-tarto"><table class="tabla"><thead><tr><th>Lóerő (LE)</th><th>Kilowatt (kW)</th><th>Kerekítve</th></tr></thead><tbody>
 ${sorok.map((le) => `<tr><td>${le} LE</td><td>${tiz(le * 0.73549875)} kW</td><td>${Math.round(le / 1.35962)} kW</td></tr>`).join('')}
 </tbody><caption>A forgalmi engedélyben egész kW szerepel.</caption></table></div>
@@ -1138,7 +1147,7 @@ ${gyik(kerdesek)}
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: 'LE–kW átváltás: hány kW egy lóerő?',
+    cim: 'kW–LE átváltás: hány lóerő 1 kW? Táblázat 44–250 kW',
     leiras, ut, tartalom,
     jsonld: [gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'LE–kW átváltás', ut }])],
     adatJson: {},
@@ -1433,11 +1442,17 @@ export function cegautoadoOldal(k) {
     { k: 'Levonható a gépjárműadó?', v: ['Igen, ugyanarra az autóra, ugyanazokra a hónapokra, ha ugyanaz fizeti mindkettőt, és a gépjárműadót határidőben befizették. Ha a cég az autót év közben használtan vette, az adott évi gépjárműadót az eladó fizeti, így abban az évben nincs mit levonni.', javaslatMondat(adat)].filter(Boolean) },
     { k: 'Melyik hónaptól kell fizetni?', v: ['A szerzést követő hónap első napjától az eladás, a lízingbe adónak való visszaadás, az ellopás vagy a megsemmisülés hónapjának utolsó napjáig. A forgalomból kivonás önmagában nem szünteti meg.'] },
     { k: 'Hogyan kell bevallani?', v: [`Negyedévente, önadózással: a negyedévet követő hónap 20-áig kell bevallani és befizetni a NAV Cégautóadó bevételi számlájára (10032000-01076167). ${M.rag(2026, 'ban', 'ben')} a 2601-es nyomtatványon.`] },
-    { k: `Mennyivel drágul ${M.rag(jovo || ev, 'ban', 'ben')}?`, v: [jovo ? `A tételek a júliusi infláció szerint emelkednek, 500 vagy 1000 forintra kerekítve. A NAV által közzétett ${M.os(jovo)} tétel egy 91–120 kW-os, „15”-ös autóra havonta ${M.ftx(adat.tetelek.cegautoado[jovo].tabla[2][2])} (${M.rag(ev, 'ban', 'ben')} ${M.ftx(t.tabla[2][2])}).` : 'A tételeket a NAV minden év október 31-ig teszi közzé a következő évre.', javaslatMondat(adat, true)].filter(Boolean) },
+    { k: jovo ? `Mennyi lesz a cégautóadó ${M.rag(jovo, 'ban', 'ben')}, mi változik?` : `Mennyivel drágul jövőre?`, v: [jovo ? `A tételek a júliusi infláció szerint emelkednek, 500 vagy 1000 forintra kerekítve. A NAV által közzétett ${M.os(jovo)} tétel egy 91–120 kW-os, „15”-ös autóra havonta ${M.ftx(adat.tetelek.cegautoado[jovo].tabla[2][2])} (${M.rag(ev, 'ban', 'ben')} ${M.ftx(t.tabla[2][2])}).` : 'A tételeket a NAV minden év október 31-ig teszi közzé a következő évre.', javaslatMondat(adat, true)].filter(Boolean) },
   ];
-  const leiras = `Cégautóadó ${evek.join(' és ')}: havi és éves összeg a kW és a környezetvédelmi osztály alapján, a gépjárműadó levonásával, a NAV tételeivel és a negyedéves határidőkkel.`;
+  const leiras = `Cégautóadó ${evek.slice().sort((x, y) => y - x).join(' és ')}: mértéke és változása, havi és éves összeg a kW és a környezetvédelmi osztály alapján, a gépjárműadó levonásával, a NAV tételeivel és a negyedéves határidőkkel.`;
+  // Ha a NAV már közzétette a jövő évi tételeket, azokat keresik: a cím, a főcím és az első mondat a jövő évről szól
+  const tj = jovo ? adat.tetelek.cegautoado[jovo] : null;
+  const savSzoveg = (x) => `${M.fmt(Math.min(...x.tabla.flat()))}–${M.ftx(Math.max(...x.tabla.flat()))}`;
+  const valasz = tj
+    ? `${M.rag(jovo, 'ban', 'ben').replace(/^./, (c) => c.toUpperCase())} havonta ${savSzoveg(tj)} autónként, ${M.rag(ev, 'ban', 'ben')} ${savSzoveg(t)}. Egy 91–120 kW-os, „15”-ös autó után ${M.ftx(t.tabla[2][2])} helyett ${M.ftx(tj.tabla[2][2])} lesz havonta. A gépjárműadó levonható belőle, a bevallás és a befizetés negyedéves.`
+    : `Havonta ${savSzoveg(t)} autónként, a teljesítménytől és a környezetvédelmi osztálytól függően. A gépjárműadó levonható belőle, a bevallás és a befizetés negyedéves.`;
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautóadó'], cim: `Mennyi a cégautóadó ${evek.map((e) => M.rag(e, 'ban', 'ben')).join(' és ')}?`, valasz: `Havonta ${M.ftx(Math.min(...t.tabla.flat()))}–${M.ftx(Math.max(...t.tabla.flat()))} autónként, a teljesítménytől és a környezetvédelmi osztálytól függően. A gépjárműadó levonható belőle, a bevallás és a befizetés negyedéves.` })}
+${oldalfej(L, { morzsa: [['Vállalkozóknak', VALL_UT], 'Cégautóadó'], cim: tj ? `Mennyi lesz a cégautóadó ${M.rag(jovo, 'ban', 'ben')}?` : `Mennyi a cégautóadó ${M.rag(ev, 'ban', 'ben')}?`, valasz })}
 <div class="keret asztal">
 ${forgalmi({ kalk: 'cegautoado', cim: 'A céges autó adatai', autom: true, tartalom: `
 ${evek.length > 1 ? sor('', negyzetek('ev', 'Melyik évre?', evek.map((e) => [e, String(e)]), ev)) : `<input type="hidden" name="ev" value="${ev}">`}
@@ -1450,8 +1465,7 @@ ${sor('', valaszto('honap', 'Melyik hónapban?', S.HONAPOK.map((n, i) => [i + 1,
 ${elszamolas(k, M.uresPanel('Add meg a teljesítményt és a környezetvédelmi osztályt.'))}
 </div>
 <div class="keret"><article class="cikk">
-<h2>A NAV tételei</h2>
-${evek.map((e) => cegTabla(adat, e)).join('\n')}
+${evek.slice().sort((a, b) => b - a).map((e) => `<h2>Cégautóadó ${e}: havi tételek</h2>\n${cegTabla(adat, e)}`).join('\n')}
 ${javaslatBekezdes(adat)}
 <p>Az elektromos („5E”) és a nulla emissziós („5Z”) autó nem tartozik a cégautóadó alá. A tételeket a NAV minden év október 31-ig teszi közzé a következő évre, a júliusi infláció alapján.</p>
 <h2>Gyakori kérdések</h2>
@@ -1461,7 +1475,7 @@ ${forrasLista([...evek.map((e) => ({ nev: `NAV: a cégautóadó ${M.os(e)} valor
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: `Cégautóadó ${evek.join(', ')}: kalkulátor és táblázat`,
+    cim: jovo ? `Cégautóadó ${jovo} és ${ev}: táblázat és kalkulátor` : `Cégautóadó ${ev}: táblázat és kalkulátor`,
     leiras, ut, tartalom,
     adatJson: { tetelek: { gepjarmuado: adat.tetelek.gepjarmuado, gepjarmuado_mozgaskorlatozott: adat.tetelek.gepjarmuado_mozgaskorlatozott, cegautoado: adat.tetelek.cegautoado }, szabalyok: { vallalkozo: adat.szabalyok.vallalkozo }, ev },
     jsonld: [alkalmazasLd(k.cfg, 'Cégautóadó-kalkulátor', ut, leiras), gyikLd(kerdesek), morzsaLd(k.cfg, [{ nev: 'Vállalkozóknak', ut: VALL_UT }, { nev: 'Cégautóadó', ut }])],
@@ -1693,6 +1707,7 @@ export function navArOldal(k) {
   const { u, most, elozo, egyEve, sorok } = navArAdatok(adat);
   const hn = M.honapHu(most.ev, most.h);
   const ban = `${most.ev}. ${M.honapBan(most.h)}`;
+  const honapi = `${S.HONAPOK[most.h - 1]}i`; // „decemberi”: így keresik (nav decemberi üzemanyagár)
   const s = Object.fromEntries(sorok.map((x) => [x.kulcs, x]));
   const elozoNev = elozo ? S.HONAPOK[elozo.h - 1] : '';
   const kozzeteve = arDatum(adat, most.ev, most.h).replace(/\.$/, '');
@@ -1725,7 +1740,7 @@ export function navArOldal(k) {
   ];
   const leiras = `NAV üzemanyagár ${hn}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft literenként, a keverék, az LPG és a CNG ára, az előző hónaphoz képest. Ezzel számolhatsz számla nélkül a kilométertérítésnél.`;
   const tartalom = (L) => `
-${oldalfej(L, { morzsa: ['NAV-üzemanyagár'], cim: `NAV üzemanyagár, ${hn}`, valasz: `${ban} a NAV szerint a benzin <strong>${s.benzin.ar}&nbsp;Ft</strong>, a dízel <strong>${s.dizel.ar}&nbsp;Ft</strong> literenként.${elozoMondat} Ezzel az árral számolhatod el a tankolást számla nélkül, például a kilométertérítésnél.` })}
+${oldalfej(L, { morzsa: ['NAV-üzemanyagár'], cim: `NAV ${honapi} üzemanyagár, ${most.ev}`, valasz: `${ban} a NAV szerint a benzin <strong>${s.benzin.ar}&nbsp;Ft</strong>, a dízel <strong>${s.dizel.ar}&nbsp;Ft</strong> literenként.${elozoMondat} Ezzel az árral számolhatod el a tankolást számla nélkül, például a kilométertérítésnél.` })}
 <div class="keret"><article class="cikk">
 <h2 id="most">${hn}i árak</h2>
 <div class="tabla-tarto"><table class="tabla"><thead><tr><th>Üzemanyag</th><th>${cap(S.HONAPOK[most.h - 1])}</th>${elozo ? `<th>${cap(elozoNev)}</th><th>Változás</th>` : ''}${egyEve ? `<th class="csak-szeles">Egy éve</th>` : ''}</tr></thead><tbody>
@@ -1757,7 +1772,7 @@ ${forrasLista([{ nev: `NAV: ${M.rag(most.ev, 'ban', 'ben')} alkalmazható üzema
 ${tovabb(L, ut)}
 </article></div>`;
   return oldal(k, {
-    cim: `NAV üzemanyagár ${hn}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft`,
+    cim: `NAV ${honapi} üzemanyagár ${most.ev}: benzin ${s.benzin.ar} Ft, dízel ${s.dizel.ar} Ft`,
     leiras, ut, tartalom,
     jsonld: [gyikLd(kerdesek), morzsaLd(cfg, [{ nev: 'NAV-üzemanyagár', ut }])],
   });
