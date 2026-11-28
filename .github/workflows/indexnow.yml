@@ -51,7 +51,8 @@ jobs:
           if (process.env.MIND !== "true") {
             let elozo = new Map();
             try { elozo = olvasSitemap(execSync("git show HEAD~1:web/sitemap.xml", { encoding: "utf8" })); } catch {}
-            urlek = urlek.filter((u) => elozo.get(u) !== most.get(u));
+            // csak az új vagy későbbi lastmod számít: egy visszafelé javított dátum nem ok a beküldésre
+            urlek = urlek.filter((u) => !elozo.has(u) || most.get(u) > elozo.get(u));
           }
           if (!urlek.length) { console.log("Nincs változott oldal."); process.exit(0); }
           const body = JSON.stringify({ host, key: cfg.indexnow_kulcs, keyLocation: `${cfg.domain}/${cfg.indexnow_kulcs}.txt`, urlList: urlek });

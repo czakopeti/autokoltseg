@@ -31,3 +31,10 @@ test('a menü a csoportokat követi, a „Kapcsolódó oldalak” a saját csopo
   assert.equal(csoportja('nav-uzemanyagar/').id, 'vallalkozas');
   assert.equal(csoportja('impresszum/'), null);
 });
+
+test('sitemap lastmod: a pecsét napi dátuma („XI. 28.”) nem számít tartalmi változásnak', async () => {
+  const { lastmodDontes } = await import('../forras/sablon.mjs');
+  const regi = '<text font-size="11">XI. 27.</text><p>benzin 644 Ft</p>';
+  assert.equal(lastmodDontes(regi, regi.replace('XI. 27.', 'XI. 28.'), '2026-11-25', '2026-11-28'), '2026-11-25');
+  assert.equal(lastmodDontes(regi, regi.replace('644', '650'), '2026-11-25', '2026-11-28'), '2026-11-28');
+});

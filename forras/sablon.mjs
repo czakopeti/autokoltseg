@@ -133,6 +133,8 @@ export function tartalomLenyomat(html) {
   return html
     .replace(/\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?/g, '#')
     .replace(new RegExp(`\\d{4}\\. (${HONAPNEV}) \\d{1,2}\\.(, \\d{2}:\\d{2})?`, 'g'), '#')
+    // a pecsét napi dátuma („XI. 28.”): az ellenőrzés napja, nem tartalmi változás
+    .replace(/\b[IVX]{1,4}\. \d{1,2}\./g, '#')
     .replace(/\?v=\w+/g, '');
 }
 export function lastmodDontes(regiHtml, ujHtml, regiDatum, ma) {
