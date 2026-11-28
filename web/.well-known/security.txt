@@ -1,4 +1,4 @@
 Contact: mailto:info@autozom.hu
-Expires: 2027-11-27T00:00:00.000Z
+Expires: 2027-11-28T00:00:00.000Z
 Preferred-Languages: hu, en
 Canonical: https://autozom.hu/.well-known/security.txt
